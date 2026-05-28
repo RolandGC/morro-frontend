@@ -20,6 +20,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { useAuthStore } from "@/modules/auth/store/authStore"
 import { ChevronsUpDownIcon, SparklesIcon, BadgeCheckIcon, CreditCardIcon, BellIcon, LogOutIcon } from "lucide-react"
 
 export function NavUser({
@@ -31,6 +32,17 @@ export function NavUser({
     avatar: string
   }
 }) {
+
+  const { logout, isLoading } = useAuthStore();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const { isMobile } = useSidebar()
 
   return (
@@ -99,9 +111,9 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <LogOutIcon
+              <LogOutIcon onSubmit={handleLogout} 
               />
-              Log out
+              Cerrar sesión
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ToastContainer } from "@/components/toast-container";
+import { AuthProvider } from "@/components/auth-provider";
 
 export const metadata: Metadata = {
   title: "Mi App",
@@ -16,9 +18,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <TooltipProvider>
-          {children}
-        </TooltipProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            {children}
+            <ToastContainer />
+          </TooltipProvider>
+        </AuthProvider>
       </body>
     </html>
   );

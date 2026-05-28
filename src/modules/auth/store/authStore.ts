@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { svLogin } from "@/services/auth/login";
+import { authService, AuthServiceResponse } from "../services/auth.service";
+import { LoginResponse } from "../types/auth.types";
 
 export interface User {
   id: string;
@@ -12,12 +13,29 @@ interface AuthStore {
   token: string | null;
   isLoading: boolean;
   error: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<AuthServiceResponse>;
   logout: () => void;
   setUser: (user: User | null) => void;
   setToken: (token: string | null) => void;
   clearError: () => void;
 }
+
+// Funciones auxiliares para manejo de cookies
+const setAuthCookie = (token: string) => {
+  if (typeof document === 'undefined') return;
+  
+  // Cookie válida por 7 días
+  const expiryDate = new Date();
+  expiryDate.setTime(expiryDate.getTime() + (7 * 24 * 60 * 60 * 1000));
+  const expires = `expires=${expiryDate.toUTCString()}`;
+  
+  document.cookie = `access_token=${token}; ${expires}; path=/; SameSite=Strict`;
+};
+
+const removeAuthCookie = () => {
+  if (typeof document === 'undefined') return;
+  document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+};
 
 export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
@@ -28,35 +46,50 @@ export const useAuthStore = create<AuthStore>((set) => ({
   login: async (email: string, password: string) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await svLogin({ email, password });
+      const result = await authService.login({ email, password });
 
-      if (!response.ok) {
-        throw new Error("Credenciales inválidas");
+      if (!result.ok || !result.data) {
+        const errorMsg = result.error || 'Error en el login';
+        set({
+          error: errorMsg,
+          isLoading: false,
+        });
+        return result;
       }
 
-      const data = await response.json();
+      const { access_token, user } = result.data;
 
-      // Guardar token en localStorage
-      localStorage.setItem("auth_token", data.token);
+      // Guardar token en ambos lugares
+      localStorage.setItem("access_token", access_token);
+      setAuthCookie(access_token);
 
       set({
-        user: data.user,
-        token: data.token,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+        },
+        token: access_token,
         isLoading: false,
       });
+
+      return result;
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Error en el login";
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
       set({
         error: errorMessage,
         isLoading: false,
       });
-      throw error;
+      return {
+        ok: false,
+        error: errorMessage,
+      };
     }
   },
 
   logout: () => {
-    localStorage.removeItem("auth_token");
+    localStorage.removeItem("access_token");
+    removeAuthCookie();
     set({
       user: null,
       token: null,
@@ -71,7 +104,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
 // Restaurar token de localStorage al inicializar
 if (typeof window !== "undefined") {
-  const token = localStorage.getItem("auth_token");
+  const token = localStorage.getItem("access_token");
   if (token) {
     useAuthStore.setState({ token });
   }

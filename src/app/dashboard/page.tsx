@@ -1,3 +1,5 @@
+'use client';
+
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -13,8 +15,28 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { useProtectedRoute } from "@/hooks/useProtectedRoute"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function Page() {
+  const { isLoading } = useProtectedRoute();
+
+  // Mostrar skeleton mientras se verifica autenticación
+  if (isLoading) {
+    return (
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <div className="flex flex-col gap-4 p-4">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-96 w-full" />
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    );
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar />

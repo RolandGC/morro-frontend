@@ -1,7 +1,14 @@
-
 import { baseUrl } from "./environment";
 
 export const endpoints = {
-    login: `${baseUrl}/auth/login`,
-    getCompanies: `${baseUrl}/companies`,
+    AUTH: {
+        LOGIN: `${baseUrl}/auth/login`,
+    },
+    COMPANIES: {
+        FIND_ALL: `${baseUrl}/companies`,
+    },
+    USER_COMPANIES: {
+        FIND_ALL: `${baseUrl}/user-companies`,
+        SELECT_COMPANY: (companyId: string) => `${baseUrl}/auth/select-companies/${companyId}`,
+    }
 }
