@@ -9,6 +9,6 @@ export const endpoints = {
     },
     USER_COMPANIES: {
         FIND_ALL: `${baseUrl}/user-companies`,
-        SELECT_COMPANY: (companyId: string) => `${baseUrl}/auth/select-companies/${companyId}`,
+        SELECT_COMPANY:`${baseUrl}/auth/select-company`,
     }
 }

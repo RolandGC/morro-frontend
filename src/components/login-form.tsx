@@ -22,8 +22,6 @@ import { Input } from '@/components/ui/input';
 import { loginSchema, LoginFormData } from '@/modules/auth/validators/loginSchema';
 import { useAuthStore } from '@/modules/auth/store/authStore';
 import { useToast } from '@/hooks/useToast';
-import CompanyService from '@/modules/companies/services/company.service';
-import { useEffect } from 'react';
 
 export function LoginForm({
   className,
@@ -32,8 +30,6 @@ export function LoginForm({
   const router = useRouter();
   const { success, error } = useToast();
   const { login, isLoading } = useAuthStore();
-  const companyService = new CompanyService();
-
 
   const {
     register,
@@ -43,18 +39,6 @@ export function LoginForm({
     resolver: zodResolver(loginSchema),
   });
 
-  useEffect(() => {
-    const fetchCompanies = async () => {
-      try {
-        const response = await companyService.getAllCompanies();
-        console.log('Empresas:', response.data); // Debug log
-      } catch (err) {
-        console.error('Error al obtener empresas:', err);
-      }
-    };
-    fetchCompanies();
-  }, []);
-  
   const onSubmit = async (data: LoginFormData) => {
     try {
       const result = await login(data.email, data.password);
@@ -117,7 +101,7 @@ export function LoginForm({
               </Field>
               <Field>
                 <Button type="submit" disabled={isLoading} className="w-full">
-                  {isLoading ? 'Cargando...' : 'Login'}
+                  {isLoading ? 'Cargando...' : 'Ingresar'}
                 </Button>
                 <FieldDescription className="text-center">
                   ¿No tienes cuenta? <a href="/auth/register" className="underline">Regístrate</a>

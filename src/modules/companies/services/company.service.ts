@@ -10,5 +10,14 @@ export default class CompanyService {
         const response = await apiClient.get(endpoints.USER_COMPANIES.FIND_ALL);
         return response;
     
-    }       
+    }
+    
+    async selectCompany(companyId: string): Promise<AxiosResponse<User>> {
+        const response = await apiClient.post(endpoints.USER_COMPANIES.SELECT_COMPANY,
+            {
+                company_id: companyId,
+            }
+        );
+        return response;
+    }
 }

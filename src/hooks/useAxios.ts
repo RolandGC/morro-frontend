@@ -33,9 +33,12 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error: AxiosError) => {
-    // Si es error 401 (no autorizado), limpiar token y redirigir a login
-    if (error.response?.status === 401) {
-      if (typeof window !== 'undefined') {
+    // Solo redirigir si había sesión (token expirado o inválido)
+    if (error.response?.status === 401 && typeof window !== 'undefined') {
+      const token = localStorage.getItem('access_token');
+      const isAuthPage = window.location.pathname.startsWith('/auth/');
+
+      if (token && !isAuthPage) {
         localStorage.removeItem('access_token');
         window.location.href = '/auth/login';
       }

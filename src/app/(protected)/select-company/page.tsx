@@ -32,9 +32,20 @@ export default function CompaniesPage() {
     }, []);
 
     const handleSelectCompany = (company: UserCompany) => {
-        console.log('Empresa seleccionada:', company);
+        const selectedCompany = async () => {
+            try {
+                await companyService.selectCompany(company.id);
+            } catch (err) {
+                console.error(err);
+                setError('No se pudo seleccionar la empresa');
+            }
+            window.location.href = '/dashboard';
+        };
 
-        // router.push(`/dashboard/${company.id}`)
+
+
+        selectedCompany();
+        
     };
 
     if (loading) {
