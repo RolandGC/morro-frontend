@@ -3,9 +3,12 @@
 import React, { useEffect, useState } from 'react';
 import CompanyService from '@/modules/companies/services/company.service';
 import { UserCompany } from '@/modules/userCompany/types/userCompany.types';
+import { setAuthCookie, getAuthCookie } from '@/modules/auth/store/authStore';
+import { useRouter } from 'next/navigation';
 
 export default function CompaniesPage() {
     const companyService = new CompanyService();
+    const router = useRouter();
 
     const [companies, setCompanies] = useState<UserCompany[]>([]);
     const [loading, setLoading] = useState(true);
@@ -34,15 +37,18 @@ export default function CompaniesPage() {
     const handleSelectCompany = (company: UserCompany) => {
         const selectedCompany = async () => {
             try {
-                await companyService.selectCompany(company.id);
+                const response = await companyService.selectCompany(company.id);
+                if(response.status === 201) {
+                    setAuthCookie(response.data.access_token);
+                    router.push('/dashboard');
+                }
+                console.log('ressss', response);
             } catch (err) {
-                console.error(err);
+                console.error('errror', err);
+                console.log('errror response', err);
                 setError('No se pudo seleccionar la empresa');
             }
-            window.location.href = '/dashboard';
         };
-
-
 
         selectedCompany();
         

@@ -13,8 +13,8 @@ export const apiClient: AxiosInstance = axios.create({
 // Interceptor para agregar token a todas las solicitudes
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Obtener token de localStorage o cookies
-    const token = localStorage.getItem('access_token')
+    // Obtener token de cookies
+    const token = getCookieValue('access_token');
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -35,11 +35,12 @@ apiClient.interceptors.response.use(
   (error: AxiosError) => {
     // Solo redirigir si había sesión (token expirado o inválido)
     if (error.response?.status === 401 && typeof window !== 'undefined') {
-      const token = localStorage.getItem('access_token');
+      const token = getCookieValue('access_token');
       const isAuthPage = window.location.pathname.startsWith('/auth/');
 
       if (token && !isAuthPage) {
-        localStorage.removeItem('access_token');
+        // Remover cookie de token
+        document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         window.location.href = '/auth/login';
       }
     }

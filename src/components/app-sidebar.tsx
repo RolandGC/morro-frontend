@@ -20,7 +20,7 @@ const data = {
   user: {
     name: "shadcn",
     email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+    avatar: "../logoMorroHoriztl.png",
   },
   teams: [
     {
@@ -59,11 +59,11 @@ const data = {
       isActive: true,
       items: [
         {
-          title: "History",
+          title: "Empresas",
           url: "#",
         },
         {
-          title: "Starred",
+          title: "Usuarios",
           url: "#",
         },
         {
@@ -73,7 +73,7 @@ const data = {
       ],
     },
     {
-      title: "Models",
+      title: "Ventas",
       url: "#",
       icon: (
         <BotIcon
@@ -81,21 +81,21 @@ const data = {
       ),
       items: [
         {
-          title: "Genesis",
+          title: "Vender",
           url: "#",
         },
         {
-          title: "Explorer",
+          title: "Clientes",
           url: "#",
         },
         {
-          title: "Quantum",
+          title: "Saldos",
           url: "#",
         },
       ],
     },
     {
-      title: "Documentation",
+      title: "Reportes",
       url: "#",
       icon: (
         <BookOpenIcon
@@ -103,15 +103,15 @@ const data = {
       ),
       items: [
         {
-          title: "Introduction",
+          title: "Ventas",
           url: "#",
         },
         {
-          title: "Get Started",
+          title: "Compras",
           url: "#",
         },
         {
-          title: "Tutorials",
+          title: "Egresos",
           url: "#",
         },
         {
@@ -121,7 +121,7 @@ const data = {
       ],
     },
     {
-      title: "Settings",
+      title: "Configuración",
       url: "#",
       icon: (
         <Settings2Icon

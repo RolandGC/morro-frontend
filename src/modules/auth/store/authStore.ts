@@ -13,7 +13,7 @@ interface AuthStore {
   token: string | null;
   isLoading: boolean;
   error: string | null;
-  login: (email: string, password: string) => Promise<AuthServiceResponse>;
+  login: (email: string, password: string) => Promise<AuthServiceResponse<LoginResponse>>;
   logout: () => void;
   setUser: (user: User | null) => void;
   setToken: (token: string | null) => void;
@@ -21,20 +21,34 @@ interface AuthStore {
 }
 
 // Funciones auxiliares para manejo de cookies
-const setAuthCookie = (token: string) => {
+export const setAuthCookie = (token: string) => {
   if (typeof document === 'undefined') return;
   
   // Cookie válida por 7 días
   const expiryDate = new Date();
   expiryDate.setTime(expiryDate.getTime() + (7 * 24 * 60 * 60 * 1000));
+
   const expires = `expires=${expiryDate.toUTCString()}`;
-  
   document.cookie = `access_token=${token}; ${expires}; path=/; SameSite=Strict`;
 };
 
-const removeAuthCookie = () => {
+export const removeAuthCookie = () => {
   if (typeof document === 'undefined') return;
   document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+};
+
+export const getAuthCookie = () => {
+  if (typeof document === 'undefined') return null;
+  const name = 'access_token=';
+  const decodedCookie = decodeURIComponent(document.cookie);
+  const cookieArray = decodedCookie.split(';');
+  for (let cookie of cookieArray) {
+    cookie = cookie.trim();
+    if (cookie.indexOf(name) === 0) {
+      return cookie.substring(name.length);
+    }
+  }
+  return null;
 };
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -59,8 +73,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
       const { access_token, user } = result.data;
 
-      // Guardar token en ambos lugares
-      localStorage.setItem("access_token", access_token);
+      // Guardar token en cookies
       setAuthCookie(access_token);
 
       set({
@@ -88,7 +101,6 @@ export const useAuthStore = create<AuthStore>((set) => ({
   },
 
   logout: () => {
-    localStorage.removeItem("access_token");
     removeAuthCookie();
     set({
       user: null,
@@ -102,9 +114,9 @@ export const useAuthStore = create<AuthStore>((set) => ({
   clearError: () => set({ error: null }),
 }));
 
-// Restaurar token de localStorage al inicializar
+// Restaurar token de cookies al inicializar
 if (typeof window !== "undefined") {
-  const token = localStorage.getItem("access_token");
+  const token = getAuthCookie();
   if (token) {
     useAuthStore.setState({ token });
   }

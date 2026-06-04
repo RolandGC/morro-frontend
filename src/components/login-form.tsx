@@ -5,19 +5,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-} from '@/components/ui/field';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle,} from '@/components/ui/card';
+import { Field, FieldDescription, FieldGroup, FieldLabel,} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { loginSchema, LoginFormData } from '@/modules/auth/validators/loginSchema';
 import { useAuthStore } from '@/modules/auth/store/authStore';
@@ -43,9 +32,11 @@ export function LoginForm({
     try {
       const result = await login(data.email, data.password);
 
+      console.log('Login result:', result);
+
       if (result.ok) {
         success('¡Login exitoso!');
-        router.push('/dashboard');
+        router.push('/select-company');
       } else {
         error(result.error || 'Error en el login');
       }
@@ -73,6 +64,7 @@ export function LoginForm({
                   placeholder="m@example.com"
                   {...register('email')}
                   disabled={isLoading}
+                  required
                 />
                 {errors.email && (
                   <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>

@@ -2,7 +2,7 @@ import { apiClient } from '@/hooks/useAxios';
 import { endpoints } from '@/config/endPoints';
 import { AxiosResponse } from 'axios';
 import { PaginationResponse } from '@/types/types';
-import { User } from '@/modules/auth/types/auth.types';
+import { LoginResponse, User } from '@/modules/auth/types/auth.types';
 import { UserCompany } from '@/modules/userCompany/types/userCompany.types';
 
 export default class CompanyService {
@@ -12,7 +12,7 @@ export default class CompanyService {
     
     }
     
-    async selectCompany(companyId: string): Promise<AxiosResponse<User>> {
+    async selectCompany(companyId: string): Promise<AxiosResponse<LoginResponse>> {
         const response = await apiClient.post(endpoints.USER_COMPANIES.SELECT_COMPANY,
             {
                 company_id: companyId,
