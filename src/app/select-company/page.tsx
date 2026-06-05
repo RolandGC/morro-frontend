@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import CompanyService from '@/modules/companies/services/company.service';
 import { UserCompany } from '@/modules/userCompany/types/userCompany.types';
-import { setAuthCookie, getAuthCookie } from '@/modules/auth/store/authStore';
+import { saveAuthToken } from '@/modules/auth/helpers';
 import { useRouter } from 'next/navigation';
 
 export default function CompaniesPage() {
@@ -39,7 +39,7 @@ export default function CompaniesPage() {
             try {
                 const response = await companyService.selectCompany(company.id);
                 if(response.status === 201) {
-                    setAuthCookie(response.data.access_token);
+                    saveAuthToken(response.data.access_token);
                     router.push('/dashboard');
                 }
                 console.log('ressss', response);

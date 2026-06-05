@@ -5,12 +5,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle,} from '@/components/ui/card';
-import { Field, FieldDescription, FieldGroup, FieldLabel,} from '@/components/ui/field';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, } from '@/components/ui/card';
+import { Field, FieldDescription, FieldGroup, FieldLabel, } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { loginSchema, LoginFormData } from '@/modules/auth/validators/loginSchema';
 import { useAuthStore } from '@/modules/auth/store/authStore';
 import { useToast } from '@/hooks/useToast';
+import axios from 'axios';
 
 export function LoginForm({
   className,
@@ -30,19 +31,22 @@ export function LoginForm({
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const result = await login(data.email, data.password);
+      const response = await login(data.email, data.password);
 
-      console.log('Login result:', result);
+      console.log('Login result:', response);
 
-      if (result.ok) {
+      if (response.status === 201) {
         success('¡Login exitoso!');
         router.push('/select-company');
-      } else {
-        error(result.error || 'Error en el login');
-      }
+      } 
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error en el login';
-      error(errorMessage);
+      if (axios.isAxiosError(err)) {
+        console.log('Status:', err.response?.status);
+        console.log('Data:', err.response?.data);
+        console.log('Message API:', err.response?.data?.message);
+      } else {
+        console.log('Error desconocido:', err);
+      }
     }
   };
 

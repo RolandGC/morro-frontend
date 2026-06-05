@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { baseUrl } from '@/config/environment';
+import { removeAuthToken } from '@/modules/auth/helpers';
 
 // Crear instancia de axios
 export const apiClient: AxiosInstance = axios.create({
@@ -39,8 +40,7 @@ apiClient.interceptors.response.use(
       const isAuthPage = window.location.pathname.startsWith('/auth/');
 
       if (token && !isAuthPage) {
-        // Remover cookie de token
-        document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        removeAuthToken();
         window.location.href = '/auth/login';
       }
     }
