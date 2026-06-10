@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import CompanyService from '@/modules/companies/services/company.service';
+import CompanyService from '@/modules/core/companies/services/company.service';
 import { UserCompany } from '@/modules/userCompany/types/userCompany.types';
 import { saveAuthToken } from '@/modules/auth/helpers';
 import { useRouter } from 'next/navigation';

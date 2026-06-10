@@ -95,7 +95,7 @@ const data = {
       ],
     },
     {
-      title: "Reportes",
+      title: "Inventario",
       url: "#",
       icon: (
         <BookOpenIcon
@@ -103,8 +103,8 @@ const data = {
       ),
       items: [
         {
-          title: "Ventas",
-          url: "#",
+          title: "Productos",
+          url: "/inventory/products/add",
         },
         {
           title: "Compras",

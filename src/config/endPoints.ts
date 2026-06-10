@@ -10,5 +10,15 @@ export const endpoints = {
     USER_COMPANIES: {
         FIND_ALL: `${baseUrl}/user-companies`,
         SELECT_COMPANY:`${baseUrl}/auth/select-company`,
-    }
+    },
+    PRODUCTS: {
+        FIND_ALL: `${baseUrl}/products`,
+        CREATE: `${baseUrl}/products`,
+    },
+    CATEGORIES: {
+        FIND_ALL: `${baseUrl}/categories`,
+        CREATE: `${baseUrl}/categories`,
+    
+    },
+
 }
