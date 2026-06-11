@@ -18,7 +18,11 @@ export const endpoints = {
     CATEGORIES: {
         FIND_ALL: `${baseUrl}/categories`,
         CREATE: `${baseUrl}/categories`,
-    
     },
+    BRANDS: {
+        FIND_ALL: `${baseUrl}/brands`,
+        CREATE: `${baseUrl}/brands`,
+    },
+
 
 }
