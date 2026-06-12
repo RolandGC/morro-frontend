@@ -1,11 +1,15 @@
 import z from "zod";
+import { regime } from "@/types/types";
 
 export const productSchema = z.object({
-    name: z.string().min(3, "El nombre del producto es requerido"),
-    model: z.string().min(2, "El modelo del producto es requerido"),
-    description: z.string().max(200, "La descripción no puede exceder los 200 caracteres"),
-    price: z.number().positive("El precio debe ser un número positivo"),
-    stock: z.number().int().nonnegative("El stock debe ser un número entero no negativo")
+    name: z.string().min(1, "Nombre requerido"),
+    model: z.string().optional(),
+    unit: z.string().min(1, "Unidad requerida"),
+    regime: z.nativeEnum(regime),
+    has_igv: z.boolean(),
+    track_stock: z.boolean(),
+    category_id: z.string(),
+    brand_id: z.string(),
 });
 
-export type ProductFormData = z.infer<typeof productSchema>;
+export type CreateProductDto = z.infer<typeof productSchema>;
