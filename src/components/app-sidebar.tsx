@@ -104,7 +104,7 @@ const data = {
       items: [
         {
           title: "Productos",
-          url: "/inventory/products/add",
+          url: "/inventory/products",
         },
         {
           title: "Compras",
