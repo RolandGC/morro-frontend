@@ -12,29 +12,27 @@ import {
 import { Field, FieldGroup } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useProductStore } from "../store/product.store"
 import ProductForm from "./ProductForm"
 
-interface ModalProps {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-}
-export function Modal({ open, onOpenChange }: ModalProps) {
+export function Modal() {
+    const open = useProductStore((state) => state.open);
+    const isEditing = useProductStore((state) => state.isEditing);
+    const close = useProductStore((state) => state.close);
+
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog open={open} onOpenChange={close}>
             <form>
-                {/* <DialogTrigger asChild>
-                    <Button variant="outline">Open Dialog</Button>
-                </DialogTrigger> */}
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle>Crear producto</DialogTitle>
+                        <DialogTitle>{isEditing ? "Editar producto" : "Crear producto"}</DialogTitle>
                         <DialogDescription>
                             Complete la información del producto.
                         </DialogDescription>
                     </DialogHeader>
 
                     <ProductForm
-                        onSuccess={() => onOpenChange(false)}
+                        onSuccess={() => close()}
                     />
                 </DialogContent>
             </form>

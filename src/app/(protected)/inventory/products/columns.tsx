@@ -1,97 +1,92 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { MoreHorizontal, ArrowUpDown } from "lucide-react"
+import { MoreHorizontal, ArrowUpDown, Pencil, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,} from "@/components/ui/dropdown-menu"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Product } from "@/modules/inventory/products/types/produc.type"
+import { formatDate } from "@/hooks/dateFormat"
+import { useProductStore } from "@/modules/inventory/products/store/product.store"
+import { productService } from "@/modules/inventory/products/services/product.service"
+import { useToast } from "@/hooks/useToast"
 
-export type Payment = {
-    id: string
-    amount: number
-    status: "pending" | "processing" | "success" | "failed"
-    email: string
-}
 
-export const columns: ColumnDef<Payment>[] = [
+export const columns: ColumnDef<Product>[] = [
     {
-        id: "select",
-        header: ({ table }) => (
-            <Checkbox
-                checked={
-                    table.getIsAllPageRowsSelected() ||
-                    (table.getIsSomePageRowsSelected() && "indeterminate")
-                }
-                onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-                aria-label="Select all"
-            />
-        ),
-        cell: ({ row }) => (
-            <Checkbox
-                checked={row.getIsSelected()}
-                onCheckedChange={(value) => row.toggleSelected(!!value)}
-                aria-label="Select row"
-            />
-        ),
-        enableSorting: false,
-        enableHiding: false,
+        accessorKey: "name",
+        header: "Producto",
     },
     {
-        accessorKey: "status",
-        header: "Status",
+        accessorFn: (row) => row.brands.name,
+        id: "brand",
+        header: "Marca",
     },
     {
-        accessorKey: "email",
-        header: ({ column }) => {
-            return (
-                <Button
-                    variant="ghost"
-                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                >
-                    Email
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-            )
-        },
+        accessorFn: (row) => row.categories.name,
+        id: "category",
+        header: "Categoría",
     },
     {
-        accessorKey: "amount",
-        header: "Amount",
+        accessorFn: (row) => row.model,
+        id: "model",
+        header: "Modelo",
+    },
+    {
+        accessorFn: (row) => formatDate(row.created_at),
+        id: "created_at",
+        header: "Fecha de creación",
     },
     {
         id: "actions",
-        header: "Actions",
+        header: "Opciones",
         cell: ({ row }) => {
-            const payment = row.original
+            const product = row.original;
+            const { openEdit } = useProductStore();
+            const { notify } = useToast();
+
+            const handleEdit = () => {
+                openEdit({
+                    //id: product.id,
+                    name: product.name,
+                    model: product.model,
+                    unit_base: product.unit_base,
+                    regime: product.regime,
+                    has_igv: product.has_igv,
+                    track_stock: product.track_stock,
+                    category_id: product.category_id,
+                    brand_id: product.brand_id,
+                });
+
+            };
+
+            const handleDelete = async () => {
+                if (!window.confirm(`¿Estás seguro de que quieres eliminar el producto "${product.name}"?`)) {
+                    return;
+                }
+
+                try {
+                    const response = await productService.delete(product?.id);
+                    console.log('Delete response:', response);
+                    notify("Producto eliminado correctamente", "success", 3000);
+                    // Recargar la lista de productos
+                    window.location.reload();
+                } catch (error) {
+                    notify("Error al eliminar el producto", "error", 3000);
+                    console.error("Error deleting product:", error);
+                }
+            };
 
             return (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem
-                            onClick={() => navigator.clipboard.writeText(payment.id)}
-                        >
-                            Copy payment ID
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>View customer</DropdownMenuItem>
-                        <DropdownMenuItem>View payment details</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            )
+                <div className="flex gap-2">
+                    <Button variant="ghost" size="icon" onClick={handleEdit} title="Editar producto">
+                        <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={handleDelete} title="Eliminar producto">
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                    </Button>
+                </div>
+            );
         },
-    },
+    }
 ]

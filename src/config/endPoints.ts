@@ -14,6 +14,8 @@ export const endpoints = {
     PRODUCTS: {
         FIND_ALL: `${baseUrl}/products`,
         CREATE: `${baseUrl}/products`,
+        UPDATE: `${baseUrl}/products`,
+        DELETE: `${baseUrl}/products`,
     },
     CATEGORIES: {
         FIND_ALL: `${baseUrl}/categories`,

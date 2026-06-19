@@ -10,23 +10,19 @@ import { Brand } from "@/modules/inventory/brands/types/brand.types";
 import { productService } from "@/modules/inventory/products/services/product.service";
 import { regime } from "@/types/types";
 import { useEffect, useState } from "react";
+import { useProductStore } from "../store/product.store";
+import { useToast } from "@/hooks/useToast";
 
 interface ProductFormProps {
     onSuccess?: () => void;
 }
 
 export default function ProductForm({ onSuccess }: ProductFormProps) {
-    const [product, setProduct] = useState({
-        name: "",
-        model: "",
-        unit_base: "",
-        regime: regime.general,
-        has_igv: true,
-        track_stock: true,
-        category_id: "",
-        brand_id: "",
-    });
-
+    const product = useProductStore((state) => state.product);
+    const updateField = useProductStore((state) => state.updateField);
+    const isEditing = useProductStore((state) => state.isEditing);
+    const reset = useProductStore((state) => state.reset);
+    const { notify: showToast} = useToast();
     const [categories, setCategories] = useState<Category[]>([]);
     const [brands, setBrands] = useState<Brand[]>([]);
 
@@ -62,12 +58,24 @@ export default function ProductForm({ onSuccess }: ProductFormProps) {
 
     const handleSubmit = async () => {
         try {
-            const response = await productService.create(product);
+            let response;
+            
+            if (isEditing && product.id) {
+                response = await productService.update(product.id, product);
+            } else {
+                response = await productService.create(product);
+            }
 
-            if (response.status === 201) {
+            if (response.status === 201 || response.status === 200) {
+                showToast(
+                    isEditing ? "Producto actualizado correctamente" : "Producto creado correctamente",
+                    "success"
+                );
+                reset();
                 onSuccess?.();
             }
         } catch (error) {
+            showToast("Error al guardar el producto", "error");
             console.error(error);
         }
     };
@@ -78,64 +86,46 @@ export default function ProductForm({ onSuccess }: ProductFormProps) {
                 id="name"
                 value={product.name}
                 label="Nombre del producto"
-                onChange={(value) =>
-                    setProduct((prev) => ({
-                        ...prev,
-                        name: value,
-                    }))
-                }
+                onChange={(value) => updateField("name", value)}
             />
 
             <InputText
                 id="model"
                 value={product.model}
                 label="Modelo"
-                onChange={(value) =>
-                    setProduct((prev) => ({
-                        ...prev,
-                        model: value,
-                    }))
-                }
+                onChange={(value) => updateField("model", value)}
             />
 
             <SimpleSelector
                 label="Marca"
+                value={product.brand_id}
                 options={brands.map((brand) => ({
                     id: brand.id,
                     name: brand.name,
                 }))}
                 onSelect={(id) =>
-                    setProduct((prev) => ({
-                        ...prev,
-                        brand_id: id,
-                    }))
+                    updateField("brand_id", id)
                 }
             />
 
             <SimpleSelector
                 label="Categoría"
+                value={product.category_id}
                 options={categories.map((category) => ({
                     id: category.id,
                     name: category.name,
                 }))}
                 onSelect={(id) =>
-                    setProduct((prev) => ({
-                        ...prev,
-                        category_id: id,
-                    }))
+                    updateField("category_id", id)
                 }
             />
 
             <SimpleSelector
                 label="Régimen"
+                value={regimeTypes.find((r) => r.value === product.regime)?.id}
                 options={regimeTypes}
                 onSelect={(id) =>
-                    setProduct((prev) => ({
-                        ...prev,
-                        regime:
-                            regimeTypes.find((r) => r.id === id)?.value ??
-                            regime.general,
-                    }))
+                    updateField("regime", regimeTypes.find((r) => r.id === id)?.value ?? regime.general)
                 }
             />
 
@@ -144,39 +134,30 @@ export default function ProductForm({ onSuccess }: ProductFormProps) {
                 value={product.unit_base}
                 label="Unidad de medida"
                 onChange={(value) =>
-                    setProduct((prev) => ({
-                        ...prev,
-                        unit_base: value,
-                    }))
+                    updateField("unit_base", value)
                 }
             />
 
             <SimpleSelector
                 label="Tiene IGV"
+                value={product.has_igv === true ? has_igv[0].id : has_igv[1].id}
                 options={has_igv}
                 onSelect={(id) =>
-                    setProduct((prev) => ({
-                        ...prev,
-                        has_igv:
-                            has_igv.find((h) => h.id === id)?.value ?? false,
-                    }))
+                    updateField("has_igv", has_igv.find((h) => h.id === id)?.value ?? true)
                 }
             />
 
             <SimpleSelector
                 label="Llevar stock"
+                value={product.track_stock === true ? track_stock[0].id : track_stock[1].id}
                 options={track_stock}
                 onSelect={(id) =>
-                    setProduct((prev) => ({
-                        ...prev,
-                        track_stock:
-                            track_stock.find((t) => t.id === id)?.value ?? false,
-                    }))
+                    updateField("track_stock", track_stock.find((t) => t.id === id)?.value ?? true)
                 }
             />
 
             <Button onClick={handleSubmit}>
-                Guardar producto
+                {isEditing ? "Actualizar producto" : "Guardar producto"}
             </Button>
         </div>
     );
