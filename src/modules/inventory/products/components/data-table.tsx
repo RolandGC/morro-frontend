@@ -28,15 +28,26 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import { ProductQueryParams } from "@/modules/inventory/products/types/produc.type"
+import { useEffect } from "react"
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
+    productFilter: ProductQueryParams
+    handleProductFilter: <K extends keyof ProductQueryParams>(
+        key: K,
+        value: ProductQueryParams[K]
+    ) => void;
+    totalPages: number;
 }
 
 export function DataTable<TData, TValue>({
     columns,
     data,
+    productFilter,
+    handleProductFilter,
+    totalPages
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -44,7 +55,7 @@ export function DataTable<TData, TValue>({
     )
     const [columnVisibility, setColumnVisibility] =
         React.useState<VisibilityState>({})
-
+    
     const [rowSelection, setRowSelection] = React.useState({})
     const table = useReactTable({
         data,
@@ -64,22 +75,27 @@ export function DataTable<TData, TValue>({
             rowSelection,
         },
     })
+    const [search, setSearch] = React.useState(productFilter.name ?? "");
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            handleProductFilter("name", search);
+        }, 350);
 
+        return () => clearTimeout(timer);
+    }, [search]);
     return (
         <div>
             <div className="flex items-center py-4">
                 <Input
-                    placeholder="Filter emails..."
-                    value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
-                    onChange={(event) =>
-                        table.getColumn("email")?.setFilterValue(event.target.value)
-                    }
+                    placeholder="Filtrar nombres..."
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
                     className="max-w-sm"
                 />
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="ml-auto">
-                            Columns
+                            Columnas
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
@@ -107,12 +123,12 @@ export function DataTable<TData, TValue>({
             </div>
             <div className="overflow-hidden rounded-md border">
                 <Table>
-                    <TableHeader>
+                    <TableHeader className="bg-white ">
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => {
                                     return (
-                                        <TableHead key={header.id}>
+                                        <TableHead key={header.id} className="bg-gray-100 font-bold">
                                             {header.isPlaceholder
                                                 ? null
                                                 : flexRender(
@@ -153,16 +169,23 @@ export function DataTable<TData, TValue>({
                 <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => table.previousPage()}
-                    disabled={!table.getCanPreviousPage()}
+                    onClick={() =>
+                        handleProductFilter("page", (productFilter.page ?? 1) - 1)
+                    }
+                    disabled={(productFilter.page ?? 1) <= 1}
                 >
                     Anterior
                 </Button>
                 <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => table.nextPage()}
-                    disabled={!table.getCanNextPage()}
+                    onClick={() =>
+                        handleProductFilter(
+                            "page",
+                            (productFilter.page ?? 1) + 1
+                        )
+                    }
+                    disabled={(productFilter.page ?? 1) >= totalPages}
                 >
                     Siguiente
                 </Button>

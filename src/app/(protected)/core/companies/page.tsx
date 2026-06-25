@@ -4,7 +4,7 @@ import { companyService } from "@/modules/core/companies/services/company.servic
 import { Company } from "@/modules/core/companies/types/company.type";
 import { useEffect, useState } from "react";
 import { columns } from "./columns";
-import { DataTable } from "@/components/features/data-table";
+import { DataTable } from "@/components/features/data-table"; 
 
 export default function CompaniesPage() {
     const [data, setData] = useState<Company[]>([]);

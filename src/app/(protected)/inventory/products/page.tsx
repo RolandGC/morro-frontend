@@ -3,7 +3,7 @@
 import { Modal } from "@/modules/inventory/products/components/Modal";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { DataTable } from "@/components/features/data-table";
+import { DataTable } from "@/modules/inventory/products/components/data-table";
 import { columns } from "./columns";
 import { productService } from "@/modules/inventory/products/services/product.service";
 import { Product, ProductQueryParams } from "@/modules/inventory/products/types/produc.type";
