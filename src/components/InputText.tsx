@@ -24,7 +24,7 @@ export default function InputText({
             />
 
             {error && (
-                <p className="text-sm text-red-500">
+                <p className="text-[13px] text-red-500 px-2 -my-2">
                     {error.message}
                 </p>
             )}

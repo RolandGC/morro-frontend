@@ -21,21 +21,14 @@ interface ProductFormProps {
 export default function ProductForm({ onSuccess }: ProductFormProps) {
     const { product, isEditing, product_id, open } = useProductStore();
     const { notify: showToast } = useToast();
-    const defaultValues: FormProductDto = {
-        name: "",
-        model: "",
-        unit_base: "",
-        regime: regime.general,
-        has_igv: true,
-        track_stock: true,
-        category_id: "",
-        brand_id: "",
-    };
+    const defaultValues = product
 
     const { register, handleSubmit, control, reset: resetForm, formState: { errors } } = useForm<FormProductDto>({
         resolver: zodResolver(productSchema),
         defaultValues,
     });
+    const brands = useBrandStore((state) => state.brands);
+    const categories = useCategoryStore((state) => state.categories);
 
     useEffect(() => {
         if (!open) {
@@ -58,9 +51,7 @@ export default function ProductForm({ onSuccess }: ProductFormProps) {
             resetForm(defaultValues);
         }
     }, [open, isEditing, product, resetForm]);
-    const brands = useBrandStore((state) => state.brands);
-    const categories = useCategoryStore((state) => state.categories);
-
+    
     const regimeTypes = [
         { id: "1", name: "General", value: regime.general },
         { id: "2", name: "Mixto", value: regime.mixed },
@@ -125,51 +116,56 @@ export default function ProductForm({ onSuccess }: ProductFormProps) {
     return (
         <div className="flex flex-col gap-4 w-full">
             <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 w-full">
-                <InputText
-                    name="name"
-                    label="Nombre del producto"
-                    register={register}
-                    error={errors.name}
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <InputText
+                        name="name"
+                        label="Nombre del producto"
+                        register={register}
+                        error={errors.name}
+                    />
 
-                <InputText
-                    name="model"
-                    label="Modelo"
-                    register={register}
-                    error={errors.model}
-                />
+                    <InputText
+                        name="model"
+                        label="Modelo"
+                        register={register}
+                        error={errors.model}
+                    />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Controller
+                        name="brand_id"
+                        control={control}
+                        render={({ field }) => (
+                            <SimpleSelector
+                                label="Marca"
+                                value={field.value}
+                                options={brands.map((brand) => ({
+                                    id: brand.id,
+                                    name: brand.name,
+                                }))}
+                                onSelect={field.onChange}
+                                error={errors.brand_id}
+                            />
+                        )}
+                    />
 
-                <Controller
-                    name="brand_id"
-                    control={control}
-                    render={({ field }) => (
-                        <SimpleSelector
-                            label="Marca"
-                            value={field.value}
-                            options={brands.map((brand) => ({
-                                id: brand.id,
-                                name: brand.name,
-                            }))}
-                            onSelect={field.onChange}
-                        />
-                    )}
-                />
-
-                <Controller
-                    name="category_id"
-                    control={control}
-                    render={({ field }) => (
-                        <SimpleSelector
-                            label="Categoría"
-                            value={field.value}
-                            options={categories.map((category) => ({
-                                id: category.id,
-                                name: category.name,
-                            }))}
-                            onSelect={field.onChange}
-                        />
-                    )}
-                />
+                    <Controller
+                        name="category_id"
+                        control={control}
+                        render={({ field }) => (
+                            <SimpleSelector
+                                label="Categoría"
+                                value={field.value}
+                                options={categories.map((category) => ({
+                                    id: category.id,
+                                    name: category.name,
+                                }))}
+                                onSelect={field.onChange}
+                                error={errors.category_id}
+                            />
+                        )}
+                    />
+                </div>
 
                 <Controller
                     name="regime"

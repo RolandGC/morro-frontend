@@ -16,7 +16,7 @@ import { PaginationMeta } from "@/types/types";
 
 
 export default function ProductsPage() {
-    const { openCreate } = useProductStore();
+    const { openCreate, product } = useProductStore();
     const { setBrands } = useBrandStore();
     const { setCategories } = useCategoryStore();
     const [data, setData] = useState<Product[]>([]);
@@ -86,10 +86,14 @@ export default function ProductsPage() {
         fetchCategoriesAndBrands();
     }, [setCategories, setBrands]);
 
+    useEffect(() => {
+        console.log("testtsts", product)
+    }, [product])
+
 
 
     return (
-        <div className="container mx-auto py-4 px-2">
+        <div className="container mx-auto py-4 px-4">
             <h1 className="text-2xl font-bold dark:text-yellow-300">Productos</h1>
             <DataTable columns={columns} data={data} productFilter={productFilter} handleProductFilter={handleProductFilter} totalPages={pages?.totalPages ?? 1}/>
             <Button onClick={() => openCreate()} className="rounded-md bg-primary px-4 py-2 text-primary-foreground">Crear producto</Button>
