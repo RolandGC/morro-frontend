@@ -1,22 +1,33 @@
 import { Input } from "./ui/input";
-import type { ChangeEvent } from "react";
+import { FieldError, UseFormRegister } from "react-hook-form";
 
 type InputProps = {
-    id: string;
-    value: string;
+    name: string;
     label?: string;
-    onChange: (value: string) => void;
-}
+    register: UseFormRegister<any>;
+    error?: FieldError;
+};
 
-export default function InputText({ id, value, label, onChange }: InputProps) {
-    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-        onChange(event.target.value);
-    };
-
+export default function InputText({
+    name,
+    label,
+    register,
+    error,
+}: InputProps) {
     return (
         <div className="flex flex-col gap-2">
-            {label && <label htmlFor={id}>{label}</label>}
-            <Input id={id} value={value} onChange={handleChange} />
+            {label && <label htmlFor={name}>{label}</label>}
+
+            <Input
+                id={name}
+                {...register(name)}
+            />
+
+            {error && (
+                <p className="text-sm text-red-500">
+                    {error.message}
+                </p>
+            )}
         </div>
     );
 }

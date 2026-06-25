@@ -1,20 +1,8 @@
 import { create } from "zustand";
 import { regime } from "@/types/types";
-import { ProductSend } from "../types/produc.type";
+import { FormProductDto } from "../validators/productShema";
 
-        // export interface ProductFormState {
-        //     id?: string;
-        //     name: string;
-        //     model: string;
-        //     unit_base: string;
-        //     regime: regime;
-        //     has_igv: boolean;
-        //     track_stock: boolean;
-        //     category_id: string;
-        //     brand_id: string;
-        // }
-
-const initialState: ProductSend = {
+const initialState: FormProductDto = {
     name: "",
     model: "",
     unit_base: "",
@@ -28,15 +16,16 @@ const initialState: ProductSend = {
 interface ProductStore {
     open: boolean;
     isEditing: boolean;
-    product: ProductSend;
+    product: FormProductDto;
+    product_id: string | null;
 
     openCreate: () => void;
-    openEdit: (product: ProductSend) => void;
+    openEdit: (product: FormProductDto, product_id: string | null) => void;
     close: () => void;
 
-    updateField: <K extends keyof ProductSend>(
+    updateField: <K extends keyof FormProductDto>(
         field: K,
-        value: ProductSend[K]
+        value: FormProductDto[K]
     ) => void;
 
     reset: () => void;
@@ -46,19 +35,21 @@ export const useProductStore = create<ProductStore>((set) => ({
     open: false,
     isEditing: false,
     product: initialState,
-
+    product_id: null,
     openCreate: () =>
         set({
             open: true,
             isEditing: false,
             product: initialState,
+            product_id: null,
         }),
 
-    openEdit: (product) =>
+    openEdit: (product, product_id) =>
         set({
             open: true,
             isEditing: true,
             product,
+            product_id,
         }),
 
     close: () =>
@@ -78,5 +69,6 @@ export const useProductStore = create<ProductStore>((set) => ({
         set({
             product: initialState,
             isEditing: false,
+            product_id: null,
         }),
 }));

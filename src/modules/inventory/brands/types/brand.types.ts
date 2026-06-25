@@ -4,3 +4,7 @@ export interface Brand {
     is_active: boolean;
     created_at: string;
 }
+
+export interface CreateBrand {
+    name: string;
+}

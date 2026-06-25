@@ -3,10 +3,10 @@ import { endpoints } from '@/config/endPoints';
 import { AxiosResponse } from 'axios';
 import { PaginationResponse } from '@/types/types';
 import { LoginResponse, User } from '@/modules/auth/types/auth.types';
-import { UserCompany } from '@/modules/userCompany/types/userCompany.types';
+import { Company } from '../types/company.type';
 
-export default class CompanyService {
-    async getAllCompanies():Promise<AxiosResponse<PaginationResponse<UserCompany>>> {
+class CompanyService {
+    async getAllCompanies():Promise<AxiosResponse<PaginationResponse<Company>>> {
         const response = await apiClient.get(endpoints.USER_COMPANIES.FIND_ALL);
         return response;
     
@@ -21,3 +21,4 @@ export default class CompanyService {
         return response;
     }
 }
+export const companyService = new CompanyService();

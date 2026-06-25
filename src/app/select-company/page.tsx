@@ -1,16 +1,15 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import CompanyService from '@/modules/core/companies/services/company.service';
-import { UserCompany } from '@/modules/userCompany/types/userCompany.types';
+import {companyService} from '@/modules/core/companies/services/company.service';
 import { saveAuthToken } from '@/modules/auth/helpers';
 import { useRouter } from 'next/navigation';
+import { Company } from '@/modules/core/companies/types/company.type';
 
 export default function CompaniesPage() {
-    const companyService = new CompanyService();
     const router = useRouter();
 
-    const [companies, setCompanies] = useState<UserCompany[]>([]);
+    const [companies, setCompanies] = useState<Company[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -34,7 +33,7 @@ export default function CompaniesPage() {
         fetchCompanies();
     }, []);
 
-    const handleSelectCompany = (company: UserCompany) => {
+    const handleSelectCompany = (company: Company) => {
         const selectedCompany = async () => {
             try {
                 const response = await companyService.selectCompany(company.id);

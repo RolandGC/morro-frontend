@@ -54,6 +54,9 @@ export function LoginForm({
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
         <CardHeader className="text-center">
+          <div className="flex justify-center">
+            <img src="/logo-morro.png" alt="" />
+          </div>
           <CardTitle className="text-xl">Bienvenido</CardTitle>
           <CardDescription>Login a tu cuenta para continuar</CardDescription>
         </CardHeader>

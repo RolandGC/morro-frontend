@@ -46,8 +46,11 @@ export const columns: ColumnDef<Product>[] = [
             const { notify } = useToast();
 
             const handleEdit = () => {
+                console.log("PRODUCT RAW:", product);
+                console.log("brand_id:", product.brand_id, "| brands.id:", product.brands?.id);
+                console.log("category_id:", product.category_id, "| categories.id:", product.categories?.id);
                 openEdit({
-                    //id: product.id,
+                    
                     name: product.name,
                     model: product.model,
                     unit_base: product.unit_base,
@@ -56,7 +59,7 @@ export const columns: ColumnDef<Product>[] = [
                     track_stock: product.track_stock,
                     category_id: product.category_id,
                     brand_id: product.brand_id,
-                });
+                }, product.id);
 
             };
 

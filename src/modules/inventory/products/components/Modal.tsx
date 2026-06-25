@@ -22,20 +22,18 @@ export function Modal() {
 
     return (
         <Dialog open={open} onOpenChange={close}>
-            <form>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle>{isEditing ? "Editar producto" : "Crear producto"}</DialogTitle>
-                        <DialogDescription>
-                            Complete la información del producto.
-                        </DialogDescription>
-                    </DialogHeader>
+            <DialogContent className="lg:max-w-2xl max-h-[90vh] overflow-y-auto sm:max-w-sm">
+                <DialogHeader>
+                    <DialogTitle>{isEditing ? "Editar producto" : "Crear producto"}</DialogTitle>
+                    <DialogDescription>
+                        Complete la información del producto.
+                    </DialogDescription>
+                </DialogHeader>
 
-                    <ProductForm
-                        onSuccess={() => close()}
-                    />
-                </DialogContent>
-            </form>
+                <ProductForm
+                    onSuccess={() => close()}
+                />
+            </DialogContent>
         </Dialog>
     )
 }

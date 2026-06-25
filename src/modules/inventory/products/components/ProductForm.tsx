@@ -3,28 +3,63 @@
 import InputText from "@/components/InputText";
 import SimpleSelector from "@/components/SimpleSelector";
 import { Button } from "@/components/ui/button";
-import { categoryService } from "@/modules/core/category/services/category.service";
-import { Category } from "@/modules/core/category/types/category.types";
-import { brandService } from "@/modules/inventory/brands/services/brands.service";
-import { Brand } from "@/modules/inventory/brands/types/brand.types";
 import { productService } from "@/modules/inventory/products/services/product.service";
 import { regime } from "@/types/types";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useProductStore } from "../store/product.store";
 import { useToast } from "@/hooks/useToast";
+import { useBrandStore } from "@/modules/inventory/brands/store/brand.store";
+import { useCategoryStore } from "@/modules/core/category/store/category.store";
+import { useForm, Controller } from "react-hook-form";
+import { FormProductDto, productSchema } from "../validators/productShema";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 interface ProductFormProps {
     onSuccess?: () => void;
 }
 
 export default function ProductForm({ onSuccess }: ProductFormProps) {
-    const product = useProductStore((state) => state.product);
-    const updateField = useProductStore((state) => state.updateField);
-    const isEditing = useProductStore((state) => state.isEditing);
-    const reset = useProductStore((state) => state.reset);
-    const { notify: showToast} = useToast();
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [brands, setBrands] = useState<Brand[]>([]);
+    const { product, isEditing, product_id, open } = useProductStore();
+    const { notify: showToast } = useToast();
+    const defaultValues: FormProductDto = {
+        name: "",
+        model: "",
+        unit_base: "",
+        regime: regime.general,
+        has_igv: true,
+        track_stock: true,
+        category_id: "",
+        brand_id: "",
+    };
+
+    const { register, handleSubmit, control, reset: resetForm, formState: { errors } } = useForm<FormProductDto>({
+        resolver: zodResolver(productSchema),
+        defaultValues,
+    });
+
+    useEffect(() => {
+        if (!open) {
+            resetForm(defaultValues);
+            return;
+        }
+
+        if (isEditing && product) {
+            resetForm({
+                name: product.name ?? "",
+                model: product.model ?? "",
+                unit_base: product.unit_base ?? "",
+                brand_id: product.brand_id ?? "",
+                category_id: product.category_id ?? "",
+                regime: product.regime,
+                has_igv: product.has_igv,
+                track_stock: product.track_stock,
+            });
+        } else {
+            resetForm(defaultValues);
+        }
+    }, [open, isEditing, product, resetForm]);
+    const brands = useBrandStore((state) => state.brands);
+    const categories = useCategoryStore((state) => state.categories);
 
     const regimeTypes = [
         { id: "1", name: "General", value: regime.general },
@@ -43,25 +78,30 @@ export default function ProductForm({ onSuccess }: ProductFormProps) {
     ];
 
     useEffect(() => {
-        categoryService.findAll().then((response) => {
-            if (response.status === 200) {
-                setCategories(response.data.data);
-            }
-        });
+        if (isEditing && product) {
+            resetForm({
+                name: product.name ?? "",
+                model: product.model ?? "",
+                unit_base: product.unit_base ?? "",
+                brand_id: product.brand_id ?? "",
+                category_id: product.category_id ?? "",
+                regime: product.regime,
+                has_igv: product.has_igv,
+                track_stock: product.track_stock,
+            });
+        } else {
+            resetForm(defaultValues);
+        }
+    }, [product, isEditing, resetForm]);
 
-        brandService.findAll().then((response) => {
-            if (response.status === 200) {
-                setBrands(response.data.data);
-            }
-        });
-    }, []);
-
-    const handleSubmit = async () => {
+    const onSubmit = async (product: FormProductDto) => {
+        console.log("DATA OK", product);
         try {
             let response;
-            
-            if (isEditing && product.id) {
-                response = await productService.update(product.id, product);
+
+
+            if (isEditing && product_id) {
+                response = await productService.update(product_id, product);
             } else {
                 response = await productService.create(product);
             }
@@ -71,7 +111,9 @@ export default function ProductForm({ onSuccess }: ProductFormProps) {
                     isEditing ? "Producto actualizado correctamente" : "Producto creado correctamente",
                     "success"
                 );
-                reset();
+                resetForm();
+                //resetStore();
+
                 onSuccess?.();
             }
         } catch (error) {
@@ -81,84 +123,114 @@ export default function ProductForm({ onSuccess }: ProductFormProps) {
     };
 
     return (
-        <div className="flex flex-col gap-4">
-            <InputText
-                id="name"
-                value={product.name}
-                label="Nombre del producto"
-                onChange={(value) => updateField("name", value)}
-            />
+        <div className="flex flex-col gap-4 w-full">
+            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 w-full">
+                <InputText
+                    name="name"
+                    label="Nombre del producto"
+                    register={register}
+                    error={errors.name}
+                />
 
-            <InputText
-                id="model"
-                value={product.model}
-                label="Modelo"
-                onChange={(value) => updateField("model", value)}
-            />
+                <InputText
+                    name="model"
+                    label="Modelo"
+                    register={register}
+                    error={errors.model}
+                />
 
-            <SimpleSelector
-                label="Marca"
-                value={product.brand_id}
-                options={brands.map((brand) => ({
-                    id: brand.id,
-                    name: brand.name,
-                }))}
-                onSelect={(id) =>
-                    updateField("brand_id", id)
-                }
-            />
+                <Controller
+                    name="brand_id"
+                    control={control}
+                    render={({ field }) => (
+                        <SimpleSelector
+                            label="Marca"
+                            value={field.value}
+                            options={brands.map((brand) => ({
+                                id: brand.id,
+                                name: brand.name,
+                            }))}
+                            onSelect={field.onChange}
+                        />
+                    )}
+                />
 
-            <SimpleSelector
-                label="Categoría"
-                value={product.category_id}
-                options={categories.map((category) => ({
-                    id: category.id,
-                    name: category.name,
-                }))}
-                onSelect={(id) =>
-                    updateField("category_id", id)
-                }
-            />
+                <Controller
+                    name="category_id"
+                    control={control}
+                    render={({ field }) => (
+                        <SimpleSelector
+                            label="Categoría"
+                            value={field.value}
+                            options={categories.map((category) => ({
+                                id: category.id,
+                                name: category.name,
+                            }))}
+                            onSelect={field.onChange}
+                        />
+                    )}
+                />
 
-            <SimpleSelector
-                label="Régimen"
-                value={regimeTypes.find((r) => r.value === product.regime)?.id}
-                options={regimeTypes}
-                onSelect={(id) =>
-                    updateField("regime", regimeTypes.find((r) => r.id === id)?.value ?? regime.general)
-                }
-            />
+                <Controller
+                    name="regime"
+                    control={control}
+                    render={({ field }) => (
+                        <SimpleSelector
+                            label="Régimen"
+                            value={regimeTypes.find((r) => r.value === field.value)?.id}
+                            options={regimeTypes}
+                            onSelect={(id) => {
+                                const selected = regimeTypes.find((r) => r.id === id);
+                                field.onChange(selected?.value ?? regime.general);
+                            }}
+                        />
+                    )}
+                />
 
-            <InputText
-                id="unit"
-                value={product.unit_base}
-                label="Unidad de medida"
-                onChange={(value) =>
-                    updateField("unit_base", value)
-                }
-            />
+                <InputText
+                    name="unit_base"
+                    label="Unidad de medida"
+                    register={register}
+                    error={errors.unit_base}
+                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Controller
+                        name="has_igv"
+                        control={control}
+                        render={({ field }) => (
+                            <SimpleSelector
+                                label="Tiene IGV"
+                                value={field.value ? has_igv[0].id : has_igv[1].id}
+                                options={has_igv}
+                                onSelect={(id) => {
+                                    const selected = has_igv.find((h) => h.id === id);
+                                    field.onChange(selected?.value ?? true);
+                                }}
+                            />
+                        )}
+                    />
 
-            <SimpleSelector
-                label="Tiene IGV"
-                value={product.has_igv === true ? has_igv[0].id : has_igv[1].id}
-                options={has_igv}
-                onSelect={(id) =>
-                    updateField("has_igv", has_igv.find((h) => h.id === id)?.value ?? true)
-                }
-            />
+                    <Controller
+                        name="track_stock"
+                        control={control}
+                        render={({ field }) => (
+                            <SimpleSelector
+                                label="Llevar stock"
+                                value={field.value ? track_stock[0].id : track_stock[1].id}
+                                options={track_stock}
+                                onSelect={(id) => {
+                                    const selected = track_stock.find((t) => t.id === id);
+                                    field.onChange(selected?.value ?? true);
+                                }}
+                            />
+                        )}
+                    />
+                </div>
 
-            <SimpleSelector
-                label="Llevar stock"
-                value={product.track_stock === true ? track_stock[0].id : track_stock[1].id}
-                options={track_stock}
-                onSelect={(id) =>
-                    updateField("track_stock", track_stock.find((t) => t.id === id)?.value ?? true)
-                }
-            />
-
-            <Button onClick={handleSubmit}>
-                {isEditing ? "Actualizar producto" : "Guardar producto"}
-            </Button>
+                <Button type="submit">
+                    {isEditing ? "Actualizar producto" : "Guardar producto"}
+                </Button>
+            </form>
         </div>
     );
 }

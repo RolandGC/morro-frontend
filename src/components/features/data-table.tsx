@@ -28,15 +28,25 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import { ProductQueryParams } from "@/modules/inventory/products/types/produc.type"
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
+    productFilter: ProductQueryParams
+    handleProductFilter: <K extends keyof ProductQueryParams>(
+        key: K,
+        value: ProductQueryParams[K]
+    ) => void;
+    totalPages: number;
 }
 
 export function DataTable<TData, TValue>({
     columns,
     data,
+    productFilter,
+    handleProductFilter,
+    totalPages
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -70,9 +80,9 @@ export function DataTable<TData, TValue>({
             <div className="flex items-center py-4">
                 <Input
                     placeholder="Filtrar nombres..."
-                    value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+                    value={productFilter?.name}
                     onChange={(event) =>
-                        table.getColumn("name")?.setFilterValue(event.target.value)
+                        handleProductFilter("name", event.target.value)
                     }
                     className="max-w-sm"
                 />
@@ -107,12 +117,12 @@ export function DataTable<TData, TValue>({
             </div>
             <div className="overflow-hidden rounded-md border">
                 <Table>
-                    <TableHeader className="bg-white">
+                    <TableHeader className="bg-white ">
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => {
                                     return (
-                                        <TableHead key={header.id}>
+                                        <TableHead key={header.id} className="bg-gray-100 font-bold">
                                             {header.isPlaceholder
                                                 ? null
                                                 : flexRender(
@@ -153,16 +163,23 @@ export function DataTable<TData, TValue>({
                 <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => table.previousPage()}
-                    disabled={!table.getCanPreviousPage()}
+                    onClick={() =>
+                        handleProductFilter("page", (productFilter.page ?? 1) - 1)
+                    }
+                    disabled={(productFilter.page ?? 1) <= 1}
                 >
                     Anterior
                 </Button>
                 <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => table.nextPage()}
-                    disabled={!table.getCanNextPage()}
+                    onClick={() =>
+                        handleProductFilter(
+                            "page",
+                            (productFilter.page ?? 1) + 1
+                        )
+                    }
+                    disabled={(productFilter.page ?? 1) >= totalPages}
                 >
                     Siguiente
                 </Button>
