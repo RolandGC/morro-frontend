@@ -4,6 +4,12 @@ export const endpoints = {
     AUTH: {
         LOGIN: `${baseUrl}/auth/login`,
     },
+    USERS: {
+        FIND_ALL: `${baseUrl}/users`,
+        CREATE: `${baseUrl}/users`,
+        UPDATE: `${baseUrl}/users`,
+        DELETE: `${baseUrl}/users`,
+    },
     COMPANIES: {
         FIND_ALL: `${baseUrl}/companies`,
     },

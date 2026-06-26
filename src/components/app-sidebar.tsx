@@ -58,7 +58,7 @@ const data = {
         },
         {
           title: "Usuarios",
-          url: "#",
+          url: "/core/users",
         },
         {
           title: "Settings",

@@ -12,15 +12,15 @@ import {
 import { Field, FieldGroup } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useProductStore } from "../store/product.store"
-import ProductForm from "./ProductForm"
+import { useUserStore } from "../store/user.store"
+import UserForm from "./UserForm"
 
 export function Modal() {
-    const {open, isEditing, close} = useProductStore()
+    const {open, isEditing, close} = useUserStore()
 
     return (
         <Dialog open={open} onOpenChange={close}>
-            <DialogContent className="lg:max-w-2xl max-h-[90vh] overflow-y-auto sm:max-w-sm">
+            <DialogContent className="lg:max-w-3xl max-h-[90vh] overflow-y-auto sm:max-w-sm">
                 <DialogHeader>
                     <DialogTitle>{isEditing ? "Editar producto" : "Crear producto"}</DialogTitle>
                     <DialogDescription>
@@ -28,7 +28,7 @@ export function Modal() {
                     </DialogDescription>
                 </DialogHeader>
 
-                <ProductForm
+                <UserForm
                     onSuccess={() => close()}
                 />
             </DialogContent>

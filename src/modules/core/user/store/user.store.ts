@@ -1,0 +1,74 @@
+import { create } from "zustand";
+import { FormUserDto } from "../validators/userShema";
+
+const initialState: FormUserDto = {
+    name: "",
+    last_name: "",
+    email: "",
+    doc_number: "",
+    is_active: true,
+    is_superadmin: false,
+    password: "",
+    company_ids: [],
+};
+
+interface UserStore {
+    open: boolean;
+    isEditing: boolean;
+    user: FormUserDto;
+    user_id: string | null;
+
+    openCreate: () => void;
+    openEdit: (user: FormUserDto, user_id: string | null) => void;
+    close: () => void;
+
+    updateField: <K extends keyof FormUserDto>(
+        field: K,
+        value: FormUserDto[K]
+    ) => void;
+
+    reset: () => void;
+}
+
+export const useUserStore = create<UserStore>((set) => ({
+    open: false,
+    isEditing: false,
+    user: initialState,
+    user_id: null,
+
+    openCreate: () =>
+        set({
+            open: true,
+            isEditing: false,
+            user: initialState,
+            user_id: null,
+        }),
+
+    openEdit: (user, user_id) =>
+        set({
+            open: true,
+            isEditing: true,
+            user,
+            user_id,
+        }),
+
+    close: () =>
+        set({
+            open: false,
+        }),
+
+    updateField: (field, value) =>
+        set((state) => ({
+            user: {
+                ...state.user,
+                [field]: value,
+            },
+        })),
+
+    reset: () =>
+        set({
+            user: initialState,
+            isEditing: false,
+            user_id: null,
+        }),
+}));
