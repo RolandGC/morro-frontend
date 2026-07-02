@@ -2,7 +2,8 @@ import { create } from "zustand";
 import { authService } from "../services/auth.service";
 import { LoginResponse } from "../types/auth.types";
 import { removeAuthToken, saveAuthToken, getAuthToken } from "../helpers";
-import { Axios, AxiosResponse } from "axios";
+import { usePermissionStore } from "./permission.store";
+import { AxiosResponse } from "axios";
 
 export interface User {
   id: string;
@@ -57,6 +58,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   logout: () => {
     removeAuthToken();
+    usePermissionStore.getState().clearPermissions();
     set({
       user: null,
       token: null,

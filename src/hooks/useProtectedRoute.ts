@@ -1,28 +1,27 @@
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useAuth } from '@/components/auth-provider';
+import { usePermission } from './usePermission';
 
-/**
- * Hook para proteger rutas en cliente
- * Redirige a login si no está autenticado
- * 
- * @example
- * export default function DashboardPage() {
- *   useProtectedRoute();
- *   return <div>Dashboard</div>;
- * }
- */
-export function useProtectedRoute() {
+export function useProtectedRoute(requiredPermission?: string) {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { can, isLoaded: permissionsLoaded } = usePermission();
+
+  const isLoading = authLoading || (isAuthenticated && requiredPermission && !permissionsLoaded);
 
   useEffect(() => {
-    // Si terminó de cargar y no está autenticado
-    if (!isLoading && !isAuthenticated) {
-      router.push('/auth/login');
-    }
-  }, [isLoading, isAuthenticated, router]);
+    if (authLoading) return;
 
-  // Retornar si está cargando para evitar flash de contenido
+    if (!isAuthenticated) {
+      router.push('/auth/login');
+      return;
+    }
+
+    if (requiredPermission && permissionsLoaded && !can(requiredPermission)) {
+      router.push('/dashboard');
+    }
+  }, [authLoading, isAuthenticated, requiredPermission, permissionsLoaded, can, router]);
+
   return { isLoading };
 }

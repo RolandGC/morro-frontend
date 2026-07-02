@@ -31,6 +31,8 @@ export const endpoints = {
         FIND_ALL: `${baseUrl}/brands`,
         CREATE: `${baseUrl}/brands`,
     },
-
+    PERMISSIONS: {
+        BY_USER: (userId: string) => `${baseUrl}/users/${userId}/permissions`,
+    },
 
 }

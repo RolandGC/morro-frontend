@@ -13,10 +13,17 @@ import { brandService } from "@/modules/inventory/brands/services/brands.service
 import { useBrandStore } from "@/modules/inventory/brands/store/brand.store";
 import { useCategoryStore } from "@/modules/core/category/store/category.store";
 import { PaginationMeta } from "@/types/types";
+import { useProtectedRoute } from "@/hooks/useProtectedRoute";
+import { RequirePermission } from "@/components/RequirePermission";
+import { useAuth } from "@/components/auth-provider";
+import { useAuthStore } from "@/modules/auth/store/authStore";
+import { usePermissionStore } from "@/modules/auth/store/permission.store";
 
 
 export default function ProductsPage() {
     const { openCreate, product } = useProductStore();
+    const {permissions} = usePermissionStore();
+    const { isLoading } = useProtectedRoute('products.read');
     const { setBrands } = useBrandStore();
     const { setCategories } = useCategoryStore();
     const [data, setData] = useState<Product[]>([]);
@@ -98,6 +105,9 @@ export default function ProductsPage() {
             <DataTable columns={columns} data={data} productFilter={productFilter} handleProductFilter={handleProductFilter} totalPages={pages?.totalPages ?? 1}/>
             <Button onClick={() => openCreate()} className="rounded-md bg-primary px-4 py-2 text-primary-foreground">Crear producto</Button>
             <Modal />
+            <RequirePermission permission="products.read">
+                <p>Contenido protegido: Solo usuarios con permiso "products.view" pueden ver esto.</p>
+            </RequirePermission>
         </div>
     );
 }
