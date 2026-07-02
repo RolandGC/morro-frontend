@@ -48,7 +48,7 @@ class AuthService {
    */
   async getCurrentUser() {
     try {
-      const response = await apiClient.get('/auth/me');
+      const response = await apiClient.get('/auth/profile');
       return {
         ok: true,
         data: response.data,
@@ -60,6 +60,7 @@ class AuthService {
       };
     }
   }
+
 }
 
 export const authService = new AuthService();

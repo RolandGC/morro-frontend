@@ -74,4 +74,8 @@ export const endpoints = {
         DELETE: `${baseUrl}/currencies`,
         GET_BY_ID: `${baseUrl}/currencies`,
     },
+    PERMISSIONS: {
+        BY_USER: (userId: string) => `${baseUrl}/users/${userId}/permissions`,
+    },
+
 }

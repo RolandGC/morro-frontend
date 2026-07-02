@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { baseUrl } from '@/config/environment';
 import { removeAuthToken } from '@/modules/auth/helpers';
+import { showToast } from '@/hooks/useToast';
 
 // Crear instancia de axios
 export const apiClient: AxiosInstance = axios.create({
@@ -34,14 +35,22 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error: AxiosError) => {
-    // Solo redirigir si había sesión (token expirado o inválido)
-    if (error.response?.status === 401 && typeof window !== 'undefined') {
-      const token = getCookieValue('access_token');
-      const isAuthPage = window.location.pathname.startsWith('/auth/');
+    if (typeof window !== 'undefined') {
+      if (error.response?.status === 401) {
+        const token = getCookieValue('access_token');
+        const isAuthPage = window.location.pathname.startsWith('/auth/');
 
-      if (token && !isAuthPage) {
-        removeAuthToken();
-        window.location.href = '/auth/login';
+        if (token && !isAuthPage) {
+          removeAuthToken();
+          window.location.href = '/auth/login';
+        }
+      }
+
+      if (error.response?.status === 403) {
+        showToast('No tienes permiso para realizar esta accion', 'error', 4000);
+        import('@/modules/auth/store/permission.store').then(({ usePermissionStore }) => {
+          usePermissionStore.getState().clearPermissions();
+        });
       }
     }
 
