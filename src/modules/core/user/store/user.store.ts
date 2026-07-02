@@ -6,7 +6,6 @@ const initialState: FormUserDto = {
     last_name: "",
     email: "",
     doc_number: "",
-    is_active: true,
     is_superadmin: false,
     password: "",
     company_ids: [],

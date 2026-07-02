@@ -13,7 +13,7 @@ class CompanyService {
     }
     
     async selectCompany(companyId: string): Promise<AxiosResponse<LoginResponse>> {
-        const response = await apiClient.post(endpoints.USER_COMPANIES.SELECT_COMPANY,
+        const response = await apiClient.post(endpoints.AUTH.SELECT_COMPANY,
             {
                 company_id: companyId,
             }

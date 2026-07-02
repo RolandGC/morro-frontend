@@ -17,14 +17,14 @@ export const columns: ColumnDef<User>[] = [
         header: "Nombre",
     },
     {
+        accessorFn: (row) => row.last_name,
+        id: "last_name",
+        header: "Apellidos",
+    },
+    {
         accessorFn: (row) => row.email,
         id: "email",
         header: "Email",
-    },
-    {
-        accessorFn: (row) => row.last_name,
-        id: "last_name",
-        header: "Categoría",
     },
     {
         accessorFn: (row) => formatDate(row.created_at ?? ""),
@@ -42,16 +42,14 @@ export const columns: ColumnDef<User>[] = [
             const handleEdit = () => {
                 openEdit({
                     name: user.name,
-
                     last_name: user.last_name ?? "",
                     email: user.email,
                     doc_number: user.doc_number ?? "",
                     is_active: user.is_active,
                     is_superadmin: user.is_superadmin,
-                    password: user.password_hash,
-                    company_ids: user.users_companies,
+                    password: "",
+                    company_ids: user.users_companies.map((company) => company.id),
                 }, user?.id);
-
             };
 
             const handleDelete = async () => {
@@ -72,10 +70,10 @@ export const columns: ColumnDef<User>[] = [
 
             return (
                 <div className="flex gap-2">
-                    <Button variant="ghost" size="icon" onClick={handleEdit} title="Editar producto">
+                    <Button variant="ghost" size="icon" onClick={handleEdit} title="Editar usuario">
                         <Pencil className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={handleDelete} title="Eliminar producto">
+                    <Button variant="ghost" size="icon" onClick={handleDelete} title="Eliminar usuario">
                         <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
                 </div>

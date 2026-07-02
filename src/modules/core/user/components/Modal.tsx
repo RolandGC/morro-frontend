@@ -1,36 +1,36 @@
-import { Button } from "@/components/ui/button"
 import {
     Dialog,
-    DialogClose,
     DialogContent,
     DialogDescription,
-    DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog"
-import { Field, FieldGroup } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { useUserStore } from "../store/user.store"
 import UserForm from "./UserForm"
 
-export function Modal() {
-    const {open, isEditing, close} = useUserStore()
+interface ModalProps {
+    onSuccess?: () => void;
+}
+
+export function Modal({ onSuccess }: ModalProps) {
+    const { open, isEditing, close } = useUserStore()
+
+    const handleSuccess = () => {
+        close();
+        onSuccess?.();
+    };
 
     return (
-        <Dialog open={open} onOpenChange={close}>
-            <DialogContent className="lg:max-w-3xl max-h-[90vh] overflow-y-auto sm:max-w-sm">
+        <Dialog open={open} onOpenChange={(isOpen) => !isOpen && close()}>
+            <DialogContent className="lg:max-w-3xl max-h-[90vh] overflow-y-auto sm:max-w-lg">
                 <DialogHeader>
-                    <DialogTitle>{isEditing ? "Editar producto" : "Crear producto"}</DialogTitle>
+                    <DialogTitle>{isEditing ? "Editar usuario" : "Crear usuario"}</DialogTitle>
                     <DialogDescription>
-                        Complete la información del producto.
+                        Complete la información del usuario.
                     </DialogDescription>
                 </DialogHeader>
 
-                <UserForm
-                    onSuccess={() => close()}
-                />
+                <UserForm onSuccess={handleSuccess} />
             </DialogContent>
         </Dialog>
     )

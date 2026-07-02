@@ -16,8 +16,8 @@ class UserService {
         const response = await apiClient.post(endpoints.USERS.CREATE, user);
         return response;
     }
-    async update(id: string, user: FormUserDto): Promise<AxiosResponse<User>> {
-        const response = await apiClient.put(endpoints.USERS.UPDATE, user);
+    async update(id: string, user: Partial<FormUserDto>): Promise<AxiosResponse<User>> {
+        const response = await apiClient.patch(`${endpoints.USERS.UPDATE}/${id}`, user);
         return response;
     }
     async delete(id: string){

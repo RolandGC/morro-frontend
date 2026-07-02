@@ -33,29 +33,28 @@ export default function UserPage() {
             [key]: value,
         }));
     };
-    useEffect(()=> {
+    const fetchUsers = async () => {
         try {
-            const fetchUsers = async () => {
-                const response = await userService.findAll(userFilter);
-                console.log("Users:", response);
-                if (response.status === 200) {
-                    console.log("Users:", response.data.data);
-                    setData(response.data.data);
-                    setPages(response.data.meta);
-                }
-            };
-            fetchUsers();
+            const response = await userService.findAll(userFilter);
+            if (response.status === 200) {
+                setData(response.data.data);
+                setPages(response.data.meta);
+            }
         } catch (error) {
             console.error("Error fetching users:", error);
         }
-    },[userFilter?.name, userFilter?.page]);
+    };
+
+    useEffect(() => {
+        fetchUsers();
+    }, [userFilter?.name, userFilter?.page]);
 
     return (
-        <div>
+        <div className="container mx-auto p-4">
             <h1  className="text-2xl font-bold dark:text-yellow-300">Usuarios</h1>
             <Button onClick={() => openCreate()} className="rounded-md bg-primary px-4 py-2 text-primary-foreground">Crear usuario</Button>
             <DataTable columns={columns} data={data} userFilter={userFilter} handleFilter={handleFilter} totalPages={pages?.totalPages ?? 1} />
-            <Modal/>
+            <Modal onSuccess={fetchUsers} />
         </div>
     );
 }

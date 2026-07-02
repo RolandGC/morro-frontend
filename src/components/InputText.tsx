@@ -4,6 +4,7 @@ import { FieldError, UseFormRegister } from "react-hook-form";
 type InputProps = {
     name: string;
     label?: string;
+    type?: string;
     register: UseFormRegister<any>;
     error?: FieldError;
 };
@@ -11,6 +12,7 @@ type InputProps = {
 export default function InputText({
     name,
     label,
+    type = "text",
     register,
     error,
 }: InputProps) {
@@ -20,6 +22,7 @@ export default function InputText({
 
             <Input
                 id={name}
+                type={type}
                 {...register(name)}
             />
 
