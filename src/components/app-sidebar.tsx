@@ -7,7 +7,7 @@ import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
 import { TeamSwitcher } from "@/components/team-switcher"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar"
-import { GalleryVerticalEndIcon, AudioLinesIcon, TerminalIcon, BriefcaseIcon, BotIcon, BookOpenIcon, Settings2Icon, FrameIcon, PieChartIcon, MapIcon } from "lucide-react"
+import { GalleryVerticalEndIcon, Banknote, Truck, AudioLinesIcon, TerminalIcon, BriefcaseIcon, Store, Package, Shield, FrameIcon, PieChartIcon, MapIcon, ChartColumn } from "lucide-react"
 
 // This is sample data.
 const data = {
@@ -44,7 +44,7 @@ const data = {
   ],
   navMain: [
     {
-      title: "Administracion",
+      title: "Administración",
       url: "#",
       icon: (
         <BriefcaseIcon
@@ -61,26 +61,35 @@ const data = {
           url: "/core/users",
         },
         {
-          title: "Settings",
-          url: "#",
+          title: "Almacenes",
+          url: "/core/warehouses",
         },
       ],
+    },
+    {
+      title: "Vender",
+      url: "",
+      icon: (
+        <BriefcaseIcon
+        />
+      ),
+      isActive: true,
+      
     },
     {
       title: "Ventas",
       url: "#",
       icon: (
-        <BotIcon
-        />
+        <Store/>
       ),
       items: [
         {
           title: "Vender",
-          url: "#",
+          url: "/sales/sale",
         },
         {
           title: "Clientes",
-          url: "#",
+          url: "/sales/customers",
         },
         {
           title: "Saldos",
@@ -89,10 +98,32 @@ const data = {
       ],
     },
     {
+      title: "Compras",
+      url: "#",
+      icon: (
+        <Truck
+        />
+      ),
+      items: [
+        {
+          title: "Proveedores",
+          url: "/buys/suppliers",
+        },
+        {
+          title: "Compras",
+          url: "#",
+        },
+        {
+          title: "Caja",
+          url: "#",
+        },
+      ],
+    },
+    {
       title: "Inventario",
       url: "#",
       icon: (
-        <BookOpenIcon
+        <Package
         />
       ),
       items: [
@@ -105,7 +136,33 @@ const data = {
           url: "/inventory/brands",
         },
         {
-          title: "Egresos",
+          title: "Categorías",
+          url: "/intentory/categoy",
+        },
+        {
+          title: "Stock",
+          url: "#",
+        },
+        {
+          title: "Ajuste Stock",
+          url: "#",
+        },
+      ],
+    },
+    {
+      title: "Finanzas",
+      url: "#",
+      icon: (
+        <Banknote
+        />
+      ),
+      items: [
+        {
+          title: "Monedas",
+          url: "/finance/currencies",
+        },
+        {
+          title: "Caja",
           url: "#",
         },
         {
@@ -115,10 +172,32 @@ const data = {
       ],
     },
     {
-      title: "Configuración",
+      title: "Reportes",
       url: "#",
       icon: (
-        <Settings2Icon
+        <ChartColumn
+        />
+      ),
+      items: [
+        {
+          title: "Ventas",
+          url: "#",
+        },
+        {
+          title: "Compras",
+          url: "#",
+        },
+        {
+          title: "Caja",
+          url: "#",
+        },
+      ],
+    },
+    {
+      title: "Seguridad",
+      url: "#",
+      icon: (
+        <Shield
         />
       ),
       items: [
@@ -127,15 +206,11 @@ const data = {
           url: "#",
         },
         {
-          title: "Team",
+          title: "Roles",
           url: "#",
         },
         {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
+          title: "Notificaciones",
           url: "#",
         },
       ],
