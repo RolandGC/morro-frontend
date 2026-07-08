@@ -3,14 +3,13 @@ import Axiosresponse, { AxiosResponse } from "axios";
 import { endpoints } from "@/config/endPoints";
 import { PaginationResponse } from "@/types/types";
 import { Category } from "../types/category.types";
-import { CategoryFormData } from "../validators/categoryShema";
-
+import { CategoryForm } from "../validators/categorySchema";
 class CategoryService {
-    async findAll():Promise<AxiosResponse<PaginationResponse<Category>>> {
-        const response = await apiClient.get(endpoints.CATEGORIES.FIND_ALL);
+    async getAll():Promise<AxiosResponse<PaginationResponse<Category>>> {
+        const response = await apiClient.get(endpoints.CATEGORIES.GET_ALL);
         return response;
     }
-    async create(category: CategoryFormData): Promise<AxiosResponse<any>> {
+    async create(category: CategoryForm): Promise<AxiosResponse<any>> {
         const response = await apiClient.post(endpoints.CATEGORIES.CREATE, category);
         return response;
     }

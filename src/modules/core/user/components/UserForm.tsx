@@ -13,13 +13,8 @@ import { companyService } from "@/modules/core/companies/services/company.servic
 import { Company } from "@/modules/core/companies/types/company.type";
 import { useUserStore } from "../store/user.store";
 import { userService } from "../services/user.service";
-import {
-    
-    UserForm,
-    userFormSchema,
-} from "../validators/userShema";
+import { UserForm, userSchema, } from "../validators/userSchema";
 import axios from "axios";
-import { email } from "zod";
 
 interface UserFormProps {
     onSuccess?: () => void;
@@ -30,7 +25,7 @@ const booleanOptions = [
     { id: "2", name: "No", value: false },
 ];
 
-export default function UserForm({ onSuccess }: UserFormProps) {
+export default function UserFormModal({ onSuccess }: UserFormProps) {
     const { user, isEditing, user_id, open } = useUserStore();
     const { notify: showToast } = useToast();
     const [companies, setCompanies] = useState<Company[]>([]);
@@ -46,7 +41,7 @@ export default function UserForm({ onSuccess }: UserFormProps) {
         formState: { errors, isSubmitting, },
         setError,
     } = useForm<UserForm>({
-        resolver: zodResolver(userFormSchema),
+        resolver: zodResolver(userSchema),
         defaultValues: user,
     });
 
@@ -156,7 +151,7 @@ export default function UserForm({ onSuccess }: UserFormProps) {
                 resetForm();
                 onSuccess?.();
             }
-            
+
         } catch (error) {
             showToast("Error al guardar el usuario", "error");
             if (axios.isAxiosError(error)) {
@@ -326,7 +321,7 @@ export default function UserForm({ onSuccess }: UserFormProps) {
                             />
                         )}
                     />
-                    
+
                 </div>
 
                 <Button type="submit" disabled={isSubmitting}>

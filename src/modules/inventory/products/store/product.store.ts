@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import { regime } from "@/types/types";
-import { FormProductDto } from "../validators/productShema";
+import { ProductForm } from "../validators/productSchema";
 
-const initialState: FormProductDto = {
+const initialState: ProductForm = {
     name: "",
     model: "",
     unit_base: "",
@@ -16,16 +16,16 @@ const initialState: FormProductDto = {
 interface ProductStore {
     open: boolean;
     isEditing: boolean;
-    product: FormProductDto;
+    product: ProductForm;
     product_id: string | null;
 
     openCreate: () => void;
-    openEdit: (product: FormProductDto, product_id: string | null) => void;
+    openEdit: (product: ProductForm, product_id: string | null) => void;
     close: () => void;
 
-    updateField: <K extends keyof FormProductDto>(
+    updateField: <K extends keyof ProductForm>(
         field: K,
-        value: FormProductDto[K]
+        value: ProductForm[K]
     ) => void;
 
     reset: () => void;

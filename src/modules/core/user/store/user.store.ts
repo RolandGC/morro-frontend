@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { UserForm } from "../validators/userShema";
+import { UserForm } from "../validators/userSchema";
 
 const initialState: UserForm = {
     name: "",

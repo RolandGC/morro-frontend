@@ -13,13 +13,19 @@ import { Company } from "@/modules/core/companies/types/company.type"
 
 
 export const columns: ColumnDef<Company>[] = [
-    {
+    /* {
         accessorKey: "name",
+        //id: "",
+        header: "Empresa",
+    }, */
+    {
+        accessorFn: (row) => row.name,
+        id: "nombre",
         header: "Empresa",
     },
     {
         accessorFn: (row) => row.phone,
-        id: "phone",
+        id: "Telefono",
         header: "Teléfono",
     },
     {
@@ -27,7 +33,7 @@ export const columns: ColumnDef<Company>[] = [
         id: "ruc",
         header: "RUC",
     },
-    {
+    /* {
         accessorFn: (row) => row.model,
         id: "model",
         header: "Modelo",
@@ -88,5 +94,5 @@ export const columns: ColumnDef<Company>[] = [
                 </div>
             );
         },
-    }
+    } */
 ]

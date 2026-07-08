@@ -35,7 +35,7 @@ export default function UserPage() {
     };
     const fetchUsers = async () => {
         try {
-            const response = await userService.findAll(userFilter);
+            const response = await userService.getAll(userFilter);
             if (response.status === 200) {
                 setData(response.data.data);
                 setPages(response.data.meta);

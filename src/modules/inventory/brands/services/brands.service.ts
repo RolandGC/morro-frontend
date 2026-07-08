@@ -6,8 +6,8 @@ import { AxiosResponse } from "axios";
 import { PaginationResponse } from "@/types/types";
 
 class BrandService {
-    async findAll(): Promise<AxiosResponse<PaginationResponse<Brand>>> {
-        const response = await apiClient.get(endpoints.BRANDS.FIND_ALL);
+    async getAll(): Promise<AxiosResponse<PaginationResponse<Brand>>> {
+        const response = await apiClient.get(endpoints.BRANDS.GET_ALL);
         return response;
     }
     async create(brand: BrandFormData): Promise<AxiosResponse<any>> {

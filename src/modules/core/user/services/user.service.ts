@@ -3,11 +3,11 @@ import { apiClient } from "@/hooks/useAxios";
 import { User, UserQueryParams } from "../types/user.types";
 import { PaginationResponse } from "@/types/types";
 import { AxiosResponse } from "axios";
-import { UserForm } from "../validators/userShema";
+import { UserForm } from "../validators/userSchema";
 
 class UserService {
-    async findAll(params: UserQueryParams): Promise<AxiosResponse<PaginationResponse<User>>> {
-        const response = await apiClient.get(endpoints.USERS.FIND_ALL,{
+    async getAll(params: UserQueryParams): Promise<AxiosResponse<PaginationResponse<User>>> {
+        const response = await apiClient.get(endpoints.USERS.GET_ALL,{
             params
         });
         return response;

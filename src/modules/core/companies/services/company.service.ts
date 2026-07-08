@@ -4,12 +4,27 @@ import { AxiosResponse } from 'axios';
 import { PaginationResponse } from '@/types/types';
 import { LoginResponse, User } from '@/modules/auth/types/auth.types';
 import { Company } from '../types/company.type';
+import { CompanyForm } from '../validators/companySchema';
 
 class CompanyService {
     async getAllCompanies():Promise<AxiosResponse<PaginationResponse<Company>>> {
-        const response = await apiClient.get(endpoints.USER_COMPANIES.FIND_ALL);
+        const response = await apiClient.get(endpoints.COMPANIES.GET_ALL);
         return response;
-    
+    }
+    async create(company: CompanyForm): Promise<AxiosResponse<Company>>{
+        const response = await apiClient.post(endpoints.COMPANIES.CREATE, company);
+        return response;
+    }
+    async update(id: string, company: Partial<CompanyForm>): Promise<AxiosResponse<Company>>{
+        const response = await apiClient.patch(`${endpoints.COMPANIES.UPDATE}/${id}`, company);
+        return response
+    }
+    async delete(id: string){
+        const response = await apiClient.delete(`${endpoints.COMPANIES.DELETE}/${id}`);
+    }
+    async getAllCompaniesUser():Promise<AxiosResponse<PaginationResponse<Company>>> {
+        const response = await apiClient.get(endpoints.USER_COMPANIES.GET_ALL);
+        return response;
     }
     
     async selectCompany(companyId: string): Promise<AxiosResponse<LoginResponse>> {
