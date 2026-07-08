@@ -1,4 +1,4 @@
-import { UserCompany } from "@/modules/userCompany/types/userCompany.types";
+import { UserCompany } from "@/modules/auth/userCompany/types/userCompany.types";
 
 export interface LoginResponse {
   access_token: string;

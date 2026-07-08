@@ -15,7 +15,7 @@ export const endpoints = {
         GET_BY_ID: `${baseUrl}/users`,
     },
     COMPANIES: {
-        FIND_ALL: `${baseUrl}/companies`,
+        GET_ALL: `${baseUrl}/companies`,
         CREATE: `${baseUrl}/companies`,
         UPDATE: `${baseUrl}/companies`,
         DELETE: `${baseUrl}/companies`,

@@ -15,7 +15,7 @@ import { useUserStore } from "../store/user.store";
 import { userService } from "../services/user.service";
 import {
     
-    FormUserDto,
+    UserForm,
     userFormSchema,
 } from "../validators/userShema";
 import axios from "axios";
@@ -45,7 +45,7 @@ export default function UserForm({ onSuccess }: UserFormProps) {
         getValues,
         formState: { errors, isSubmitting, },
         setError,
-    } = useForm<FormUserDto>({
+    } = useForm<UserForm>({
         resolver: zodResolver(userFormSchema),
         defaultValues: user,
     });
@@ -121,7 +121,7 @@ export default function UserForm({ onSuccess }: UserFormProps) {
         }
     };
 
-    const onSubmit = async (formData: FormUserDto) => {
+    const onSubmit = async (formData: UserForm) => {
         if (!isEditing && (!formData.password || formData.password.length < 8)) {
             showToast("La contraseña debe tener al menos 8 caracteres", "error");
             return;
@@ -129,7 +129,7 @@ export default function UserForm({ onSuccess }: UserFormProps) {
 
         try {
             if (isEditing && user_id) {
-                const payload: Partial<FormUserDto> = { ...formData };
+                const payload: Partial<UserForm> = { ...formData };
 
                 if (!payload.password) {
                     delete payload.password;
@@ -148,7 +148,7 @@ export default function UserForm({ onSuccess }: UserFormProps) {
 
             const { is_active: _, ...createData } = formData;
             const response = await userService.create(
-                createData as FormUserDto
+                createData as UserForm
             );
 
             if (response.status === 201 || response.status === 200) {

@@ -1,7 +1,7 @@
 import { create } from "zustand";
-import { FormUserDto } from "../validators/userShema";
+import { UserForm } from "../validators/userShema";
 
-const initialState: FormUserDto = {
+const initialState: UserForm = {
     name: "",
     last_name: "",
     email: "",
@@ -14,16 +14,16 @@ const initialState: FormUserDto = {
 interface UserStore {
     open: boolean;
     isEditing: boolean;
-    user: FormUserDto;
+    user: UserForm;
     user_id: string | null;
 
     openCreate: () => void;
-    openEdit: (user: FormUserDto, user_id: string | null) => void;
+    openEdit: (user: UserForm, user_id: string | null) => void;
     close: () => void;
 
-    updateField: <K extends keyof FormUserDto>(
+    updateField: <K extends keyof UserForm>(
         field: K,
-        value: FormUserDto[K]
+        value: UserForm[K]
     ) => void;
 
     reset: () => void;

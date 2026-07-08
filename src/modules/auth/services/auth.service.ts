@@ -1,5 +1,5 @@
 import { apiClient } from '@/hooks/useAxios';
-import { LoginFormData } from '../validators/loginSchema';
+import { LoginForm } from '../validators/loginSchema';
 import { LoginResponse } from '../types/auth.types';
 import { AxiosResponse } from 'axios';
 import { endpoints } from '@/config/endPoints';
@@ -8,7 +8,7 @@ class AuthService {
   /**
    * Login con email y contraseña
    */
-  async login(data: LoginFormData): Promise<AxiosResponse<LoginResponse>> {
+  async login(data: LoginForm): Promise<AxiosResponse<LoginResponse>> {
     const response = await apiClient.post<LoginResponse>(endpoints.AUTH.LOGIN, data);
     return response
   }

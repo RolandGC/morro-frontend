@@ -3,7 +3,7 @@ import { apiClient } from "@/hooks/useAxios";
 import { User, UserQueryParams } from "../types/user.types";
 import { PaginationResponse } from "@/types/types";
 import { AxiosResponse } from "axios";
-import { FormUserDto } from "../validators/userShema";
+import { UserForm } from "../validators/userShema";
 
 class UserService {
     async findAll(params: UserQueryParams): Promise<AxiosResponse<PaginationResponse<User>>> {
@@ -12,11 +12,11 @@ class UserService {
         });
         return response;
     }
-    async create(user: FormUserDto): Promise<AxiosResponse<User>> {
+    async create(user: UserForm): Promise<AxiosResponse<User>> {
         const response = await apiClient.post(endpoints.USERS.CREATE, user);
         return response;
     }
-    async update(id: string, user: Partial<FormUserDto>): Promise<AxiosResponse<User>> {
+    async update(id: string, user: Partial<UserForm>): Promise<AxiosResponse<User>> {
         const response = await apiClient.patch(`${endpoints.USERS.UPDATE}/${id}`, user);
         return response;
     }

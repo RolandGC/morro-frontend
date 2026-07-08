@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, } from '@/components/ui/card';
 import { Field, FieldDescription, FieldGroup, FieldLabel, } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { loginSchema, LoginFormData } from '@/modules/auth/validators/loginSchema';
+import { loginSchema, LoginForm } from '@/modules/auth/validators/loginSchema';
 import { useAuthStore } from '@/modules/auth/store/authStore';
 import { useToast } from '@/hooks/useToast';
 import axios from 'axios';
@@ -25,11 +25,11 @@ export function LoginForm({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginFormData>({
+  } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = async (data: LoginFormData) => {
+  const onSubmit = async (data: LoginForm) => {
     try {
       const response = await login(data.email, data.password);
 
