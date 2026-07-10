@@ -1,35 +1,49 @@
-import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useCompanyStore } from "../store/company.store";
 import { useForm } from "react-hook-form";
 import { CompanyForm, companySchema } from "../validators/companySchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import InputText from "@/components/InputText";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { APIS_PERU_BASE_URL, APIS_PERU_TOKEN } from "@/config/environment";
 import { useToast } from "@/hooks/useToast";
 import { companyService } from "../services/company.service";
-import { is } from "zod/v4/locales";
 
 interface CompanyFormProps {
     onSuccess?: () => void;
+    fetchCompanies: () => void,
 }
-export default function CompanyFormModal({ onSuccess }: CompanyFormProps) {
+export default function CompanyFormModal({ onSuccess, fetchCompanies }: CompanyFormProps) {
     const { isEditing, company, open, close, company_id } = useCompanyStore();
     const [isSearch, setIsSearch] = useState(false)
     const defaultValues = company;
     const { notify: showToast } = useToast();
 
-
     const { register, handleSubmit,
         control, reset: resetForm,
-        formState: { errors },
         getValues,
         setValue,
+        formState: { errors, isSubmitting },
+        setError,
     } = useForm<CompanyForm>({
         resolver: zodResolver(companySchema),
         defaultValues: company,
     });
+
+    useEffect(() => {
+        if (isEditing && company) {
+            resetForm({
+                name: company.name ?? "",
+                address: company.address ?? "",
+                trade_name: company.trade_name ?? "",
+                phone: company.phone ?? "",
+                ruc: company.ruc ?? "",
+            });
+        } else {
+            resetForm(defaultValues);
+        }
+    }, [company, isEditing, resetForm]);
 
     const searchRuc = async () => {
         const docNumber = getValues("ruc")?.trim();
@@ -64,35 +78,36 @@ export default function CompanyFormModal({ onSuccess }: CompanyFormProps) {
             setIsSearch(false);
         }
     };
-
+    
     const onSubmit = async (company: CompanyForm) => {
         try {
+            let response;
             if (isEditing && company_id) {
-                const response = await companyService.update(company_id, company);
+                response = await companyService.update(company_id, company);
+            } else {
+                response = await companyService.create(company);
             }
-            const response = await companyService.create(company);
             if (response.status === 201 || response.status === 200) {
                 showToast(
                     isEditing ? "Empresa actualizado correctamente" : "Empresa creado correctamente",
                     "success"
                 );
                 resetForm();
-                //resetStore();
-
+                await fetchCompanies();
+                close();
                 onSuccess?.();
             }
         } catch (error) {
             showToast("Error al guardar la empresa", "error")
             console.error(error)
         }
-
     };
 
     return (
         <Dialog open={open} onOpenChange={close}>
             <DialogContent className="lg:max-w-2xl max-h-[90vh] overflow-y-auto sm:max-w-sm">
                 <DialogHeader>
-                    <h1 className="font-bold text-2xl">{isEditing ? "Editar empresa" : "Crear Empresa"}</h1>
+                    <DialogTitle className="font-bold text-2xl">{isEditing ? "Editar empresa" : "Crear Empresa"}</DialogTitle>
                 </DialogHeader>
                 <div className="flex flex-col gap-4 w-full">
                     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 w-full">
@@ -139,15 +154,15 @@ export default function CompanyFormModal({ onSuccess }: CompanyFormProps) {
                                 register={register}
                                 error={errors.phone}
                             />
-                            {/* <InputText
-                                name="address"
-                                label="Dirección"
-                                register={register}
-                                error={errors.address}
-                            /> */}
                         </div>
 
-                        <button type="submit">{isEditing ? "Actualizar Empresa" : "Guardar Empresa"}</button>
+                        <Button type="submit" disabled={isSubmitting}>
+                            {isSubmitting
+                                ? "Guardando..."
+                                : isEditing
+                                    ? "Actualizar empresa"
+                                    : "Guardar empresa"}
+                        </Button>
                     </form>
 
                 </div>

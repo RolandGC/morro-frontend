@@ -28,37 +28,34 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import { CompanyQueryParams } from "../types/company.type" 
 import { useEffect, useState } from "react"
 
-interface DataTableProps<TData, TValue, TQuery extends { page?: number }> {
+interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
-    filter: TQuery;
-    searchKey: keyof TQuery;
-
-    handleFilter: <K extends keyof TQuery>(
+    filter: CompanyQueryParams
+    handleFilter: <K extends keyof CompanyQueryParams>(
         key: K,
-        value: TQuery[K]
+        value: CompanyQueryParams[K]
     ) => void;
-
     totalPages: number;
 }
 
-export function DataTable<TData, TValue, TQuery extends { page?: number }>({
+export function CompanyDataTable<TData, TValue>({
     columns,
     data,
     filter,
-    searchKey,
     handleFilter,
-    totalPages,
-}: DataTableProps<TData, TValue, TQuery>) {
+    totalPages
+}: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
         []
     )
     const [columnVisibility, setColumnVisibility] =
         React.useState<VisibilityState>({})
-
+    
     const [rowSelection, setRowSelection] = React.useState({})
     const table = useReactTable({
         data,
@@ -78,28 +75,21 @@ export function DataTable<TData, TValue, TQuery extends { page?: number }>({
             rowSelection,
         },
     })
-
-    const [search, setSearch] = useState(filter[searchKey] ?? "");
-
-    useEffect(() => {
-        setSearch(String(filter[searchKey] ?? ""))
-    }, [filter, searchKey])
-      
+    const [search, setSearch] = useState(filter.name ?? "");
     useEffect(() => {
         const timer = setTimeout(() => {
-            handleFilter(searchKey, search as TQuery[typeof searchKey]);
+            handleFilter("name", search);
         }, 350);
 
         return () => clearTimeout(timer);
-    }, [search, searchKey, handleFilter]);
-
+    }, [search]);
     return (
         <div>
             <div className="flex items-center py-4">
                 <Input
-                    placeholder="Buscar..."
+                    placeholder="Filtrar nombres..."
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={(event) => setSearch(event.target.value)}
                     className="max-w-sm"
                 />
                 <DropdownMenu>
@@ -133,12 +123,12 @@ export function DataTable<TData, TValue, TQuery extends { page?: number }>({
             </div>
             <div className="overflow-hidden rounded-md border">
                 <Table>
-                    <TableHeader>
+                    <TableHeader className="bg-white ">
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => {
                                     return (
-                                        <TableHead key={header.id}>
+                                        <TableHead key={header.id} className="bg-gray-100 font-bold">
                                             {header.isPlaceholder
                                                 ? null
                                                 : flexRender(
@@ -168,7 +158,7 @@ export function DataTable<TData, TValue, TQuery extends { page?: number }>({
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    No results.
+                                    No hay resultados.
                                 </TableCell>
                             </TableRow>
                         )}
@@ -179,16 +169,23 @@ export function DataTable<TData, TValue, TQuery extends { page?: number }>({
                 <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => table.previousPage()}
-                    disabled={!table.getCanPreviousPage()}
+                    onClick={() =>
+                        handleFilter("page", (filter.page ?? 1) - 1)
+                    }
+                    disabled={(filter.page ?? 1) <= 1}
                 >
                     Anterior
                 </Button>
                 <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => table.nextPage()}
-                    disabled={!table.getCanNextPage()}
+                    onClick={() =>
+                        handleFilter(
+                            "page",
+                            (filter.page ?? 1) + 1
+                        )
+                    }
+                    disabled={(filter.page ?? 1) >= totalPages}
                 >
                     Siguiente
                 </Button>

@@ -9,7 +9,7 @@ const initialState: CompanyForm = {
   address: "",
   phone: "",
   logo_url: null,
-  settings_json: {},
+  //settings_json: {},
 };
 
 interface CompanyStore {

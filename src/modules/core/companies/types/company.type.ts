@@ -12,3 +12,20 @@ export interface Company {
     created_at: string | null;
     updated_at: string | null;
 }
+
+export interface CompanyQueryParams {
+    page?: number | undefined;
+    limit?: number | undefined;
+    id?: string | undefined;
+    name?: string | undefined;
+    trade_name?: string | undefined;
+    ruc?: string | undefined;
+    phone?: string | undefined;
+    address?: string | undefined;
+    parent_company_id?: string | undefined;
+    logo_url?: string | undefined;
+    settings_json?: Record<string, any> | undefined;
+    is_active?: boolean | undefined;
+    created_at?: string | undefined;
+    updated_at?: string | undefined;
+  }

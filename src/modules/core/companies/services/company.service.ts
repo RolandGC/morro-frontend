@@ -3,12 +3,14 @@ import { endpoints } from '@/config/endPoints';
 import { AxiosResponse } from 'axios';
 import { PaginationResponse } from '@/types/types';
 import { LoginResponse, User } from '@/modules/auth/types/auth.types';
-import { Company } from '../types/company.type';
+import { Company, CompanyQueryParams } from '../types/company.type';
 import { CompanyForm } from '../validators/companySchema';
 
 class CompanyService {
-    async getAllCompanies():Promise<AxiosResponse<PaginationResponse<Company>>> {
-        const response = await apiClient.get(endpoints.COMPANIES.GET_ALL);
+    async getAllCompanies(params?: CompanyQueryParams):Promise<AxiosResponse<PaginationResponse<Company>>> {
+        const response = await apiClient.get(endpoints.COMPANIES.GET_ALL,{
+            params,
+        });
         return response;
     }
     async create(company: CompanyForm): Promise<AxiosResponse<Company>>{

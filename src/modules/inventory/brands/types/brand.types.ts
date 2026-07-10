@@ -8,3 +8,10 @@ export interface Brand {
 export interface CreateBrand {
     name: string;
 }
+
+export interface BrandQueryParams {
+    page?: number | undefined; // default: 1
+    limit?: number | undefined; // default: 20
+    name?: string | undefined;
+    is_active?: boolean | undefined;
+}

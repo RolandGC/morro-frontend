@@ -22,5 +22,4 @@ export interface UserQueryParams {
     name?: string | undefined;
     email?: string | undefined;
     is_active?: boolean | undefined;
-    order?: "asc" | "desc" ;
 }

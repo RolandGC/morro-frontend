@@ -24,7 +24,8 @@ export const companySchema = z.object({
   address: z
     .string()
     .min(5, "La dirección es obligatoria")
-    .max(255),
+    .max(255)
+    .nullable(),
 
   phone: z
     .string()
@@ -35,10 +36,10 @@ export const companySchema = z.object({
     .optional()
     .nullable(),
 
-  settings_json: z
+  /* settings_json: z
     .record(z.string(), z.unknown())
     .optional()
-    .default({}),
+    .default({}), */
 });
 
 export type CompanyForm = z.infer<typeof companySchema>;

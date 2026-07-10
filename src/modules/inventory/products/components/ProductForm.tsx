@@ -24,7 +24,9 @@ export default function ProductFormModal({ onSuccess }: ProductFormProps) {
     const { notify: showToast } = useToast();
     const defaultValues = product
 
-    const { register, handleSubmit, control, reset: resetForm, formState: { errors } } = useForm<ProductForm>({
+    const { register, handleSubmit, 
+        control, reset: resetForm, 
+        formState: { errors } } = useForm<ProductForm>({
         resolver: zodResolver(productSchema),
         defaultValues,
     });
@@ -90,7 +92,6 @@ export default function ProductFormModal({ onSuccess }: ProductFormProps) {
         console.log("DATA OK", product);
         try {
             let response;
-
 
             if (isEditing && product_id) {
                 response = await productService.update(product_id, product);

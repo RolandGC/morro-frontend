@@ -11,3 +11,11 @@ export interface CreateCategory {
      description: string;
      parent_id: string | null;
 }
+
+export interface CategoryQueryParams {
+    page?: number | undefined; // default: 1
+    limit?: number | undefined; // default: 20
+    name?: string | undefined;
+    parent_id?: string | undefined;
+    is_active?: boolean | undefined;
+}

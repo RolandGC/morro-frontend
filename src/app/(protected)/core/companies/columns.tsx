@@ -6,18 +6,17 @@ import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu"
 import { Checkbox } from "@/components/ui/checkbox"
 import { formatDate } from "@/hooks/dateFormat"
-import { useProductStore } from "@/modules/inventory/products/store/product.store"
-import { productService } from "@/modules/inventory/products/services/product.service"
 import { useToast } from "@/hooks/useToast"
 import { Company } from "@/modules/core/companies/types/company.type"
+import { useCompanyStore } from "@/modules/core/companies/store/company.store"
+import { companyService } from "@/modules/core/companies/services/company.service"
+import Swal from "sweetalert2"
 
+interface ColumnsProps {
+    fetchCompanies: () => Promise<void>;
+}
 
-export const columns: ColumnDef<Company>[] = [
-    /* {
-        accessorKey: "name",
-        //id: "",
-        header: "Empresa",
-    }, */
+export const getColumns = ({ fetchCompanies }: ColumnsProps): ColumnDef<Company>[] => [
     {
         accessorFn: (row) => row.name,
         id: "nombre",
@@ -42,44 +41,72 @@ export const columns: ColumnDef<Company>[] = [
         accessorFn: (row) => formatDate(row.created_at),
         id: "created_at",
         header: "Fecha de creación",
-    },
+    }, */
     {
-        id: "actions",
+        id: "Opciones",
         header: "Opciones",
         cell: ({ row }) => {
-            const product = row.original;
-            const { openEdit } = useProductStore();
+            const company = row.original;
+            const { openEdit } = useCompanyStore();
             const { notify } = useToast();
 
             const handleEdit = () => {
                 openEdit({
-                    id: product.id,
-                    name: product.name,
-                    model: product.model,
-                    unit_base: product.unit_base,
-                    regime: product.regime,
-                    has_igv: product.has_igv,
-                    track_stock: product.track_stock,
-                    category_id: product.category_id,
-                    brand_id: product.brand_id,
-                });
-
+                    name: company.name,
+                    ruc: company.ruc,
+                    address: company?.address,
+                    phone: company.phone,
+                    trade_name: company.trade_name,
+                    parent_company_id: company.parent_company_id
+                }, company.id);
             };
 
             const handleDelete = async () => {
-                if (!window.confirm(`¿Estás seguro de que quieres eliminar la empresa "${product.name}"?`)) {
+                const result = await Swal.fire({
+                    title: "¿Estás seguro?",
+                    text: `Se eliminará la empresa "${company.name}" de forma permanente.`,
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Sí, eliminar",
+                    cancelButtonText: "Cancelar",
+                    reverseButtons: true,
+                    customClass: {
+                        confirmButton:
+                            "bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg ml-2",
+                        cancelButton:
+                            "bg-gray-500 hover:bg-gray-600 text-white font-medium px-4 py-2 rounded-lg mr-2",
+                    },
+                    buttonsStyling: false
+                });
+
+                // Si el usuario cancela
+                if (!result.isConfirmed) {
                     return;
                 }
 
                 try {
-                    const response = await productService.delete(product?.id);
-                    console.log('Delete response:', response);
-                    notify("Producto eliminado correctamente", "success", 3000);
-                    //Recargar la lista de productos
-                    window.location.reload();
+                    await companyService.delete(company.id);
+
+                    await Swal.fire({
+                        title: "¡Eliminado!",
+                        text: "La empresa fue eliminada correctamente.",
+                        icon: "success",
+                        confirmButtonText: "Aceptar"
+                    });
+
+                    notify("Empresa eliminada correctamente", "success", 3000);
+
+                    await fetchCompanies();
+
                 } catch (error) {
-                    notify("Error al eliminar el producto", "error", 3000);
-                    console.error("Error deleting product:", error);
+                    Swal.fire({
+                        title: "Error",
+                        text: "No se pudo eliminar la empresa.",
+                        icon: "error"
+                    });
+
+                    notify("Error al eliminar la empresa", "error", 3000);
+                    console.error(error);
                 }
             };
 
@@ -94,5 +121,5 @@ export const columns: ColumnDef<Company>[] = [
                 </div>
             );
         },
-    } */
+    }
 ]
