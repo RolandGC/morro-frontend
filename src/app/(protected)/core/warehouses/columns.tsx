@@ -11,11 +11,15 @@ import { productService } from "@/modules/inventory/products/services/product.se
 import { useToast } from "@/hooks/useToast"
 import { Company } from "@/modules/core/companies/types/company.type"
 
+interface ColumnsProps {
+    fetchWarehouses: () => Promise<void>;
+}
 
-export const columns: ColumnDef<Company>[] = [
+export const getColumns = ({ fetchWarehouses }: ColumnsProps): ColumnDef<Company>[] => [
     {
-        accessorKey: "name",
-        header: "Empresa",
+        accessorFn: (row) => row.name,
+        id: "nombre",
+        header: "Almacén",
     },
     {
         accessorFn: (row) => row.phone,

@@ -77,5 +77,11 @@ export const endpoints = {
     PERMISSIONS: {
         BY_USER: (userId: string) => `${baseUrl}/users/${userId}/permissions`,
     },
-
+    ROLES:{
+        GET_ALL: `${baseUrl}/roles`,
+        CREATE: `${baseUrl}/roles`,
+        UPDATE: `${baseUrl}/roles`,
+        DELETE: `${baseUrl}/roles`,
+        GET_BY_ID: `${baseUrl}/roles`,
+    }
 }

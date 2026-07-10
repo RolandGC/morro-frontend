@@ -50,7 +50,7 @@ export const userSchema = z.object({
 
   role_ids: z
     .array(z.uuid("Rol inválido"))
-    .min(1, "Debe seleccionar al menos un rol"),
+    .min(1, "Debe seleccionar un rol"),
 
   is_superadmin: z.boolean(),
 

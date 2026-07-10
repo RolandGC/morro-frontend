@@ -9,6 +9,8 @@ const initialState: UserForm = {
     is_superadmin: false,
     password: "",
     company_ids: [],
+    role_ids: [],
+    is_active: true,
 };
 
 interface UserStore {

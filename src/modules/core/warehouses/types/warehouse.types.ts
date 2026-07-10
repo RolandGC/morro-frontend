@@ -1,3 +1,12 @@
+export interface Warehouse {
+    id: string;
+    company_id: string;
+    name: string;
+    type: string;
+    address: string;
+    is_active: boolean;
+    created_at: string;
+}
 
 export interface WarehouseQueryParams {
     page?: number | undefined; // default: 1

@@ -1,4 +1,5 @@
 import { UserCompany } from "@/modules/auth/userCompany/types/userCompany.types";
+import { UserRole } from "@/modules/security/roles/types/roles.types";
 
 export interface User {
     id: string;
@@ -13,6 +14,7 @@ export interface User {
     created_at: string | null;
     updated_at: string | null;
     users_companies: UserCompany[];
+    user_roles: UserRole[];
 }
 
 export interface UserQueryParams {

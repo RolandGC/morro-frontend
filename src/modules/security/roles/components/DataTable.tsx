@@ -20,27 +20,23 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from "@/components/ui/table"
-import { useEffect } from "react"
-import { UserQueryParams } from "../types/user.types"
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table"
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
-    userFilter: UserQueryParams
-    handleFilter: <K extends keyof UserQueryParams>(
-        key: K,
-        value: UserQueryParams[K]
-    ) => void;
-    totalPages: number;
 }
 
 export function DataTable<TData, TValue>({
     columns,
     data,
-    userFilter,
-    handleFilter,
-    totalPages
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -48,7 +44,7 @@ export function DataTable<TData, TValue>({
     )
     const [columnVisibility, setColumnVisibility] =
         React.useState<VisibilityState>({})
-    
+
     const [rowSelection, setRowSelection] = React.useState({})
     const table = useReactTable({
         data,
@@ -68,27 +64,22 @@ export function DataTable<TData, TValue>({
             rowSelection,
         },
     })
-    const [search, setSearch] = React.useState(userFilter.name ?? "");
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            handleFilter("name", search);
-        }, 350);
 
-        return () => clearTimeout(timer);
-    }, [search]);
     return (
         <div>
             <div className="flex items-center py-4">
                 <Input
-                    placeholder="Filtrar nombres..."
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
+                    placeholder="Filtrar nombre..."
+                    value={(table.getColumn("display_name")?.getFilterValue() as string) ?? ""}
+                    onChange={(event) =>
+                        table.getColumn("display_name")?.setFilterValue(event.target.value)
+                    }
                     className="max-w-sm"
                 />
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="ml-auto">
-                            Columnas
+                            Columns
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
@@ -116,12 +107,12 @@ export function DataTable<TData, TValue>({
             </div>
             <div className="overflow-hidden rounded-md border">
                 <Table>
-                    <TableHeader className="bg-white ">
+                    <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => {
                                     return (
-                                        <TableHead key={header.id} className="bg-gray-100 font-bold">
+                                        <TableHead key={header.id}>
                                             {header.isPlaceholder
                                                 ? null
                                                 : flexRender(
@@ -162,23 +153,16 @@ export function DataTable<TData, TValue>({
                 <Button
                     variant="outline"
                     size="sm"
-                    onClick={() =>
-                        handleFilter("page", (userFilter.page ?? 1) - 1)
-                    }
-                    disabled={(userFilter.page ?? 1) <= 1}
+                    onClick={() => table.previousPage()}
+                    disabled={!table.getCanPreviousPage()}
                 >
                     Anterior
                 </Button>
                 <Button
                     variant="outline"
                     size="sm"
-                    onClick={() =>
-                        handleFilter(
-                            "page",
-                            (userFilter.page ?? 1) + 1
-                        )
-                    }
-                    disabled={(userFilter.page ?? 1) >= totalPages}
+                    onClick={() => table.nextPage()}
+                    disabled={!table.getCanNextPage()}
                 >
                     Siguiente
                 </Button>

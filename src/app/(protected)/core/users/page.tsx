@@ -3,12 +3,12 @@
 import { userService } from "@/modules/core/user/services/user.service";
 import { User, UserQueryParams } from "@/modules/core/user/types/user.types";
 import { useEffect, useState } from "react";
-import { columns } from "./columns";
-import { DataTable } from "@/modules/core/user/components/data-table";
+import { getColumns } from "./columns";
+import { UserDataTable } from "@/modules/core/user/components/UserDataTable";
 import { PaginationMeta } from "@/types/types";
 import { useUserStore } from "@/modules/core/user/store/user.store";
 import { Button } from "@/components/ui/button";
-import { Modal } from "@/modules/core/user/components/Modal";
+import UserFormModal from "@/modules/core/user/components/UserFormModal";
 
 export default function UserPage() {
     const { openCreate, user } = useUserStore();
@@ -46,7 +46,11 @@ export default function UserPage() {
     };
 
     useEffect(() => {
-        fetchUsers();
+        try {
+            fetchUsers();
+        } catch (error) {
+            console.error("Error fetching users", error)
+        }
     }, [userFilter?.name, userFilter?.page]);
 
     return (
@@ -55,8 +59,13 @@ export default function UserPage() {
                 <h1 className="text-2xl font-bold dark:text-yellow-300">Usuarios</h1>
                 <Button onClick={() => openCreate()} className="rounded-md bg-primary px-4 py-2 text-primary-foreground">Crear usuario</Button>
             </div>
-            <DataTable columns={columns} data={data} userFilter={userFilter} handleFilter={handleFilter} totalPages={pages?.totalPages ?? 1} />
-            <Modal onSuccess={fetchUsers} />
+            <UserDataTable
+                columns={getColumns({ fetchUsers })}
+                data={data} userFilter={userFilter} 
+                handleFilter={handleFilter} 
+                totalPages={pages?.totalPages ?? 1}
+            />
+            <UserFormModal onSuccess={() => close()} fectchUsers={fetchUsers} />
         </div>
     );
 }
