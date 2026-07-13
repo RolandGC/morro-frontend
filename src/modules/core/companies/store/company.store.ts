@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { CompanyForm } from "../validators/companySchema";
+import { Company } from "../types/company.type";
 
 const initialState: CompanyForm = {
   name: "",
@@ -17,9 +18,11 @@ interface CompanyStore {
   isEditing: boolean;
   company: CompanyForm;
   company_id: string | null;
+  companies: Company[];
 
   openCreate: () => void;
   openEdit: (company: CompanyForm, company_id: string | null) => void;
+  setCompanies: (brands: Company[]) => void;
   close: () => void;
 
   updateField: <K extends keyof CompanyForm>(
@@ -35,6 +38,7 @@ export const useCompanyStore = create<CompanyStore>((set) => ({
   isEditing: false,
   company: initialState,
   company_id: null,
+  companies: [],
 
   openCreate: () =>
     set({
@@ -56,6 +60,8 @@ export const useCompanyStore = create<CompanyStore>((set) => ({
     set({
       open: false,
     }),
+
+  setCompanies: (companies) => set ({companies}),
 
   updateField: (field, value) =>
     set((state) => ({

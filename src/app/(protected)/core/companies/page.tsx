@@ -13,7 +13,7 @@ import { CompanyDataTable } from "@/modules/core/companies/components/CompanyDat
 
 export default function CompaniesPage() {
     const [data, setData] = useState<Company[]>([]);
-    const { openCreate, company } = useCompanyStore();
+    const { openCreate, company, setCompanies } = useCompanyStore();
     const [pages, setPages] = useState<PaginationMeta | null>(null);
 
     const [companyFilter, setCompanyFilter] = useState<CompanyQueryParams>({
@@ -42,6 +42,7 @@ export default function CompaniesPage() {
         if (response.status === 200) {
             setPages(response.data.meta)
             setData(response.data.data);
+            setCompanies(response.data.data)
         } else {
             console.error("Error fetching companies:", response.statusText);
         }
