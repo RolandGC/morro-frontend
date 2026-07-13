@@ -30,19 +30,19 @@ export default function WarehouseFormModal({ onSuccess, fetchWarehouses }: Wareh
     const [companies, setCompanies ] = useState<Company[]>([]);
 
     useEffect(() => {
-        const fetchCategoriesAndBrands = async () => {
+        const fetchCompanies = async () => {
             try {
                 const categoryResponse = await companyService.getAllCompanies({is_active: true});
                 if (categoryResponse.status === 200) {
                     setCompanies(categoryResponse.data.data);
                 }
             } catch (error) {
-                console.error('Error fetching categories:', error);
+                console.error('Error fetching companies:', error);
             }
 
         };
 
-        fetchCategoriesAndBrands();
+        fetchCompanies();
     }, [setCompanies]);
 
     const { register, handleSubmit,

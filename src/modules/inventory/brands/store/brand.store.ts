@@ -1,58 +1,85 @@
-import { create } from 'zustand';
-import { Brand, CreateBrand } from '../types/brand.types';
+import { create } from "zustand";
+import { Brand } from "../types/brand.types";
+import { BrandForm } from "../validators/brandSchema";
 
+const initialState: BrandForm = {
+    name: "",
+    is_active: true,
+};
 
-type Mode = 'create' | 'edit';
+interface BrandStore {
+    open: boolean;
+    isEditing: boolean;
 
-interface BrandState {
-    mode: Mode;
-    brand: CreateBrand;
-    editingId: string | null;
-    brands: Brand[]; // Lista global de brands
+    brand: BrandForm;
+    brand_id: string | null;
 
-    setMode: (mode: Mode) => void;
+    brands: Brand[];
 
-    setBrand: (data: Partial<CreateBrand>) => void;
+    openCreate: () => void;
+    openEdit: (
+        brand: BrandForm,
+        brand_id: string | null
+    ) => void;
+    close: () => void;
 
-    loadBrandToEdit: (brand: Brand) => void;
+    updateField: <K extends keyof BrandForm>(
+        field: K,
+        value: BrandForm[K]
+    ) => void;
 
-    setBrands: (brands: Brand[]) => void; // Método para guardar la lista
+    setBrands: (brands: Brand[]) => void;
 
     reset: () => void;
 }
 
-const initialState: CreateBrand = {
-    name: '',
-};
+export const useBrandStore = create<BrandStore>((set) => ({
+    open: false,
+    isEditing: false,
 
-export const useBrandStore = create<BrandState>((set) => ({
-    mode: 'create',
     brand: initialState,
-    editingId: null,
+    brand_id: null,
+
     brands: [],
 
-    setMode: (mode) => set({ mode }),
-
-    setBrand: (data) =>
-        set((state) => ({
-            brand: { ...state.brand, ...data },
-        })),
-
-    loadBrandToEdit: (brand) =>
+    openCreate: () =>
         set({
-            mode: 'edit',
-            editingId: brand.id,
-            brand: {
-                name: brand.name,
-            },
+            open: true,
+            isEditing: false,
+            brand: initialState,
+            brand_id: null,
         }),
 
-    setBrands: (brands) => set({ brands }),
+    openEdit: (brand, brand_id) =>
+        set({
+            open: true,
+            isEditing: true,
+            brand,
+            brand_id,
+        }),
+
+    close: () =>
+        set({
+            open: false,
+        }),
+
+    updateField: (field, value) =>
+        set((state) => ({
+            brand: {
+                ...state.brand,
+                [field]: value,
+            },
+        })),
+
+    setBrands: (brands) =>
+        set({
+            brands,
+        }),
 
     reset: () =>
         set({
-            mode: 'create',
             brand: initialState,
-            editingId: null,
+            isEditing: false,
+            brand_id: null,
         }),
 }));
