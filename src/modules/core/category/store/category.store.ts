@@ -1,62 +1,86 @@
-import { create } from 'zustand';
-import { Category, CreateCategory } from '../types/category.types';
+import { create } from "zustand";
+import { Category } from "../types/category.types";
+import { CategoryForm } from "../validators/categorySchema";
 
+const initialState: CategoryForm = {
+    name: "",
+    description: "",
+    parent_id: null,
+};
 
-type Mode = 'create' | 'edit';
+interface CategoryStore {
+    open: boolean;
+    isEditing: boolean;
 
-interface CategoryState {
-    mode: Mode;
-    category: CreateCategory; // usamos esta para form (sirve para crear y editar)
-    editingId: string | null;
-    categories: Category[]; // Lista global de categories
+    category: CategoryForm;
+    category_id: string | null;
 
-    setMode: (mode: Mode) => void;
+    categories: Category[];
 
-    setCategory: (data: Partial<CreateCategory>) => void;
+    openCreate: () => void;
+    openEdit: (
+        category: CategoryForm,
+        category_id: string | null
+    ) => void;
+    close: () => void;
 
-    loadCategoryToEdit: (category: Category) => void;
+    updateField: <K extends keyof CategoryForm>(
+        field: K,
+        value: CategoryForm[K]
+    ) => void;
 
-    setCategories: (categories: Category[]) => void; // Método para guardar la lista
+    setCategories: (categories: Category[]) => void;
 
     reset: () => void;
 }
 
-const initialState: CreateCategory = {
-    name: '',
-    description: '',
-    parent_id: null,
-};
+export const useCategoryStore = create<CategoryStore>((set) => ({
+    open: false,
+    isEditing: false,
 
-export const useCategoryStore = create<CategoryState>((set) => ({
-    mode: 'create',
     category: initialState,
-    editingId: null,
+    category_id: null,
+
     categories: [],
 
-    setMode: (mode) => set({ mode }),
-
-    setCategory: (data) =>
-        set((state) => ({
-            category: { ...state.category, ...data },
-        })),
-
-    loadCategoryToEdit: (category) =>
+    openCreate: () =>
         set({
-            mode: 'edit',
-            editingId: category.id,
-            category: {
-                name: category.name,
-                description: category.description,
-                parent_id: category.parent_id,
-            },
+            open: true,
+            isEditing: false,
+            category: initialState,
+            category_id: null,
         }),
 
-    setCategories: (categories) => set({ categories }),
+    openEdit: (category, category_id) =>
+        set({
+            open: true,
+            isEditing: true,
+            category,
+            category_id,
+        }),
+
+    close: () =>
+        set({
+            open: false,
+        }),
+
+    updateField: (field, value) =>
+        set((state) => ({
+            category: {
+                ...state.category,
+                [field]: value,
+            },
+        })),
+
+    setCategories: (categories) =>
+        set({
+            categories,
+        }),
 
     reset: () =>
         set({
-            mode: 'create',
             category: initialState,
-            editingId: null,
+            isEditing: false,
+            category_id: null,
         }),
 }));

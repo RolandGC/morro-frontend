@@ -4,12 +4,8 @@ export interface Category {
     parent_id: string | null;
     description: string;
     is_active: boolean;
-}
-
-export interface CreateCategory {
-     name: string;
-     description: string;
-     parent_id: string | null;
+    created_at: string,
+    updated_at: string | null,
 }
 
 export interface CategoryQueryParams {

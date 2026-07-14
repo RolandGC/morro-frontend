@@ -11,22 +11,25 @@ import Swal from "sweetalert2"
 import { Brand } from "@/modules/inventory/brands/types/brand.types"
 import { brandService } from "@/modules/inventory/brands/services/brands.service"
 import { useBrandStore } from "@/modules/inventory/brands/store/brand.store"
+import { Category } from "@/modules/core/category/types/category.types"
+import { useCategoryStore } from "@/modules/core/category/store/category.store"
+import { categoryService } from "@/modules/core/category/services/category.service"
 
 interface ColumnsProps {
-    fetchBrands: () => Promise<void>;
+    fetchData: () => Promise<void>;
 }
 
-export const getColumns = ({ fetchBrands }: ColumnsProps): ColumnDef<Brand>[] => [
+export const getColumns = ({ fetchData }: ColumnsProps): ColumnDef<Category>[] => [
     {
         accessorFn: (row) => row.name,
         id: "nombre",
-        header: "Marca",
+        header: "Categoría",
     },
-    /* {
-        accessorFn: (row) => row.address,
-        id: "dirección",
-        header: "Dirección",
-    }, */
+    {
+        accessorFn: (row) => row.description,
+        id: "Descripción",
+        header: "Descripción",
+    },
     {
         accessorFn: (row) => formatDate(row.created_at),
         id: "Fecha Creación",
@@ -41,22 +44,23 @@ export const getColumns = ({ fetchBrands }: ColumnsProps): ColumnDef<Brand>[] =>
         id: "opciones",
         header: "Opciones",
         cell: ({ row }) => {
-            const brand = row.original;
-            const { openEdit } = useBrandStore();
+            const category = row.original;
+            const { openEdit } = useCategoryStore();
             const { notify } = useToast();
 
             const handleEdit = () => {
                 openEdit({
-                    name: brand.name,
-                    is_active: brand.is_active,
-                }, brand.id);
+                    name: category.name,
+                    description: category.description,
+                    parent_id: category.parent_id,
+                }, category.id);
 
             };
 
             const handleDelete = async () => {
                 const result = await Swal.fire({
                     title: "¿Estás seguro?",
-                    text: `Se eliminará la marca "${brand.name}" de forma permanente.`,
+                    text: `Se eliminará la categoría "${category.name}" de forma permanente.`,
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonText: "Sí, eliminar",
@@ -77,27 +81,27 @@ export const getColumns = ({ fetchBrands }: ColumnsProps): ColumnDef<Brand>[] =>
                 }
 
                 try {
-                    await brandService.delete(brand.id);
+                    await categoryService.delete(category.id);
 
                     await Swal.fire({
                         title: "¡Eliminado!",
-                        text: "La marca fue eliminada correctamente.",
+                        text: "La categoría fue eliminada correctamente.",
                         icon: "success",
                         confirmButtonText: "Aceptar"
                     });
 
-                    notify("Marca eliminado correctamente", "success", 3000);
+                    notify("Categoría eliminado correctamente", "success", 3000);
 
-                    await fetchBrands();
+                    await fetchData();
 
                 } catch (error) {
                     Swal.fire({
                         title: "Error",
-                        text: "No se pudo eliminar el marca.",
+                        text: "No se pudo eliminar la categoría.",
                         icon: "error"
                     });
 
-                    notify("Error al eliminar la marca", "error", 3000);
+                    notify("Error al eliminar la categoría", "error", 3000);
                     console.error(error);
                 }
             };
@@ -105,10 +109,10 @@ export const getColumns = ({ fetchBrands }: ColumnsProps): ColumnDef<Brand>[] =>
 
             return (
                 <div className="flex gap-2">
-                    <Button variant="ghost" size="icon" onClick={handleEdit} title="Editar marca">
+                    <Button variant="ghost" size="icon" onClick={handleEdit} title="Editar categoría">
                         <Pencil className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={handleDelete} title="Eliminar marca">
+                    <Button variant="ghost" size="icon" onClick={handleDelete} title="Eliminar categoría">
                         <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
                 </div>

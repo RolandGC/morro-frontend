@@ -137,7 +137,7 @@ const data = {
         },
         {
           title: "Categorías",
-          url: "/intentory/categoy",
+          url: "/inventory/category",
         },
         {
           title: "Stock",
