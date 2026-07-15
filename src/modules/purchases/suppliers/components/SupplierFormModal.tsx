@@ -12,6 +12,8 @@ import { supplierService } from "../services/supplier.service";
 import SimpleSelector from "@/components/SimpleSelector";
 import { Company } from "@/modules/core/companies/types/company.type";
 import { companyService } from "@/modules/core/companies/services/company.service";
+import { confirmAction } from "@/lib/swal";
+import Swal from "sweetalert2";
 
 interface SupplierFormProps {
     onSuccess?: () => void;
@@ -102,7 +104,6 @@ export default function SupplierFormModal({ onSuccess, fetchData }: SupplierForm
     };
 
     const onSubmit = async (supplier: SupplierForm) => {
-        console.log("holaaa")
         try {
             let response;
             if (isEditing && supplier_id) {
