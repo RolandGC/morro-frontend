@@ -1,3 +1,4 @@
+import { doc_type } from "@/types/types";
 import { z } from "zod";
 
 export const customerSchema = z.object({
@@ -6,9 +7,7 @@ export const customerSchema = z.object({
     .min(3, "El nombre completo debe tener al menos 3 caracteres")
     .max(255, "El nombre completo no puede superar los 255 caracteres"),
 
-  doc_type: z.enum(["dni", "ruc", "ce", "passport"], {
-    error: "Seleccione un tipo de documento válido",
-  }),
+  doc_type: z.nativeEnum(doc_type),
 
   doc_number: z
     .string()
