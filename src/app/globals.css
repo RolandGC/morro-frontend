@@ -130,3 +130,7 @@
     @apply font-sans;
   }
 }
+
+body:has(.swal2-container) {
+  pointer-events: auto !important;
+}

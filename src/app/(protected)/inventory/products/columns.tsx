@@ -1,15 +1,16 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { MoreHorizontal, ArrowUpDown, Pencil, Trash2 } from "lucide-react"
+import { MoreHorizontal, ArrowUpDown, Pencil, Trash2, Tags } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,} from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Product } from "@/modules/inventory/products/types/produc.type"
 import { formatDate } from "@/hooks/dateFormat"
 import { useProductStore } from "@/modules/inventory/products/store/product.store"
 import { productService } from "@/modules/inventory/products/services/product.service"
 import { useToast } from "@/hooks/useToast"
+import { useProductUnitStore } from "@/modules/inventory/products/store/productUnit.store"
 
 
 export const columns: ColumnDef<Product>[] = [
@@ -43,14 +44,12 @@ export const columns: ColumnDef<Product>[] = [
         cell: ({ row }) => {
             const product = row.original;
             const { openEdit } = useProductStore();
+            const { openList } = useProductUnitStore();
             const { notify } = useToast();
 
             const handleEdit = () => {
-                console.log("PRODUCT RAW:", product);
-                console.log("brand_id:", product.brand_id, "| brands.id:", product.brands?.id);
-                console.log("category_id:", product.category_id, "| categories.id:", product.categories?.id);
                 openEdit({
-                    
+
                     name: product.name,
                     model: product.model,
                     unit_base: product.unit_base,
@@ -61,6 +60,10 @@ export const columns: ColumnDef<Product>[] = [
                     brand_id: product.brand_id,
                 }, product.id);
 
+            };
+
+            const handleProductUnit = () => {
+                openList(product.id)
             };
 
             const handleDelete = async () => {
@@ -87,6 +90,9 @@ export const columns: ColumnDef<Product>[] = [
                     </Button>
                     <Button variant="ghost" size="icon" onClick={handleDelete} title="Eliminar producto">
                         <Trash2 className="h-4 w-4 text-red-500" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={handleProductUnit} title="Editar unidad producto">
+                        <Tags className="h-4 w-4" />
                     </Button>
                 </div>
             );

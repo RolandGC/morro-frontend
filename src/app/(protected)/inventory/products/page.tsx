@@ -1,6 +1,5 @@
 'use client'
 
-import { Modal } from "@/modules/inventory/products/components/Modal";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { DataTable } from "@/modules/inventory/products/components/data-table";
@@ -19,6 +18,7 @@ import { useAuth } from "@/components/auth-provider";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { usePermissionStore } from "@/modules/auth/store/permission.store";
 import ProductForm from "@/modules/inventory/products/components/ProductForm";
+import ProductUnitModal from "@/modules/inventory/products/components/ProductUnitModal";
 
 
 export default function ProductsPage() {
@@ -108,6 +108,7 @@ export default function ProductsPage() {
             </div>
             <DataTable columns={columns} data={data} productFilter={productFilter} handleProductFilter={handleProductFilter} totalPages={pages?.totalPages ?? 1} />
             <ProductForm onSuccess={() => close()} />
+            <ProductUnitModal onSuccess={() => close()} />
             <RequirePermission permission="products.read">
                 <p>Contenido protegido: Solo usuarios con permiso "products.view" pueden ver esto.</p>
             </RequirePermission>

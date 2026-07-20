@@ -28,30 +28,16 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { useEffect, useState } from "react"
 
-interface DataTableProps<TData, TValue, TQuery extends { page?: number }> {
+interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
-    filter: TQuery;
-    searchKey: keyof TQuery;
-
-    handleFilter: <K extends keyof TQuery>(
-        key: K,
-        value: TQuery[K]
-    ) => void;
-
-    totalPages: number;
 }
 
-export function DataTable<TData, TValue, TQuery extends { page?: number }>({
+export function DataTable<TData, TValue>({
     columns,
     data,
-    filter,
-    searchKey,
-    handleFilter,
-    totalPages,
-}: DataTableProps<TData, TValue, TQuery>) {
+}: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
         []
@@ -79,33 +65,21 @@ export function DataTable<TData, TValue, TQuery extends { page?: number }>({
         },
     })
 
-    const [search, setSearch] = useState(filter[searchKey] ?? "");
-
-    useEffect(() => {
-        setSearch(String(filter[searchKey] ?? ""))
-    }, [filter, searchKey])
-      
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            handleFilter(searchKey, search as TQuery[typeof searchKey]);
-        }, 350);
-
-        return () => clearTimeout(timer);
-    }, [search, searchKey, handleFilter]);
-
     return (
         <div>
             <div className="flex items-center py-4">
                 <Input
-                    placeholder="Buscar..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Filtrar nombre..."
+                    value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+                    onChange={(event) =>
+                        table.getColumn("name")?.setFilterValue(event.target.value)
+                    }
                     className="max-w-sm"
                 />
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="ml-auto">
-                            Columnas
+                            Columns
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">

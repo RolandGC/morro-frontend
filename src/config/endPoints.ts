@@ -53,6 +53,13 @@ export const endpoints = {
         DELETE: `${baseUrl}/products`,
         GET_BY_ID: `${baseUrl}/products`,
     },
+    PRODUCT_UNIT: {
+        GET_ALL: (productId: string) => `${baseUrl}/products/${productId}/units`,
+        CREATE: (productId: string) => `${baseUrl}/products/${productId}/units`,
+        UPDATE: (productId: string, id: string) => `${baseUrl}/products/${productId}/units/${id}`,
+        DELETE: (productId: string, id: string) => `${baseUrl}/products/${productId}/units/${id}`,
+        GET_BY_ID: (productId: string, id: string) => `${baseUrl}/products/${productId}/units/${id}`,
+    },
     CUSTOMERS: {
         GET_ALL: `${baseUrl}/customers`,
         CREATE: `${baseUrl}/customers`,

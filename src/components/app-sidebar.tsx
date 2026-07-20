@@ -140,8 +140,8 @@ const data = {
           url: "/inventory/category",
         },
         {
-          title: "Stock",
-          url: "#",
+          title: "Unidad de productos",
+          url: "/inventory/product_unit",
         },
         {
           title: "Ajuste Stock",

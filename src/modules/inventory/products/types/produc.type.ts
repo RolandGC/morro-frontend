@@ -18,6 +18,15 @@ export interface Product {
     created_at: string;
 }
 
+export interface ProductUnit {
+    id: string;
+    name: string,
+    conversion_factor: number,
+    barcode: string,
+    is_default: boolean,
+    created_at: string,
+};
+
 export interface ProductQueryParams {
     page?: number | undefined; // default: 1
     limit?: number | undefined; // default: 20
@@ -30,5 +39,5 @@ export interface ProductQueryParams {
     has_igv?: boolean | undefined;
     track_stock?: boolean | undefined;
     is_active?: boolean | undefined;
-    order?: "asc" | "desc" ;
+    order?: "asc" | "desc";
 }
