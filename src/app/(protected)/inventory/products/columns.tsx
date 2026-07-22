@@ -11,31 +11,35 @@ import { useProductStore } from "@/modules/inventory/products/store/product.stor
 import { productService } from "@/modules/inventory/products/services/product.service"
 import { useToast } from "@/hooks/useToast"
 import { useProductUnitStore } from "@/modules/inventory/products/store/productUnit.store"
+import Swal from "sweetalert2"
 
+interface ColumnsProps {
+    fetchData: () => Promise<void>;
+}
 
-export const columns: ColumnDef<Product>[] = [
+export const getColumns = ({ fetchData }: ColumnsProps): ColumnDef<Product>[] => [
     {
         accessorKey: "name",
         header: "Producto",
     },
     {
         accessorFn: (row) => row.brands.name,
-        id: "brand",
+        id: "marca",
         header: "Marca",
     },
     {
         accessorFn: (row) => row.categories.name,
-        id: "category",
+        id: "categoria",
         header: "Categoría",
     },
     {
         accessorFn: (row) => row.model,
-        id: "model",
+        id: "modelo",
         header: "Modelo",
     },
     {
         accessorFn: (row) => formatDate(row.created_at),
-        id: "created_at",
+        id: "Fecha de creación",
         header: "Fecha de creación",
     },
     {
@@ -67,13 +71,40 @@ export const columns: ColumnDef<Product>[] = [
             };
 
             const handleDelete = async () => {
-                if (!window.confirm(`¿Estás seguro de que quieres eliminar el producto "${product.name}"?`)) {
+                const result = await Swal.fire({
+                    title: "¿Estás seguro?",
+                    text: `Se eliminará el prodcuto "${product.name}" de forma permanente.`,
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Sí, eliminar",
+                    cancelButtonText: "Cancelar",
+                    reverseButtons: true,
+                    customClass: {
+                        confirmButton:
+                            "bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg ml-2",
+                        cancelButton:
+                            "bg-gray-500 hover:bg-gray-600 text-white font-medium px-4 py-2 rounded-lg mr-2",
+                    },
+                    buttonsStyling: false
+                });
+
+                // Si el usuario cancela
+                if (!result.isConfirmed) {
                     return;
                 }
-
                 try {
-                    const response = await productService.delete(product?.id);
-                    console.log('Delete response:', response);
+                    await productService.delete(product?.id);
+
+                    await Swal.fire({
+                        title: "¡Eliminado!",
+                        text: "El producto fue eliminada correctamente.",
+                        icon: "success",
+                        confirmButtonText: "Aceptar"
+                    });
+
+                    notify("Producto eliminado correctamente", "success", 3000);
+
+                    await fetchData();
                     notify("Producto eliminado correctamente", "success", 3000);
                     // Recargar la lista de productos
                     window.location.reload();

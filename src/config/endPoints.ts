@@ -4,7 +4,7 @@ export const endpoints = {
     AUTH: {
         LOGIN: `${baseUrl}/auth/login`,
         REGISTER: `${baseUrl}/auth/register`,
-        SELECT_COMPANY:`${baseUrl}/auth/select-company`,
+        SELECT_COMPANY: `${baseUrl}/auth/select-company`,
         GET_MY_PROFILE: `${baseUrl}/auth/profile`,
     },
     USERS: {
@@ -74,6 +74,15 @@ export const endpoints = {
         DELETE: `${baseUrl}/suppliers`,
         GET_BY_ID: `${baseUrl}/suppliers`,
     },
+    PURCHASES: {
+        GET_ALL: `${baseUrl}/purchases`,
+        CREATE: `${baseUrl}/purchases`,
+        UPDATE: `${baseUrl}/purchases`,
+        DELETE: `${baseUrl}/purchases`,
+        GET_BY_ID: `${baseUrl}/purchases`,
+        COMPLETE: (id: string) => `${baseUrl}/purchases/${id}/complete`,
+        CANCEL: (id: string) => `${baseUrl}/purchases/${id}/cancel`,
+    },
     CURRENCIES: {
         GET_ALL: `${baseUrl}/currencies`,
         CREATE: `${baseUrl}/currencies`,
@@ -84,7 +93,7 @@ export const endpoints = {
     PERMISSIONS: {
         BY_USER: (userId: string) => `${baseUrl}/users/${userId}/permissions`,
     },
-    ROLES:{
+    ROLES: {
         GET_ALL: `${baseUrl}/roles`,
         CREATE: `${baseUrl}/roles`,
         UPDATE: `${baseUrl}/roles`,

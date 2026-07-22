@@ -41,9 +41,9 @@ export default function SupplierFormModal({ onSuccess, fetchData }: SupplierForm
     useEffect(() => {
         const fetchCompanies = async () => {
             try {
-                const categoryResponse = await companyService.getAllCompanies({ is_active: true });
-                if (categoryResponse.status === 200) {
-                    setCompanies(categoryResponse.data.data);
+                const response = await companyService.getAllCompanies({ is_active: true });
+                if (response.status === 200) {
+                    setCompanies(response.data.data);
                 }
             } catch (error) {
                 console.error('Error fetching companies:', error);

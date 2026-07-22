@@ -6,7 +6,7 @@ import { ProductUnitForm } from "../validators/productUnitSchema";
 import { ProductUnit } from "../types/produc.type";
 
 class ProductUnitService {
-    async getAll(productId: string): Promise<AxiosResponse<ProductUnit>> {
+    async getAll(productId: string): Promise<AxiosResponse<ProductUnit[]>> {
         const response = await apiClient.get(endpoints.PRODUCT_UNIT.GET_ALL(productId));
         return response;
     }

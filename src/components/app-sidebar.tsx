@@ -107,11 +107,11 @@ const data = {
       items: [
         {
           title: "Proveedores",
-          url: "/buys/suppliers",
+          url: "/purchases/suppliers",
         },
         {
           title: "Compras",
-          url: "#",
+          url: "/purchases/purchase",
         },
         {
           title: "Caja",

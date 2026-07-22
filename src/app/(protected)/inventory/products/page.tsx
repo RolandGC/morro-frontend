@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { DataTable } from "@/modules/inventory/products/components/data-table";
-import { columns } from "./columns";
 import { productService } from "@/modules/inventory/products/services/product.service";
 import { Product, ProductQueryParams } from "@/modules/inventory/products/types/produc.type";
 import { useProductStore } from "@/modules/inventory/products/store/product.store";
@@ -19,6 +18,7 @@ import { useAuthStore } from "@/modules/auth/store/authStore";
 import { usePermissionStore } from "@/modules/auth/store/permission.store";
 import ProductForm from "@/modules/inventory/products/components/ProductForm";
 import ProductUnitModal from "@/modules/inventory/products/components/ProductUnitModal";
+import { getColumns } from "./columns";
 
 
 export default function ProductsPage() {
@@ -53,18 +53,19 @@ export default function ProductsPage() {
         }));
     };
 
+    const fetchData = async () => {
+        const response = await productService.getAll(productFilter);
+        if (response.status === 200) {
+            setData(response.data.data)
+            setPages(response.data.meta)
+        } else {
+            console.error("Error fetching products:", response.statusText);
+        }
+    }
+    
     useEffect(() => {
         try {
-            const fetchProducts = async () => {
-                const response = await productService.getAll(productFilter);
-                console.log('Products:', response);
-                if (response.status === 200) {
-                    console.log("datas", response.data.data)
-                    setPages(response.data.meta)
-                    setData(response.data.data);
-                }
-            };
-            fetchProducts();
+            fetchData();
         } catch (error) {
             console.error('Error fetching products:', error);
         }
@@ -106,7 +107,7 @@ export default function ProductsPage() {
                 <h1 className="text-2xl font-bold dark:text-yellow-300">Productos</h1>
                 <Button onClick={() => openCreate()} className="rounded-md bg-primary px-4 py-2 text-primary-foreground">Crear producto</Button>
             </div>
-            <DataTable columns={columns} data={data} productFilter={productFilter} handleProductFilter={handleProductFilter} totalPages={pages?.totalPages ?? 1} />
+            <DataTable columns={getColumns({fetchData})} data={data} productFilter={productFilter} handleProductFilter={handleProductFilter} totalPages={pages?.totalPages ?? 1} />
             <ProductForm onSuccess={() => close()} />
             <ProductUnitModal onSuccess={() => close()} />
             <RequirePermission permission="products.read">

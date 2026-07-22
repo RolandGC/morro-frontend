@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import { useSupplierStore } from "@/modules/purchases/suppliers/store/supplier.store"
 import SupplierFormModal from "@/modules/purchases/suppliers/components/SupplierFormModal"
 
-export default function () {
+export default function SupplierPage() {
     const [data, setData] = useState<Supplier[]>([])
     const [pages, setPages] = useState<PaginationMeta | null>(null);
     const {openCreate} = useSupplierStore()
