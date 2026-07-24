@@ -16,12 +16,10 @@ class PurchaseService {
         const response = await apiClient.post(endpoints.PURCHASES.CREATE, purchase);
         return response;
     }
-
     async update(id: string, purchase: PurchaseForm): Promise<AxiosResponse<Purchase>> {
         const response = await apiClient.patch(`${endpoints.PURCHASES.UPDATE}/${id}`, purchase);
         return response;
     }
-
     async delete(id: string) {
         const response = await apiClient.delete(`${endpoints.PURCHASES.DELETE}/${id}`);
         return response;

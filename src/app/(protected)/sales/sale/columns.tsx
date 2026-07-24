@@ -12,17 +12,18 @@ import { Supplier } from "@/modules/purchases/suppliers/types/suppliers.types"
 import { useSupplierStore } from "@/modules/purchases/suppliers/store/supplier.store"
 import { supplierService } from "@/modules/purchases/suppliers/services/supplier.service"
 import { Purchase } from "@/modules/purchases/purchase/types/purchase.types"
-import { translatePurchaseStatus } from "@/modules/purchases/purchase/utils"
+import { Sale } from "@/modules/sales/sale/types/sale.types"
+import { translateSaleStatus } from "@/modules/sales/sale/utils"
 
 interface ColumnsProps {
     fetchData: () => Promise<void>;
 }
 
-export const getColumns = ({ fetchData }: ColumnsProps): ColumnDef<Purchase>[] => [
+export const getColumns = ({ fetchData }: ColumnsProps): ColumnDef<Sale>[] => [
     {
-        accessorFn: (row) => row.suppliers?.name,
-        id: "Proveedor",
-        header: "Proveedor",
+        accessorFn: (row) => row.customers.full_name,
+        id: "Cliente",
+        header: "Cliente",
     },
     {
         accessorFn: (row) => row.companies.name,
@@ -30,7 +31,7 @@ export const getColumns = ({ fetchData }: ColumnsProps): ColumnDef<Purchase>[] =
         header: "Empresa",
     },
     {
-        accessorFn: (row) => translatePurchaseStatus(row.status),
+        accessorFn: (row) => translateSaleStatus(row.status),
         id: "Estado",
         header: "Estado",
     },

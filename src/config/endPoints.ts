@@ -74,6 +74,15 @@ export const endpoints = {
         DELETE: `${baseUrl}/suppliers`,
         GET_BY_ID: `${baseUrl}/suppliers`,
     },
+    SALES: {
+        GET_ALL: `${baseUrl}/sales`,
+        CREATE: `${baseUrl}/sales`,
+        UPDATE: `${baseUrl}/sales`,
+        DELETE: `${baseUrl}/sales`,
+        GET_BY_ID: `${baseUrl}/sales`,
+        COMPLETE: (id: string) => `${baseUrl}/sales/${id}/complete`,
+        CANCEL: (id: string) => `${baseUrl}/sales/${id}/cancel`,
+    },
     PURCHASES: {
         GET_ALL: `${baseUrl}/purchases`,
         CREATE: `${baseUrl}/purchases`,

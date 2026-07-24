@@ -1,58 +1,62 @@
 "use client"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+
 import InputText from "@/components/InputText";
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/useToast";
 import SimpleSelector from "@/components/SimpleSelector";
-import { Company } from "@/modules/core/companies/types/company.type";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { showToast } from "@/hooks/useToast";
 import { companyService } from "@/modules/core/companies/services/company.service";
-import { confirmAction } from "@/lib/swal";
-import Swal from "sweetalert2";
-import { Warehouse } from "@/modules/core/warehouses/types/warehouse.types";
+import { Company } from "@/modules/core/companies/types/company.type";
 import { warehouseService } from "@/modules/core/warehouses/services/warehouse.service";
+import { Warehouse } from "@/modules/core/warehouses/types/warehouse.types";
 import { currencyService } from "@/modules/finances/currency/services/currency.service";
 import { Currency } from "@/modules/finances/currency/types/currency.types";
-import { Product, ProductUnit } from "@/modules/inventory/products/types/produc.type";
 import { productService } from "@/modules/inventory/products/services/product.service";
 import { productUnitService } from "@/modules/inventory/products/services/producUnit.service";
-import { usePurchaseStore } from "@/modules/purchases/purchase/store/purchase.store";
-import { Supplier } from "@/modules/purchases/suppliers/types/suppliers.types";
-import { PurchaseForm, purchaseSchema } from "@/modules/purchases/purchase/validators/purchaseSchema";
-import { supplierService } from "@/modules/purchases/suppliers/services/supplier.service";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PurchaseItem } from "@/modules/purchases/purchase/types/purchase.types";
-import { purchaseService } from "@/modules/purchases/purchase/services/purchase.service";
+import { Product, ProductUnit } from "@/modules/inventory/products/types/produc.type";
+import { customerService } from "@/modules/sales/customers/services/customer.service";
+import { Customer } from "@/modules/sales/customers/types/customer.type";
+import { saleService } from "@/modules/sales/sale/services/sale.service";
+import { useSaleStore } from "@/modules/sales/sale/store/sale.store";
+import { SaleForm, saleSchema } from "@/modules/sales/sale/validators/saleSchema";
+import { sale_type } from "@/types/types";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 
-interface PurchaseFormProps {
-    onSuccess?: () => void;
-}
-export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
-    const { isEditing, purchase, open, close, purchase_id } = usePurchaseStore();
-    const [isSearch, setIsSearch] = useState(false)
-    const { notify: showToast } = useToast();
+export default function SaleAddPage() {
+    const router = useRouter();
+    const { sale, sales, isEditing, sale_id } = useSaleStore();
     const [companies, setCompanies] = useState<Company[]>([]);
-    const [warehouse, setWarehouse] = useState<Warehouse[]>([])
-    const [supplier, setSupplier] = useState<Supplier[]>([])
-    const [currency, setCurrency] = useState<Currency[]>([])
+    const [warehouse, setWarehouse] = useState<Warehouse[]>([]);
+    const [customer, setCustomer] = useState<Customer[]>([]);
+    const [currency, setCurrency] = useState<Currency[]>([]);
+    const [editingIndex, setEditingIndex] = useState<number | null>(null);
+    const [openProduct, setOpenProduct] = useState(false);
     const [products, setProducts] = useState<Product[]>([]);
     const [productUnits, setProductUnits] = useState<Record<number, ProductUnit[]>>({});
-    const [openProduct, setOpenProduct] = useState(false);
-    const router = useRouter();
-    const defaultValues: PurchaseForm = {
+
+    const saleTypes = [
+        { id: "1", name: "Efectivo", value: sale_type.cash },
+        { id: "2", name: "Crédito", value: sale_type.credit },
+    ];
+    const is_bonus = [
+        { id: "1", name: "Sí", value: true },
+        { id: "2", name: "No", value: false },
+    ];
+    const defaultValues: SaleForm = {
         company_id: "",
         warehouse_id: "",
-        supplier_id: "",
+        customer_id: "",
+        price_list_id: "",
         currency_id: "",
         exchange_rate: 1,
-        reference_doc: "",
+        sale_type: sale_type.cash,
+        sale_date: new Date().toISOString().split("T")[0],
         items: [],
-        purchase_date: new Date().toISOString().split("T")[0],
     };
-
     const {
         control,
         register,
@@ -62,12 +66,12 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
         getValues,
         watch,
         formState: { errors, isSubmitting },
-    } = useForm<PurchaseForm>({
-        resolver: zodResolver(purchaseSchema),
+    } = useForm<SaleForm>({
+        resolver: zodResolver(saleSchema),
         defaultValues: {
             ...defaultValues,
-            ...purchase,
-            items: purchase?.items ?? [],
+            ...sale,
+            items: sale?.items ?? [],
         },
     });
 
@@ -100,32 +104,28 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
         fetchData();
     }, [setCompanies, setWarehouse]);
 
-    const fetchCuurencySupplier = async () => {
-        try {
-            const [supplierResponse, currencyResponse] = await Promise.all([
-                supplierService.getAll({ is_active: true }),
-                currencyService.getAll({ is_active: true }),
-            ]);
-
-            if (supplierResponse.status === 200) {
-                setSupplier(supplierResponse.data.data);
-            } else {
-                console.error("Error fetching suppliers:", supplierResponse.statusText);
-            }
-
-            if (currencyResponse.status === 200) {
-                setCurrency(currencyResponse.data.data);
-            } else {
-                console.error("Error fetching currencies:", currencyResponse.statusText);
-            }
-        } catch (error) {
-            console.error("Error fetching data:", error);
-        }
-    };
-
     useEffect(() => {
-        fetchCuurencySupplier();
-    }, []);
+        const fetchData = async () => {
+            try {
+                const [customer, currencyResponse] = await Promise.all([
+                    customerService.getAll({ is_active: true }),
+                    currencyService.getAll({ is_active: true }),
+                ]);
+
+                if (customer.status === 200) {
+                    setCustomer(customer.data.data);
+                }
+
+                if (currencyResponse.status === 200) {
+                    setCurrency(currencyResponse.data.data);
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        };
+
+        fetchData();
+    }, [setCustomer, setCurrency]);
 
     const fetchProducts = async () => {
         const response = await productService.getAll({ is_active: true });
@@ -143,6 +143,63 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
             console.error('Error fetching products:', error);
         }
     }, []);
+
+    const onSubmit = async (data: SaleForm) => {
+        console.log(JSON.stringify(data, null, 2));
+        console.log("FORMULARIO COMPLETO:", data);
+        try {
+
+            if (!data.items || data.items.length === 0) {
+                showToast("Debe agregar al menos un producto", "error");
+                return;
+            }
+
+            const invalidItem = data.items.some(
+                item =>
+                    !item.product_id ||
+                    !item.product_unit_id ||
+                    item.quantity <= 0
+            );
+
+            if (invalidItem) {
+                showToast("Complete correctamente los datos de los productos", "error");
+                return;
+            }
+
+            console.log("DATOS A ENVIAR:", data);
+
+            let response;
+
+            if (isEditing && sale_id) {
+                response = await saleService.update(
+                    sale_id ?? '',
+                    data
+                );
+            } else {
+                response = await saleService.create(data);
+            }
+
+            if (response.status === 201 || response.status === 200) {
+                showToast(
+                    isEditing
+                        ? "Compra actualizada correctamente"
+                        : "Compra creada correctamente",
+                    "success"
+                );
+
+                resetForm(defaultValues);
+                router.push("/sales/sale")
+            }
+
+        } catch (error) {
+            showToast(
+                "Error al guardar la compra",
+                "error"
+            );
+
+            console.error(error);
+        }
+    };
 
     const loadProductUnits = async (
         productId: string,
@@ -174,77 +231,6 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
         }
     };
 
-    useEffect(() => {
-        if (isEditing && purchase) {
-            resetForm({
-                ...defaultValues,
-                ...purchase,
-                items: purchase?.items ?? [],
-            });
-        } else {
-            resetForm(defaultValues);
-        }
-    }, [purchase, isEditing, resetForm]);
-
-    const onSubmit = async (data: PurchaseForm) => {
-        console.log(JSON.stringify(data, null, 2));
-        console.log("FORMULARIO COMPLETO:", data);
-        try {
-
-            if (!data.items || data.items.length === 0) {
-                showToast("Debe agregar al menos un producto", "error");
-                return;
-            }
-
-            const invalidItem = data.items.some(
-                item =>
-                    !item.product_id ||
-                    !item.product_unit_id ||
-                    item.quantity <= 0 ||
-                    item.unit_cost <= 0
-            );
-
-            if (invalidItem) {
-                showToast("Complete correctamente los datos de los productos", "error");
-                return;
-            }
-
-            console.log("DATOS A ENVIAR:", data);
-
-            let response;
-
-            if (isEditing && purchase_id) {
-                response = await purchaseService.update(
-                    purchase_id ?? '',
-                    data
-                );
-            } else {
-                response = await purchaseService.create(data);
-            }
-
-            if (response.status === 201 || response.status === 200) {
-                showToast(
-                    isEditing
-                        ? "Compra actualizada correctamente"
-                        : "Compra creada correctamente",
-                    "success"
-                );
-
-                resetForm(defaultValues);
-                router.push("/purchases/purchase")
-            }
-
-        } catch (error) {
-            showToast(
-                "Error al guardar la compra",
-                "error"
-            );
-
-            console.error(error);
-        }
-    };
-
-    const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
     const handleAddProduct = () => {
         const newIndex = fields.length;
@@ -254,10 +240,10 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
             product_unit_id: "",
             quantity: 1,
             unit_quantity: 1,
-            unit_cost: 0,
-            total_cost: 0,
-            lot_number: "",
-            expiry_date: "",
+            unit_price: 0,
+            igv_amount: 0,
+            subtotal: 0,
+            is_bonus: false,
         });
 
         setEditingIndex(newIndex);
@@ -280,23 +266,13 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
 
         setOpenProduct(true);
     };
+
     return (
         <div className="container mx-auto py-4 px-4">
-            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 w-full">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <InputText
-                        name="reference_doc"
-                        label="Documento de referencia"
-                        register={register}
-                        error={errors.reference_doc}
-                    />
-                    <InputText
-                        name="exchange_rate"
-                        label="Tipo de cambio"
-                        register={register}
-                        error={errors.exchange_rate}
-                    />
-                </div>
+            <form onSubmit={handleSubmit(onSubmit, (errors) => {
+                console.log("Errores:", errors);
+            })} className="flex flex-col gap-4 w-full">
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Controller
                         name="company_id"
@@ -333,18 +309,18 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Controller
-                        name="supplier_id"
+                        name="customer_id"
                         control={control}
                         render={({ field }) => (
                             <SimpleSelector
-                                label="Proveedor"
+                                label="cliente"
                                 value={field.value}
-                                options={supplier.map((supplier) => ({
-                                    id: supplier.id,
-                                    name: supplier.name,
+                                options={customer.map((customer) => ({
+                                    id: customer.id,
+                                    name: customer.full_name,
                                 }))}
                                 onSelect={field.onChange}
-                                error={errors.supplier_id}
+                                error={errors.customer_id}
                             />
                         )}
                     />
@@ -363,6 +339,29 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
                                 error={errors.currency_id}
                             />
                         )}
+                    />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Controller
+                        name="sale_type"
+                        control={control}
+                        render={({ field }) => (
+                            <SimpleSelector
+                                label="Tipo de venta"
+                                value={saleTypes.find((r) => r.value === field.value)?.id}
+                                options={saleTypes}
+                                onSelect={(id) => {
+                                    const selected = saleTypes.find((r) => r.id === id);
+                                    field.onChange(selected?.value ?? sale_type.cash);
+                                }}
+                            />
+                        )}
+                    />
+                    <InputText
+                        name="exchange_rate"
+                        label="Tipo de cambio"
+                        register={register}
+                        error={errors.exchange_rate}
                     />
                 </div>
                 <Button
@@ -398,10 +397,10 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
                                             {item?.quantity}
                                         </TableCell>
                                         <TableCell>
-                                            {item?.unit_cost}
+                                            {item?.unit_quantity}
                                         </TableCell>
                                         <TableCell>
-                                            {item?.total_cost}
+                                            {item?.subtotal}
                                         </TableCell>
                                         <TableCell className="flex gap-2">
                                             <Button
@@ -425,7 +424,6 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
                         </TableBody>
                     </Table>
                 </div>
-
                 <Dialog open={openProduct} onOpenChange={setOpenProduct}>
                     <DialogContent className="lg:max-w-2xl max-h-[90vh] overflow-y-auto sm:max-w-sm">
                         <DialogHeader>
@@ -474,47 +472,49 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
                                 </div>
 
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-
                                     <InputText
                                         label="Cantidad"
                                         name={`items.${editingIndex}.quantity`}
                                         register={register}
                                     />
-
                                     <InputText
                                         label="Cant. Unidad"
                                         name={`items.${editingIndex}.unit_quantity`}
                                         register={register}
                                     />
-
                                     <InputText
                                         label="Costo Unit."
-                                        name={`items.${editingIndex}.unit_cost`}
+                                        name={`items.${editingIndex}.unit_price`}
                                         register={register}
                                     />
-
                                     <InputText
-                                        label="Costo Total"
-                                        name={`items.${editingIndex}.total_cost`}
+                                        label="Sub Total"
+                                        name={`items.${editingIndex}.subtotal`}
                                         register={register}
                                     />
-
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                                    <InputText
+                                   {/*  <InputText
                                         label="Lote"
                                         name={`items.${editingIndex}.lot_number`}
                                         register={register}
-                                    />
-
-                                    <InputText
-                                        type="date"
-                                        label="Fecha de vencimiento"
-                                        name={`items.${editingIndex}.expiry_date`}
-                                        error={errors.purchase_date}
-                                        register={register}
+                                    /> */}
+                                    <Controller
+                                        name={`items.${editingIndex}.is_bonus`}
+                                        control={control}
+                                        render={({ field }) => (
+                                            <SimpleSelector
+                                                label="Es bono"
+                                                value={field.value ? is_bonus[0].id : is_bonus[1].id}
+                                                options={is_bonus}
+                                                onSelect={(id) => {
+                                                    const selected = is_bonus.find(h => h.id === id);
+                                                    field.onChange(selected?.value ?? false);
+                                                }}
+                                            />
+                                        )}
                                     />
 
                                 </div>
@@ -543,14 +543,14 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
                         )}
                     </DialogContent>
                 </Dialog>
-                <Button type="submit" disabled={isSubmitting}>
+                <Button type="submit" disabled={isSubmitting} onClick={() => console.log("click")}>
                     {isSubmitting
                         ? "Guardando..."
                         : isEditing
-                            ? "Actualizar compra"
-                            : "Guardar compra"}
+                            ? "Actualizar venta"
+                            : "Guardar venta"}
                 </Button>
             </form>
         </div>
-    );
+    )
 }
