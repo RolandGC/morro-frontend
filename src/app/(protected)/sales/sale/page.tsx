@@ -8,11 +8,13 @@ import { useEffect, useState } from "react";
 import { saleService } from "@/modules/sales/sale/services/sale.service";
 import { Sale, SaleQueryParams } from "@/modules/sales/sale/types/sale.types";
 import { PaginationMeta } from "@/types/types";
+import { Spinner } from "@/components/Spinner";
 
 export default function SalePage() {
     const router = useRouter();
     const [data, setData] = useState<Sale[]>([])
     const [pages, setPages] = useState<PaginationMeta | null>(null);
+    const [loading, setLoading] = useState(true);
     const [saleFilter, setSaleFilter] = useState<SaleQueryParams>({
         page: 1,
         limit: 10,
@@ -29,21 +31,24 @@ export default function SalePage() {
         }));
     };
     const fetchData = async () => {
-        const response = await saleService.getAll(saleFilter)
-        if (response.status === 200) {
-            setData(response.data.data)
-            setPages(response.data.meta)
-        } else {
-            console.error("Error fetching purchases:", response.statusText);
+        try {
+            setLoading(true);
+            const response = await saleService.getAll(saleFilter)
+            if (response.status === 200) {
+                setData(response.data.data)
+                setPages(response.data.meta)
+            } else {
+                console.error("Error fetching purchases:", response.statusText);
+            }
+        } catch (error) {
+            console.error("Error fetching purchases:", error);
+        } finally {
+            setLoading(false);
         }
     }
 
     useEffect(() => {
-        try {
-            fetchData();
-        } catch (error) {
-            console.error("Error fetching purchases:", error);
-        }
+        fetchData();
     }, [saleFilter?.date_to, saleFilter?.page])
 
     
@@ -53,13 +58,17 @@ export default function SalePage() {
                 <h1 className="text-2xl font-bold">Ventas</h1>
                 <Button onClick={() => router.push("/sales/sale/add")} className="rounded-md bg-primary px-4 py-2 text-primary-foreground">Crear Venta</Button>
             </div>
-            <SaleDataTable
-                columns={getColumns({ fetchData })}
-                data={data}
-                filter={saleFilter}
-                handleFilter={handleFilter}
-                totalPages={pages?.totalPages ?? 1}
-            />
+            {loading ? (
+                <Spinner />
+            ) : (
+                <SaleDataTable
+                    columns={getColumns({ fetchData })}
+                    data={data}
+                    filter={saleFilter}
+                    handleFilter={handleFilter}
+                    totalPages={pages?.totalPages ?? 1}
+                />
+            )}
         </div>
     );
 }

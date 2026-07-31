@@ -9,10 +9,12 @@ import { PaginationMeta } from "@/types/types";
 import { useEffect, useState } from "react";
 import { getColumns } from "./columns";
 import CustomerFormModal from "@/modules/sales/customers/components/CustomerFormModal";
+import { Spinner } from "@/components/Spinner";
 
 export default function Clients() {
     const [data, setData] = useState<Customer[]>([])
     const [pages, setPages] = useState<PaginationMeta | null>(null);
+    const [loading, setLoading] = useState(true);
     const {openCreate} = useCustomerStore()
 
     const [customerFilter, setCustomerFilter] = useState<CustomerQueryParams>({
@@ -34,6 +36,7 @@ export default function Clients() {
     };
     const fetchData = async () => {
         try {
+            setLoading(true);
             const response = await customerService.getAll(customerFilter);
             if (response.status === 200) {
                 setData(response.data.data);
@@ -41,15 +44,13 @@ export default function Clients() {
             }
         } catch (error) {
             console.error("Error fetching customers:", error);
+        } finally {
+            setLoading(false);
         }
     };
 
     useEffect(() => {
-        try {
-            fetchData();
-        } catch (error) {
-            console.error("Error fetching customers", error)
-        }
+        fetchData();
     }, [customerFilter?.full_name, customerFilter?.page]);
 
     return (
@@ -58,13 +59,17 @@ export default function Clients() {
                 <h1 className="text-2xl font-bold">Clientes</h1>
                 <Button onClick={() => openCreate()} className="rounded-md bg-primary px-4 py-2 text-primary-foreground">Crear Cliente</Button>
             </div>
-            <CustomerDataTable
-                columns={getColumns({fetchData})}
-                data={data}
-                filter={customerFilter}
-                handleFilter={handleFilter}
-                totalPages={pages?.totalPages ?? 1}
-            />
+            {loading ? (
+                <Spinner />
+            ) : (
+                <CustomerDataTable
+                    columns={getColumns({fetchData})}
+                    data={data}
+                    filter={customerFilter}
+                    handleFilter={handleFilter}
+                    totalPages={pages?.totalPages ?? 1}
+                />
+            )}
             <CustomerFormModal
                 fetchData={fetchData}
                 onSuccess={() => close()}
