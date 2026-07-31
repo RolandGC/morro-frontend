@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/modules/security/roles/components/DataTable";
 import { roleService } from "@/modules/security/roles/services/role.service";
@@ -7,6 +8,7 @@ import { Role } from "@/modules/security/roles/types/roles.types";
 import { getColumns } from "./columns";
 import { useEffect, useState } from "react";
 import RoleFormModal from "@/modules/security/roles/components/RoleFormModal";
+import { Spinner } from "@/components/Spinner";
 
 export default function RolesPage() {
     const { openCreate, role } = useRoleStore();
@@ -15,20 +17,24 @@ export default function RolesPage() {
 
 
     const fetchRoles = async () => {
-        const response = await roleService.getAll();
-        if (response.status === 200) {
-            console.log(response.data, "okkkk")
-            setData(response.data);
-        } else {
-            console.error("Error fetching companies:", response.statusText);
+        try {
+            setLoading(true);
+
+            const response = await roleService.getAll();
+
+            if (response.status === 200) {
+                setData(response.data);
+            } else {
+                console.error("Error fetching roles:", response.statusText);
+            }
+        } catch (error) {
+            console.error("Error fetching roles:", error);
+        } finally {
+            setLoading(false);
         }
     };
     useEffect(() => {
-        try {
-            fetchRoles();
-        } catch (error) {
-            console.error("Error fetching companies:", error);
-        }
+        fetchRoles();
     }, []);
 
     return (
@@ -38,9 +44,7 @@ export default function RolesPage() {
                 <Button onClick={() => openCreate()} className="rounded-md bg-primary px-4 py-2 text-primary-foreground">Crear Rol</Button>
             </div>
             {loading ? (
-                <div className="flex h-80 items-center justify-center">
-                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                </div>
+                <Spinner />
             ) : (
                 <DataTable
                     columns={getColumns({ fetchRoles })}

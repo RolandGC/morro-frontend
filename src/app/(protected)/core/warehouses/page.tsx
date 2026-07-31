@@ -10,10 +10,12 @@ import { useEffect, useState } from "react"
 import { getColumns } from "./columns"
 import { useWarehouseStore } from "@/modules/core/warehouses/store/warehouse.store"
 import WarehouseFormModal from "@/modules/core/warehouses/components/WarehouseFormModal"
+import { Spinner } from "@/components/Spinner"
 
 export default function WarehousesPage(){
     const [data, setData]= useState<Warehouse[]>([])
     const [pages, setPages] = useState<PaginationMeta | null>(null);
+    const [loading, setLoading] = useState(true);
     const{openCreate} = useWarehouseStore();
 
     const [warehouseFilter, setWarehouseFilter] = useState<WarehouseQueryParams>({
@@ -38,6 +40,7 @@ export default function WarehousesPage(){
 
     const fetchWarehouses = async () => {
         try {
+            setLoading(true);
             const response = await warehouseService.getAll(warehouseFilter);
             if(response.status === 200){
                 setData(response.data.data)
@@ -45,15 +48,13 @@ export default function WarehousesPage(){
             }
         } catch(error){
             console.error("Error fetching warehouses:", error);
+        } finally {
+            setLoading(false);
         }
     }
 
     useEffect(()=>{
-        try{
-            fetchWarehouses();
-        } catch (error){
-            console.error("Error fetching warehouses")
-        }
+        fetchWarehouses();
     },[warehouseFilter?.name, warehouseFilter?.page])
     return (
         <div className="container mx-auto py-4 px-4">
@@ -61,13 +62,17 @@ export default function WarehousesPage(){
                 <h1 className="text-2xl font-bold dark:text-yellow-300">Almacenes</h1>
                 <Button onClick={() => openCreate()} className="rounded-md bg-primary px-4 py-2 text-primary-foreground">Crear Alamcén</Button>
             </div>
-            <WarehouseDataTable
-                filter={warehouseFilter}
-                columns={getColumns({fetchWarehouses})}
-                data={data}
-                totalPages={pages?.totalPages ?? 1}
-                handleFilter={handleFilter}
-            />
+            {loading ? (
+                <Spinner />
+            ) : (
+                <WarehouseDataTable
+                    filter={warehouseFilter}
+                    columns={getColumns({fetchWarehouses})}
+                    data={data}
+                    totalPages={pages?.totalPages ?? 1}
+                    handleFilter={handleFilter}
+                />
+            )}
             <WarehouseFormModal
                 fetchWarehouses={fetchWarehouses}
                 onSuccess={() => close()}

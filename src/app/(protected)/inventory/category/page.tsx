@@ -9,10 +9,12 @@ import { PaginationMeta } from "@/types/types";
 import { useEffect, useState } from "react";
 import { getColumns } from "./columns";
 import CategoryFormModal from "@/modules/core/category/components/CategoryFormModal";
+import { Spinner } from "@/components/Spinner";
 
 export default function CategoryPage() {
     const [data, setData] = useState<Category[]>([])
     const [pages, setPages] = useState<PaginationMeta | null>(null);
+    const [loading, setLoading] = useState(true);
     const {category, openCreate}= useCategoryStore()
     const [categoryFilter, setCategoryFilter] = useState<CategoryQueryParams>({
         name: '',
@@ -32,21 +34,24 @@ export default function CategoryPage() {
     };
 
     const fetchData = async () => {
-        const response = await categoryService.getAll(categoryFilter)
-        if (response.status === 200) {
-            setData(response.data.data)
-            setPages(response.data.meta)
-        } else {
-            console.error("Error fetching categories:", response.statusText);
+        try {
+            setLoading(true);
+            const response = await categoryService.getAll(categoryFilter)
+            if (response.status === 200) {
+                setData(response.data.data)
+                setPages(response.data.meta)
+            } else {
+                console.error("Error fetching categories:", response.statusText);
+            }
+        } catch (error) {
+            console.error("Error fetching categories:", error);
+        } finally {
+            setLoading(false);
         }
     }
 
     useEffect(() => {
-        try {
-            fetchData();
-        } catch (error) {
-            console.error("Error fetching categories:", error);
-        }
+        fetchData();
     }, [categoryFilter?.name, categoryFilter?.page])
     return (
         <div className="container mx-auto py-4 px-4">
@@ -54,13 +59,17 @@ export default function CategoryPage() {
                 <h1 className="text-2xl font-bold dark:text-yellow-300">Categorías</h1>
                 <Button onClick={() => openCreate()} className="rounded-md bg-primary px-4 py-2 text-primary-foreground">Crear Categoría</Button>
             </div>
-            <CategoryDataTable
-                filter={categoryFilter}
-                columns={getColumns({fetchData})}
-                data={data}
-                totalPages={pages?.totalPages ?? 1}
-                handleFilter={handleFilter}
-            />
+            {loading ? (
+                <Spinner />
+            ) : (
+                <CategoryDataTable
+                    filter={categoryFilter}
+                    columns={getColumns({fetchData})}
+                    data={data}
+                    totalPages={pages?.totalPages ?? 1}
+                    handleFilter={handleFilter}
+                />
+            )}
             <CategoryFormModal
                 fetchData={fetchData}
                 onSuccess={() => close()}

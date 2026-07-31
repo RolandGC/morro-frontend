@@ -15,6 +15,7 @@ import {
 } from "../validators/rolesSchema";
 import { Permission } from "../types/roles.types";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Spinner } from "@/components/Spinner";
 
 interface RoleFormProps {
     onSuccess?: () => void;
@@ -25,6 +26,7 @@ export default function RoleFormModal({ onSuccess, fetchData }: RoleFormProps) {
     const { isEditing, open, close, role, role_id } = useRoleStore();
     const { notify: showToast } = useToast();
     const [permissions, setPermissions] = useState<Permission[]>([]);
+    const [loadingPermissions, setLoadingPermissions] = useState(false);
 
     const createForm = useForm<RoleForm>({
         resolver: zodResolver(roleSchema),
@@ -38,6 +40,8 @@ export default function RoleFormModal({ onSuccess, fetchData }: RoleFormProps) {
     });
 
     const fetchPermissions = async () => {
+        setLoadingPermissions(true);
+
         try {
             const response = await roleService.getPermissions();
 
@@ -46,6 +50,8 @@ export default function RoleFormModal({ onSuccess, fetchData }: RoleFormProps) {
             }
         } catch (error) {
             console.error(error);
+        } finally {
+            setLoadingPermissions(false);
         }
     };
 
@@ -54,6 +60,8 @@ export default function RoleFormModal({ onSuccess, fetchData }: RoleFormProps) {
     }, []);
 
     const fetchRole = async () => {
+        setLoadingPermissions(true);
+
         try {
             const response = await roleService.getRoleById(role_id ?? "");
 
@@ -84,6 +92,8 @@ export default function RoleFormModal({ onSuccess, fetchData }: RoleFormProps) {
             }
         } catch (error) {
             console.error(error);
+        } finally {
+            setLoadingPermissions(false);
         }
     };
 
@@ -143,94 +153,100 @@ export default function RoleFormModal({ onSuccess, fetchData }: RoleFormProps) {
                     <DialogTitle className="font-bold text-2xl">{isEditing ? "Editar Permisos" : "Crear Rol"}</DialogTitle>
                 </DialogHeader>
                 <div className="flex flex-col gap-4 w-full">
-                    <form
-                        onSubmit={
-                            isEditing
-                                ? permissionsForm.handleSubmit(onPermissionsSubmit)
-                                : createForm.handleSubmit(onCreateSubmit)
-                        }
-                        className="flex flex-col gap-4 w-full"
-                    >
-                        {!isEditing && (
-                            <>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {isEditing && loadingPermissions ? (
+                        <div className="flex justify-center py-8">
+                            <Spinner />
+                        </div>
+                    ) : (
+                        <form
+                            onSubmit={
+                                isEditing
+                                    ? permissionsForm.handleSubmit(onPermissionsSubmit)
+                                    : createForm.handleSubmit(onCreateSubmit)
+                            }
+                            className="flex flex-col gap-4 w-full"
+                        >
+                            {!isEditing && (
+                                <>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <InputText
+                                            name="name"
+                                            label="Clave"
+                                            register={createForm.register}
+                                            error={createForm.formState.errors.name}
+                                        />
+                                        <InputText
+                                            name="display_name"
+                                            label="Nombre"
+                                            register={createForm.register}
+                                            error={createForm.formState.errors.display_name}
+                                        />
+                                    </div>
                                     <InputText
-                                        name="name"
-                                        label="Clave"
+                                        name="description"
+                                        label="Descripción"
                                         register={createForm.register}
-                                        error={createForm.formState.errors.name}
+                                        error={createForm.formState.errors.description}
                                     />
-                                    <InputText
-                                        name="display_name"
-                                        label="Nombre"
-                                        register={createForm.register}
-                                        error={createForm.formState.errors.display_name}
+                                </>
+                            )}
+                            {isEditing && (
+                                <div>
+                                    <Controller
+                                        name="permissions"
+                                        control={permissionsForm.control}
+                                        defaultValue={[]}
+                                        render={({ field }) => (
+                                            <div className="grid grid-cols-2 gap-3">
+                                                {permissions.map((permission) => {
+                                                    const checked = field.value?.includes(permission.name);
+
+                                                    return (
+                                                        <div
+                                                            key={permission.id}
+                                                            className="flex items-center space-x-2"
+                                                        >
+                                                            <Checkbox
+                                                                checked={Boolean(checked)}
+                                                                onCheckedChange={(value) => {
+                                                                    const current = field.value ?? [];
+
+                                                                    if (value) {
+                                                                        field.onChange([...current, permission.name]);
+                                                                    } else {
+                                                                        field.onChange(
+                                                                            current.filter((name: string) => name !== permission.name)
+                                                                        );
+                                                                    }
+                                                                }}
+                                                            />
+
+                                                            <label className="text-sm">
+                                                                {permission.name}
+                                                            </label>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
                                     />
                                 </div>
-                                <InputText
-                                    name="description"
-                                    label="Descripción"
-                                    register={createForm.register}
-                                    error={createForm.formState.errors.description}
-                                />
-                            </>
-                        )}
-                        {isEditing && (
-                            <div>
-                                <Controller
-                                    name="permissions"
-                                    control={permissionsForm.control}
-                                    defaultValue={[]}
-                                    render={({ field }) => (
-                                        <div className="grid grid-cols-2 gap-3">
-                                            {permissions.map((permission) => {
-                                                const checked = field.value?.includes(permission.name);
+                            )}
 
-                                                return (
-                                                    <div
-                                                        key={permission.id}
-                                                        className="flex items-center space-x-2"
-                                                    >
-                                                        <Checkbox
-                                                            checked={Boolean(checked)}
-                                                            onCheckedChange={(value) => {
-                                                                const current = field.value ?? [];
-
-                                                                if (value) {
-                                                                    field.onChange([...current, permission.name]);
-                                                                } else {
-                                                                    field.onChange(
-                                                                        current.filter((name: string) => name !== permission.name)
-                                                                    );
-                                                                }
-                                                            }}
-                                                        />
-
-                                                        <label className="text-sm">
-                                                            {permission.display_name}
-                                                        </label>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
-                                />
-                            </div>
-                        )}
-
-                        <Button
-                            type="submit"
-                            disabled={isEditing ? permissionsForm.formState.isSubmitting : createForm.formState.isSubmitting}
-                        >
-                            {isEditing
-                                ? permissionsForm.formState.isSubmitting
-                                    ? "Guardando..."
-                                    : "Actualizar permisos"
-                                : createForm.formState.isSubmitting
-                                    ? "Guardando..."
-                                    : "Guardar Rol"}
-                        </Button>
-                    </form>
+                            <Button
+                                type="submit"
+                                disabled={isEditing ? permissionsForm.formState.isSubmitting : createForm.formState.isSubmitting}
+                            >
+                                {isEditing
+                                    ? permissionsForm.formState.isSubmitting
+                                        ? "Guardando..."
+                                        : "Actualizar permisos"
+                                    : createForm.formState.isSubmitting
+                                        ? "Guardando..."
+                                        : "Guardar Rol"}
+                            </Button>
+                        </form>
+                    )}
                 </div>
             </DialogContent>
         </Dialog>

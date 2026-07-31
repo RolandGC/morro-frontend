@@ -10,9 +10,11 @@ import { useCompanyStore } from "@/modules/core/companies/store/company.store";
 import CompanyForm from "@/modules/core/companies/components/CompanyForm";
 import { PaginationMeta } from "@/types/types";
 import { CompanyDataTable } from "@/modules/core/companies/components/CompanyDataTable";
+import { Spinner } from "@/components/Spinner";
 
 export default function CompaniesPage() {
     const [data, setData] = useState<Company[]>([]);
+    const [loading, setLoading] = useState(true);
     const { openCreate, company, setCompanies } = useCompanyStore();
     const [pages, setPages] = useState<PaginationMeta | null>(null);
 
@@ -38,21 +40,24 @@ export default function CompaniesPage() {
 
 
     const fetchCompanies = async () => {
-        const response = await companyService.getAllCompanies(companyFilter);
-        if (response.status === 200) {
-            setPages(response.data.meta)
-            setData(response.data.data);
-            setCompanies(response.data.data)
-        } else {
-            console.error("Error fetching companies:", response.statusText);
+        try {
+            setLoading(true);
+            const response = await companyService.getAllCompanies(companyFilter);
+            if (response.status === 200) {
+                setPages(response.data.meta)
+                setData(response.data.data);
+                setCompanies(response.data.data)
+            } else {
+                console.error("Error fetching companies:", response.statusText);
+            }
+        } catch (error) {
+            console.error("Error fetching companies:", error);
+        } finally {
+            setLoading(false);
         }
     };
     useEffect(() => {
-        try {
-            fetchCompanies();
-        } catch (error) {
-            console.error("Error fetching companies:", error);
-        }
+        fetchCompanies();
     }, [companyFilter?.name, companyFilter?.page]);
 
     return (
@@ -61,12 +66,16 @@ export default function CompaniesPage() {
                 <h1 className="text-2xl font-bold">Empresas</h1>
                 <Button onClick={() => openCreate()} className="rounded-md bg-primary px-4 py-2 text-primary-foreground">Crear Empresa</Button>
             </div>
-            <CompanyDataTable columns={getColumns({ fetchCompanies })} data={data}
-                filter={companyFilter}
-                handleFilter={handleFilter}
-                totalPages={pages?.totalPages ?? 1}
-            />
-            <CompanyForm onSuccess={() => close()} fetchCompanies= {fetchCompanies}/>
+            {loading ? (
+                <Spinner />
+            ) : (
+                <CompanyDataTable columns={getColumns({ fetchCompanies })} data={data}
+                    filter={companyFilter}
+                    handleFilter={handleFilter}
+                    totalPages={pages?.totalPages ?? 1}
+                />
+            )}
+            <CompanyForm onSuccess={() => close()} fetchCompanies={fetchCompanies} />
         </div>
     );
 }

@@ -19,6 +19,7 @@ import { usePermissionStore } from "@/modules/auth/store/permission.store";
 import ProductForm from "@/modules/inventory/products/components/ProductForm";
 import ProductUnitModal from "@/modules/inventory/products/components/ProductUnitModal";
 import { getColumns } from "./columns";
+import { Spinner } from "@/components/Spinner";
 
 
 export default function ProductsPage() {
@@ -29,6 +30,7 @@ export default function ProductsPage() {
     const { setCategories } = useCategoryStore();
     const [data, setData] = useState<Product[]>([]);
     const [pages, setPages] = useState<PaginationMeta | null>(null);
+    const [loading, setLoading] = useState(true);
     const [productFilter, setProductFilter] = useState<ProductQueryParams>({
         name: '',
         brand_id: undefined,
@@ -54,21 +56,24 @@ export default function ProductsPage() {
     };
 
     const fetchData = async () => {
-        const response = await productService.getAll(productFilter);
-        if (response.status === 200) {
-            setData(response.data.data)
-            setPages(response.data.meta)
-        } else {
-            console.error("Error fetching products:", response.statusText);
+        try {
+            setLoading(true);
+            const response = await productService.getAll(productFilter);
+            if (response.status === 200) {
+                setData(response.data.data)
+                setPages(response.data.meta)
+            } else {
+                console.error("Error fetching products:", response.statusText);
+            }
+        } catch (error) {
+            console.error('Error fetching products:', error);
+        } finally {
+            setLoading(false);
         }
     }
     
     useEffect(() => {
-        try {
-            fetchData();
-        } catch (error) {
-            console.error('Error fetching products:', error);
-        }
+        fetchData();
     }, [productFilter?.name, productFilter?.page]);
 
     useEffect(() => {
@@ -107,7 +112,11 @@ export default function ProductsPage() {
                 <h1 className="text-2xl font-bold dark:text-yellow-300">Productos</h1>
                 <Button onClick={() => openCreate()} className="rounded-md bg-primary px-4 py-2 text-primary-foreground">Crear producto</Button>
             </div>
-            <DataTable columns={getColumns({fetchData})} data={data} productFilter={productFilter} handleProductFilter={handleProductFilter} totalPages={pages?.totalPages ?? 1} />
+            {loading ? (
+                <Spinner />
+            ) : (
+                <DataTable columns={getColumns({fetchData})} data={data} productFilter={productFilter} handleProductFilter={handleProductFilter} totalPages={pages?.totalPages ?? 1} />
+            )}
             <ProductForm onSuccess={() => close()} />
             <ProductUnitModal onSuccess={() => close()} />
             <RequirePermission permission="products.read">

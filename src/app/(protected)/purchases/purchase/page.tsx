@@ -10,10 +10,12 @@ import { PurchaseDataTable } from "@/modules/purchases/purchase/components/Purch
 import PurchaseFormModal from "@/modules/purchases/purchase/components/PurchaseFormModal"
 import { usePurchaseStore } from "@/modules/purchases/purchase/store/purchase.store"
 import { useRouter } from "next/navigation"
+import { Spinner } from "@/components/Spinner"
 
 export default function PurchasePage () {
     const [data, setData] = useState<Purchase[]>([])
     const [pages, setPages] = useState<PaginationMeta | null>(null);
+    const [loading, setLoading] = useState(true);
     const {openCreate} = usePurchaseStore()
     const router = useRouter();
 
@@ -34,22 +36,26 @@ export default function PurchasePage () {
     };
 
     const fetchData = async () => {
-        const response = await purchaseService.getAll(purchaseFilter)
-        if (response.status === 200) {
-            setData(response.data.data)
-            setPages(response.data.meta)
-        } else {
-            console.error("Error fetching purchases:", response.statusText);
+        setLoading(true);
+
+        try {
+            const response = await purchaseService.getAll(purchaseFilter)
+            if (response.status === 200) {
+                setData(response.data.data)
+                setPages(response.data.meta)
+            } else {
+                console.error("Error fetching purchases:", response.statusText);
+            }
+        } catch (error) {
+            console.error("Error fetching purchases:", error);
+        } finally {
+            setLoading(false);
         }
     }
 
     useEffect(() => {
-        try {
-            fetchData();
-        } catch (error) {
-            console.error("Error fetching purchases:", error);
-        }
-    }, [purchaseFilter?.date_to, purchaseFilter?.page])
+        void fetchData();
+    }, [purchaseFilter?.date_to, purchaseFilter?.page]);
     return (
         <div className="container mx-auto py-4 px-4">
             <div className="flex justify-between">
@@ -57,13 +63,17 @@ export default function PurchasePage () {
                 <Button onClick={() => router.push("/purchases/purchase/add")} className="rounded-md bg-primary px-4 py-2 text-primary-foreground">Agregar compra</Button>
             </div>
 
-            <PurchaseDataTable
-                columns={getColumns({ fetchData })}
-                data={data}
-                filter={purchaseFilter}
-                handleFilter={handleFilter}
-                totalPages={pages?.totalPages ?? 1}
-            />
+            {loading ? (
+                <Spinner />
+            ) : (
+                <PurchaseDataTable
+                    columns={getColumns({ fetchData })}
+                    data={data}
+                    filter={purchaseFilter}
+                    handleFilter={handleFilter}
+                    totalPages={pages?.totalPages ?? 1}
+                />
+            )}
             <PurchaseFormModal
                 fetchData={fetchData}
                 onSuccess={()=> close()}
