@@ -6,6 +6,10 @@ export interface Role {
     is_system: boolean;
     created_at: string | null;
     updated_at: string | null;
+    role_permissions?: Array<{
+      permission_id: string;
+      [key: string]: unknown;
+    }>;
   }
   
   export interface UserRole {
@@ -18,3 +22,15 @@ export interface Role {
     updated_at: string | null;
     roles: Role;
   }
+
+export interface Permission {
+  id: string;
+  name: string;
+  module: string;
+  action: string;
+  description: string | null;
+  is_active: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+  display_name: string;
+}

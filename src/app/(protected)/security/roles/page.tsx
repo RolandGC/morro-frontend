@@ -6,6 +6,7 @@ import { useRoleStore } from "@/modules/security/roles/store/role.store";
 import { Role } from "@/modules/security/roles/types/roles.types";
 import { getColumns } from "./columns";
 import { useEffect, useState } from "react";
+import RoleFormModal from "@/modules/security/roles/components/RoleFormModal";
 
 export default function RolesPage() {
     const { openCreate, role } = useRoleStore();
@@ -39,7 +40,7 @@ export default function RolesPage() {
                 columns={getColumns({ fetchRoles })}
                 data={data}
             />
-            {/* <CompanyForm onSuccess={() => close()} fetchRoles= {fetchRoles}/> */}
+            <RoleFormModal onSuccess={() => close()} fetchData={fetchRoles}/>
         </div>
     )
 }

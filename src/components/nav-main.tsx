@@ -15,8 +15,9 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
-import { ChevronRightIcon } from "lucide-react"
+import { ChevronRightIcon, ShoppingCart } from "lucide-react"
 import Link from "next/link"
+import { Button } from "./ui/button"
 
 export function NavMain({
   items,
@@ -34,8 +35,16 @@ export function NavMain({
 }) {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      <SidebarGroupLabel>Módulos</SidebarGroupLabel>
       <SidebarMenu>
+        <SidebarMenuItem className="bg-primary text-primary-foreground hover:bg-primary/80 rounded-md">
+          <SidebarMenuButton asChild tooltip="Vender">
+            <Link href="/sales/sale/add">
+              <ShoppingCart />
+              <span>Vender</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
         {items.map((item) => (
           <Collapsible
             key={item.title}

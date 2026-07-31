@@ -21,7 +21,13 @@ export const roleSchema = z.object({
     .string()
     .trim()
     .max(255, "La descripción no puede superar los 255 caracteres")
-    .optional(),
+    .optional()
+    .or(z.literal("")),
+});
+
+export const permissionsSchema = z.object({
+  permissions: z.array(z.string()),
 });
 
 export type RoleForm = z.infer<typeof roleSchema>;
+export type RolePermissionsForm = z.infer<typeof permissionsSchema>;

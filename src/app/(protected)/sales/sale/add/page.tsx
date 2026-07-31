@@ -376,7 +376,7 @@ export default function SaleAddPage() {
                             <TableRow>
                                 <TableHead>Producto</TableHead>
                                 <TableHead>Cantidad</TableHead>
-                                <TableHead>Costo</TableHead>
+                                <TableHead>Precio</TableHead>
                                 <TableHead>Total</TableHead>
                                 <TableHead></TableHead>
                             </TableRow>
@@ -483,7 +483,7 @@ export default function SaleAddPage() {
                                         register={register}
                                     />
                                     <InputText
-                                        label="Costo Unit."
+                                        label="Precio Unit."
                                         name={`items.${editingIndex}.unit_price`}
                                         register={register}
                                     />

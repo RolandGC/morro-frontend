@@ -10,6 +10,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } fr
 import { GalleryVerticalEndIcon, Banknote, Truck, AudioLinesIcon, TerminalIcon, BriefcaseIcon, Store, Package, Shield, FrameIcon, PieChartIcon, MapIcon, ChartColumn, ShoppingCart } from "lucide-react"
 import { Button } from "./ui/button"
 import Link from "next/link"
+import { useAuthStore } from "@/modules/auth/store/authStore"
 
 // This is sample data.
 const data = {
@@ -67,14 +68,6 @@ const data = {
           url: "/core/warehouses",
         },
       ],
-    },
-    {
-      title: "Vender",
-      url: "/sale",
-      icon: (
-        <BriefcaseIcon
-        />
-      ),
     },
     {
       title: "Ventas",
@@ -233,25 +226,18 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const {user} = useAuthStore()
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <NavUser user={user} />
       </SidebarHeader>
       <SidebarContent>
-        <div className="px-2 py-2">
-          <Button asChild className="w-full" size="lg">
-            <Link href="/sales/sale/add">
-              <ShoppingCart className="mr-2 h-4 w-4" />
-              Vender
-            </Link>
-          </Button>
-        </div>
         <NavMain items={data.navMain} />
         {/* <NavProjects projects={data.projects} /> */}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <TeamSwitcher teams={data.teams} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
