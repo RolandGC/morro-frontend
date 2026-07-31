@@ -14,11 +14,6 @@ import { useAuthStore } from "@/modules/auth/store/authStore"
 
 // This is sample data.
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "../logoMorroHoriztl.png",
-  },
   teams: [
     {
       name: "Acme Inc",
@@ -148,7 +143,7 @@ const data = {
         },
         {
           title: "Caja",
-          url: "#",
+          url: "/finance/cashbox",
         },
       ],
     },
@@ -183,12 +178,12 @@ const data = {
       ),
       items: [
         {
-          title: "General",
-          url: "#",
+          title: "Roles y permisos",
+          url: "/security/roles",
         },
         {
-          title: "Roles",
-          url: "/security/roles",
+          title: "General",
+          url: "#",
         },
         {
           title: "Notificaciones",

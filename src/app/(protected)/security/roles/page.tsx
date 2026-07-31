@@ -11,6 +11,7 @@ import RoleFormModal from "@/modules/security/roles/components/RoleFormModal";
 export default function RolesPage() {
     const { openCreate, role } = useRoleStore();
     const [data, setData] = useState<Role[]>([]);
+    const [loading, setLoading] = useState(true);
 
 
     const fetchRoles = async () => {
@@ -36,11 +37,17 @@ export default function RolesPage() {
                 <h1 className="text-2xl font-bold">Roles</h1>
                 <Button onClick={() => openCreate()} className="rounded-md bg-primary px-4 py-2 text-primary-foreground">Crear Rol</Button>
             </div>
-            <DataTable
-                columns={getColumns({ fetchRoles })}
-                data={data}
-            />
-            <RoleFormModal onSuccess={() => close()} fetchData={fetchRoles}/>
+            {loading ? (
+                <div className="flex h-80 items-center justify-center">
+                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                </div>
+            ) : (
+                <DataTable
+                    columns={getColumns({ fetchRoles })}
+                    data={data}
+                />
+            )}
+            <RoleFormModal onSuccess={() => close()} fetchData={fetchRoles} />
         </div>
     )
 }

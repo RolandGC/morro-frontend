@@ -113,5 +113,9 @@ export const endpoints = {
         USERS_BY_ROLE: (userId: string) => `${baseUrl}/users/${userId}/roles`,
         GET_ROLE_BY_USER: (userId: string) => `${baseUrl}/users/${userId}/roles`,
         ROLE_DELETE_BY_USER: (userId: string) => `${baseUrl}/users/${userId}/roles`,
+    },
+    CASHBOX: {
+        GET_ALL: `${baseUrl}/cash-sessions`,
+        
     }
 }

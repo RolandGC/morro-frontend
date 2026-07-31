@@ -8,29 +8,29 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { formatDate } from "@/hooks/dateFormat"
 import { useToast } from "@/hooks/useToast"
 import Swal from "sweetalert2"
-import { Role } from "@/modules/security/roles/types/roles.types"
-import { useRoleStore } from "@/modules/security/roles/store/role.store"
-import { roleService } from "@/modules/security/roles/services/role.service"
+import { useCurrencyStore } from "@/modules/finances/currency/store/currency.store"
+import { currencyService } from "@/modules/finances/currency/services/currency.service"
+import { Cashbox } from "@/modules/finances/cashbox/types/cashbox.types"
 
 interface ColumnsProps {
-    fetchRoles: () => Promise<void>;
+    fetchData: () => Promise<void>;
 }
 
-export const getColumns = ({ fetchRoles }: ColumnsProps): ColumnDef<Role>[] => [
+export const getColumns = ({ fetchData }: ColumnsProps): ColumnDef<Cashbox>[] => [
     {
-        accessorFn: (row) => row.name,
-        id: "clave",
-        header: "Clave",
+        accessorFn: (row) => row.id,
+        id: "id",
+        header: "id",
     },
     {
-        accessorFn: (row) => row.display_name,
-        id: "display_name",
-        header: "Nombre",
+        accessorFn: (row) => row.company_id,
+        id: "empresa",
+        header: "Empresa",
     },
     {
-        accessorFn: (row) => row.description,
-        id: "descripción",
-        header: "Descripción",
+        accessorFn: (row) => row.notes,
+        id: "notas",
+        header: "Notas",
     },
     /* {
         accessorFn: (row) => row.model,
@@ -42,26 +42,27 @@ export const getColumns = ({ fetchRoles }: ColumnsProps): ColumnDef<Role>[] => [
         id: "created_at",
         header: "Fecha de creación",
     }, */
-    {
+   /*  {
         id: "Opciones",
-        header: "Opciones de permisos",
+        header: "Opciones",
         cell: ({ row }) => {
-            const role = row.original;
-            const { openEdit } = useRoleStore();
+            const currency = row.original;
+            const { openEdit } = useCurrencyStore();
             const { notify } = useToast();
 
             const handleEdit = () => {
                 openEdit({
-                    name: role.name,
-                    description: role.description,
-                    display_name: role.display_name
-                }, role.id);
+                    name: currency.name,
+                    code: currency.code,
+                    symbol: currency.symbol,
+                    is_base: currency.is_base,
+                }, currency.id);
             };
 
             const handleDelete = async () => {
                 const result = await Swal.fire({
                     title: "¿Estás seguro?",
-                    text: `Se eliminará el rol "${role.name}" de forma permanente.`,
+                    text: `Se eliminará la moneda "${currency.name}" de forma permanente.`,
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonText: "Sí, eliminar",
@@ -82,41 +83,41 @@ export const getColumns = ({ fetchRoles }: ColumnsProps): ColumnDef<Role>[] => [
                 }
 
                 try {
-                    await roleService.delete(role.id);
+                    await currencyService.delete(currency.id);
 
                     await Swal.fire({
                         title: "¡Eliminado!",
-                        text: "el rol fue eliminada correctamente.",
+                        text: "La moneda fue eliminada correctamente.",
                         icon: "success",
                         confirmButtonText: "Aceptar"
                     });
 
-                    notify("Rol eliminada correctamente", "success", 3000);
+                    notify("Moneda eliminada correctamente", "success", 3000);
 
-                    await fetchRoles();
+                    await fetchData();
 
                 } catch (error) {
                     Swal.fire({
                         title: "Error",
-                        text: "No se pudo eliminar el rol.",
+                        text: "No se pudo eliminar la moneda.",
                         icon: "error"
                     });
 
-                    notify("Error al eliminar el rol", "error", 3000);
+                    notify("Error al eliminar la moneda", "error", 3000);
                     console.error(error);
                 }
             };
 
             return (
                 <div className="flex gap-2">
-                    <Button variant="ghost" size="icon" onClick={handleEdit} title="Editar permisos">
+                    <Button variant="ghost" size="icon" onClick={handleEdit} title="Editar moneda">
                         <Pencil className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={handleDelete} title="Eliminar Rol">
+                    <Button variant="ghost" size="icon" onClick={handleDelete} title="Eliminar moneda">
                         <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
                 </div>
             );
         },
-    }
+    } */
 ]
