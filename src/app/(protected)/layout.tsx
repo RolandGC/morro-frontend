@@ -29,7 +29,7 @@ export default function ProtectedLayout({
                         <Breadcrumb>
                             <BreadcrumbList>
                                 <BreadcrumbItem className="hidden md:block">
-                                    <BreadcrumbLink href="#">
+                                    <BreadcrumbLink href="/dashboard">
                                         Build Your Application
                                     </BreadcrumbLink>
                                 </BreadcrumbItem>

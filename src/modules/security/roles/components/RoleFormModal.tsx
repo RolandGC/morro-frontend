@@ -222,7 +222,7 @@ export default function RoleFormModal({ onSuccess, fetchData }: RoleFormProps) {
                                                             />
 
                                                             <label className="text-sm">
-                                                                {permission.name}
+                                                                {permission.display_name}
                                                             </label>
                                                         </div>
                                                     );
