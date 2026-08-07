@@ -1,4 +1,6 @@
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -12,15 +14,9 @@ export default function Home() {
           height={20}
           priority
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            Construyendo un app con Next.js 16, Tailwind CSS y TypeScript
-          </h1>
-
-        </div>
-        <a href="/auth/login">
-          <button className="bg-slate-500 rounded-xl text-white p-2">Login</button>
-        </a>
+        <Link href="/auth/login">
+          <Button className="bg-slate-500 rounded-xl text-white p-2">Login</Button>
+        </Link>
         <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
         </div>
       </main>

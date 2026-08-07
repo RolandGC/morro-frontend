@@ -26,7 +26,7 @@ export function useRouteAccess(required: AccessRule) {
     if (authLoading) return;
 
     if (!isAuthenticated) {
-      router.push('/auth/login');
+      router.replace('/auth/login');
       return;
     }
 

@@ -37,13 +37,10 @@ apiClient.interceptors.response.use(
   (error: AxiosError) => {
     if (typeof window !== 'undefined') {
       if (error.response?.status === 401) {
+        window.location.href = '/auth/login';
         const token = getCookieValue('access_token');
-        const isAuthPage = window.location.pathname.startsWith('/auth/');
-
-        if (token && !isAuthPage) {
-          removeAuthToken();
-          window.location.href = '/auth/login';
-        }
+        //const isAuthPage = window.location.pathname.startsWith('/');
+        removeAuthToken();
       }
 
       if (error.response?.status === 403) {
