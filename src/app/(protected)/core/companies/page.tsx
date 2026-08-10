@@ -67,19 +67,13 @@ export default function CompaniesPage() {
         }
     };
 
-    // Primera carga y cambio de página
-    useEffect(() => {
-        fetchCompanies();
-    }, [companyFilter.page]);
-
-    // Búsqueda por nombre con debounce
     useEffect(() => {
         const timer = setTimeout(() => {
             fetchCompanies();
         }, 350);
 
         return () => clearTimeout(timer);
-    }, [companyFilter.name]);
+    }, [companyFilter.name, companyFilter.page]);
 
     if (initialLoading) {
         return (

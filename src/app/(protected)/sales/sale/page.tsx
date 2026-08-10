@@ -15,6 +15,8 @@ export default function SalePage() {
     const [data, setData] = useState<Sale[]>([])
     const [pages, setPages] = useState<PaginationMeta | null>(null);
     const [loading, setLoading] = useState(true);
+    const [filterLoading, setFilterLoading] = useState(false);
+
     const [saleFilter, setSaleFilter] = useState<SaleQueryParams>({
         page: 1,
         limit: 10,
@@ -31,8 +33,14 @@ export default function SalePage() {
         }));
     };
     const fetchData = async () => {
+        const isInitial = loading;
+
         try {
-            setLoading(true);
+            if (isInitial) {
+                setLoading(true);
+            } else {
+                setFilterLoading(true);
+            }
             const response = await saleService.getAll(saleFilter)
             if (response.status === 200) {
                 setData(response.data.data)
@@ -43,32 +51,42 @@ export default function SalePage() {
         } catch (error) {
             console.error("Error fetching purchases:", error);
         } finally {
-            setLoading(false);
+            if (isInitial) {
+                setLoading(false);
+            } else {
+                setFilterLoading(false);
+            }
         }
     }
 
     useEffect(() => {
-        fetchData();
+        const timer = setTimeout(() => {
+            void fetchData();
+        }, 350);
+
+        return () => clearTimeout(timer);
     }, [saleFilter?.date_to, saleFilter?.page])
 
-    
+    if (loading) {
+        return (
+            <div className="container mx-auto py-4 px-2">
+                <Spinner />
+            </div>
+        );
+    }
     return (
         <div className="container mx-auto py-4 px-4">
             <div className="flex justify-between">
                 <h1 className="text-2xl font-bold">Ventas</h1>
                 <Button onClick={() => router.push("/sales/sale/add")} className="rounded-md bg-primary px-4 py-2 text-primary-foreground">Crear Venta</Button>
             </div>
-            {loading ? (
-                <Spinner />
-            ) : (
-                <SaleDataTable
-                    columns={getColumns({ fetchData })}
-                    data={data}
-                    filter={saleFilter}
-                    handleFilter={handleFilter}
-                    totalPages={pages?.totalPages ?? 1}
-                />
-            )}
+            <SaleDataTable
+                columns={getColumns({ fetchData })}
+                data={data}
+                filter={saleFilter}
+                handleFilter={handleFilter}
+                totalPages={pages?.totalPages ?? 1}
+            />
         </div>
     );
 }

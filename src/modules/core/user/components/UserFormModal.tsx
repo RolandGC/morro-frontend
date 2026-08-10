@@ -21,7 +21,7 @@ import { roleService } from "@/modules/security/roles/services/role.service";
 
 interface UserFormProps {
     onSuccess?: () => void;
-    fectchUsers: () => void;
+    fetchUsers: () => void;
 }
 
 const booleanOptions = [
@@ -29,7 +29,7 @@ const booleanOptions = [
     { id: "2", name: "No", value: false },
 ];
 
-export default function ModalUserForm({ onSuccess, fectchUsers }: UserFormProps) {
+export default function ModalUserForm({ onSuccess, fetchUsers }: UserFormProps) {
     const { user, isEditing, user_id, open, close } = useUserStore();
     const { notify: showToast } = useToast();
     const [companies, setCompanies] = useState<Company[]>([]);
@@ -160,7 +160,7 @@ export default function ModalUserForm({ onSuccess, fectchUsers }: UserFormProps)
             if (response.status === 201 || response.status === 200) {
                 showToast("Usuario creado correctamente", "success");
                 resetForm();
-                await fectchUsers();
+                await fetchUsers();
                 close(),
                     onSuccess?.();
             }

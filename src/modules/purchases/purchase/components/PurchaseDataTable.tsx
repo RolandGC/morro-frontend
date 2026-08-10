@@ -68,21 +68,14 @@ export function PurchaseDataTable<TData, TValue>({
             rowSelection,
         },
     })
-    const [search, setSearch] = React.useState(filter.date_to ?? "");
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            handleFilter("date_to", search);
-        }, 350);
-
-        return () => clearTimeout(timer);
-    }, [search]);
+    
     return (
         <div>
             <div className="flex items-center py-4">
                 <Input
                     placeholder="Filtrar nombres..."
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
+                    value={filter.date_to}
+                    onChange={(event) => handleFilter("date_to", event.target.value)}
                     className="max-w-sm"
                 />
                 <DropdownMenu>

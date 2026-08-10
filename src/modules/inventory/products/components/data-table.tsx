@@ -29,7 +29,6 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { ProductQueryParams } from "@/modules/inventory/products/types/produc.type"
-import { useEffect } from "react"
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
@@ -75,21 +74,14 @@ export function DataTable<TData, TValue>({
             rowSelection,
         },
     })
-    const [search, setSearch] = React.useState(productFilter.name ?? "");
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            handleProductFilter("name", search);
-        }, 350);
-
-        return () => clearTimeout(timer);
-    }, [search]);
+    
     return (
         <div>
             <div className="flex items-center py-4">
                 <Input
                     placeholder="Filtrar nombres..."
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
+                    value={productFilter.name}
+                    onChange={(event) => handleProductFilter("name", event.target.value)}
                     className="max-w-sm"
                 />
                 <DropdownMenu>

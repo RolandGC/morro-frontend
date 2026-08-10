@@ -15,7 +15,8 @@ export default function CategoryPage() {
     const [data, setData] = useState<Category[]>([])
     const [pages, setPages] = useState<PaginationMeta | null>(null);
     const [loading, setLoading] = useState(true);
-    const {category, openCreate}= useCategoryStore()
+    const [filterLoading, setFilterLoading] = useState(false);
+    const { category, openCreate } = useCategoryStore()
     const [categoryFilter, setCategoryFilter] = useState<CategoryQueryParams>({
         name: '',
         is_active: true,
@@ -34,8 +35,14 @@ export default function CategoryPage() {
     };
 
     const fetchData = async () => {
+        const isInitial = loading;
+
         try {
-            setLoading(true);
+            if (isInitial) {
+                setLoading(true);
+            } else {
+                setFilterLoading(true);
+            }
             const response = await categoryService.getAll(categoryFilter)
             if (response.status === 200) {
                 setData(response.data.data)
@@ -46,30 +53,42 @@ export default function CategoryPage() {
         } catch (error) {
             console.error("Error fetching categories:", error);
         } finally {
-            setLoading(false);
+            if (isInitial) {
+                setLoading(false);
+            } else {
+                setFilterLoading(false);
+            }
         }
     }
 
     useEffect(() => {
-        fetchData();
+        const timer = setTimeout(() => {
+            fetchData();
+        }, 350);
+
+        return () => clearTimeout(timer);
     }, [categoryFilter?.name, categoryFilter?.page])
+
+    if (loading) {
+        return (
+            <div className="container mx-auto py-4 px-2">
+                <Spinner />
+            </div>
+        );
+    }
     return (
         <div className="container mx-auto py-4 px-4">
             <div className="flex justify-between">
                 <h1 className="text-2xl font-bold dark:text-yellow-300">Categorías</h1>
                 <Button onClick={() => openCreate()} className="rounded-md bg-primary px-4 py-2 text-primary-foreground">Crear Categoría</Button>
             </div>
-            {loading ? (
-                <Spinner />
-            ) : (
-                <CategoryDataTable
-                    filter={categoryFilter}
-                    columns={getColumns({fetchData})}
-                    data={data}
-                    totalPages={pages?.totalPages ?? 1}
-                    handleFilter={handleFilter}
-                />
-            )}
+            <CategoryDataTable
+                filter={categoryFilter}
+                columns={getColumns({ fetchData })}
+                data={data}
+                totalPages={pages?.totalPages ?? 1}
+                handleFilter={handleFilter}
+            />
             <CategoryFormModal
                 fetchData={fetchData}
                 onSuccess={() => close()}

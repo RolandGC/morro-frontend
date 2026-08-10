@@ -15,7 +15,8 @@ export default function SupplierPage() {
     const [data, setData] = useState<Supplier[]>([])
     const [pages, setPages] = useState<PaginationMeta | null>(null);
     const [loading, setLoading] = useState(true);
-    const {openCreate} = useSupplierStore()
+    const [filterLoading, setFilterLoading] = useState(false);
+    const { openCreate } = useSupplierStore()
 
     const [supplierFilter, setSupplierFilter] = useState<SupplierQueryParams>({
         name: '',
@@ -35,8 +36,14 @@ export default function SupplierPage() {
     };
 
     const fetchData = async () => {
+        const isInitial = loading;
+
         try {
-            setLoading(true);
+            if (isInitial) {
+                setLoading(true);
+            } else {
+                setFilterLoading(true);
+            }
             const response = await supplierService.getAll(supplierFilter)
             if (response.status === 200) {
                 setData(response.data.data)
@@ -47,13 +54,29 @@ export default function SupplierPage() {
         } catch (error) {
             console.error("Error fetching suppliers:", error);
         } finally {
-            setLoading(false);
+            if (isInitial) {
+                setLoading(false);
+            } else {
+                setFilterLoading(false);
+            }
         }
     }
 
     useEffect(() => {
-        fetchData();
+        const timer = setTimeout(() => {
+            fetchData();
+        }, 350);
+
+        return () => clearTimeout(timer);
     }, [supplierFilter?.name, supplierFilter?.page])
+
+    if (loading) {
+        return (
+            <div className="container mx-auto py-4 px-2">
+                <Spinner />
+            </div>
+        );
+    }
     return (
         <div className="container mx-auto py-4 px-4">
             <div className="flex justify-between">
@@ -61,20 +84,16 @@ export default function SupplierPage() {
                 <Button onClick={() => openCreate()} className="rounded-md bg-primary px-4 py-2 text-primary-foreground">Crear Proveedor</Button>
             </div>
 
-            {loading ? (
-                <Spinner />
-            ) : (
-                <SupplierDataTable
-                    columns={getColumns({ fetchData })}
-                    data={data}
-                    filter={supplierFilter}
-                    handleFilter={handleFilter}
-                    totalPages={pages?.totalPages ?? 1}
-                />
-            )}
+            <SupplierDataTable
+                columns={getColumns({ fetchData })}
+                data={data}
+                filter={supplierFilter}
+                handleFilter={handleFilter}
+                totalPages={pages?.totalPages ?? 1}
+            />
             <SupplierFormModal
                 fetchData={fetchData}
-                onSuccess={()=> close()}
+                onSuccess={() => close()}
             />
 
         </div>

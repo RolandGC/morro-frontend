@@ -68,21 +68,14 @@ export function CustomerDataTable<TData, TValue>({
             rowSelection,
         },
     })
-    const [search, setSearch] = React.useState(filter.full_name ?? "");
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            handleFilter("full_name", search);
-        }, 350);
-
-        return () => clearTimeout(timer);
-    }, [search]);
+    
     return (
         <div>
             <div className="flex items-center py-4">
                 <Input
                     placeholder="Filtrar nombres..."
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
+                    value={filter.full_name}
+                    onChange={(event) => handleFilter("full_name", event.target.value)}
                     className="max-w-sm"
                 />
                 <DropdownMenu>

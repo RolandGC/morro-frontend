@@ -21,7 +21,6 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from "@/components/ui/table"
-import { useEffect } from "react"
 import { UserQueryParams } from "../types/user.types"
 
 interface DataTableProps<TData, TValue> {
@@ -68,21 +67,14 @@ export function UserDataTable<TData, TValue>({
             rowSelection,
         },
     })
-    const [search, setSearch] = React.useState(userFilter.name ?? "");
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            handleFilter("name", search);
-        }, 350);
-
-        return () => clearTimeout(timer);
-    }, [search]);
+    
     return (
         <div>
             <div className="flex items-center py-4">
                 <Input
                     placeholder="Filtrar nombres..."
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
+                    value={userFilter?.name}
+                    onChange={(event) => handleFilter("name", event.target.value)}
                     className="max-w-sm"
                 />
                 <DropdownMenu>

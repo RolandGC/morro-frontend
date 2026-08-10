@@ -15,6 +15,7 @@ export default function Clients() {
     const [data, setData] = useState<Customer[]>([])
     const [pages, setPages] = useState<PaginationMeta | null>(null);
     const [loading, setLoading] = useState(true);
+    const [filterLoading, setFilterLoading] = useState(false);
     const {openCreate} = useCustomerStore()
 
     const [customerFilter, setCustomerFilter] = useState<CustomerQueryParams>({
@@ -35,8 +36,14 @@ export default function Clients() {
         }));
     };
     const fetchData = async () => {
+        const isInitial = loading;
+
         try {
-            setLoading(true);
+            if (isInitial) {
+                setLoading(true);
+            } else {
+                setFilterLoading(true);
+            }
             const response = await customerService.getAll(customerFilter);
             if (response.status === 200) {
                 setData(response.data.data);
@@ -45,13 +52,29 @@ export default function Clients() {
         } catch (error) {
             console.error("Error fetching customers:", error);
         } finally {
-            setLoading(false);
+            if (isInitial) {
+                setLoading(false);
+            } else {
+                setFilterLoading(false);
+            }
         }
     };
 
     useEffect(() => {
-        fetchData();
+        const timer = setTimeout(() => {
+            void fetchData();
+        }, 350);
+
+        return () => clearTimeout(timer);
     }, [customerFilter?.full_name, customerFilter?.page]);
+
+    if (loading) {
+        return (
+            <div className="container mx-auto py-4 px-2">
+                <Spinner />
+            </div>
+        );
+    }
 
     return (
         <div className="container mx-auto py-4 px-4">
@@ -59,9 +82,6 @@ export default function Clients() {
                 <h1 className="text-2xl font-bold">Clientes</h1>
                 <Button onClick={() => openCreate()} className="rounded-md bg-primary px-4 py-2 text-primary-foreground">Crear Cliente</Button>
             </div>
-            {loading ? (
-                <Spinner />
-            ) : (
                 <CustomerDataTable
                     columns={getColumns({fetchData})}
                     data={data}
@@ -69,7 +89,6 @@ export default function Clients() {
                     handleFilter={handleFilter}
                     totalPages={pages?.totalPages ?? 1}
                 />
-            )}
             <CustomerFormModal
                 fetchData={fetchData}
                 onSuccess={() => close()}

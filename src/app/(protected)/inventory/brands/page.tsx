@@ -15,7 +15,8 @@ export default function BrandsPage() {
     const [data, setData] = useState<Brand[]>([])
     const [pages, setPages] = useState<PaginationMeta | null>(null);
     const [loading, setLoading] = useState(true);
-    const {brand, openCreate} = useBrandStore()
+    const [filterLoading, setFilterLoading] = useState(false);
+    const { brand, openCreate } = useBrandStore()
 
     const [brandFilter, setBrandFilter] = useState<BrandQueryParams>({
         name: '',
@@ -35,10 +36,16 @@ export default function BrandsPage() {
     };
 
     const fetchBrands = async () => {
+        const isInitial = loading;
+
         try {
-            setLoading(true);
+            if (isInitial) {
+                setLoading(true);
+            } else {
+                setFilterLoading(true);
+            }
             const response = await brandService.getAll(brandFilter)
-            if(response.status === 200){
+            if (response.status === 200) {
                 setData(response.data.data)
                 setPages(response.data.meta)
             } else {
@@ -47,13 +54,28 @@ export default function BrandsPage() {
         } catch (error) {
             console.error("Error fetching brands:", error);
         } finally {
-            setLoading(false);
+            if (isInitial) {
+                setLoading(false);
+            } else {
+                setFilterLoading(false);
+            }
         }
     }
 
-    useEffect(()=>{
-        fetchBrands();
-    },[brandFilter?.name, brandFilter?.page])
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            fetchBrands();
+        }, 350);
+        return () => clearTimeout(timer);
+    }, [brandFilter?.name, brandFilter?.page])
+
+    if (loading) {
+        return (
+            <div className="container mx-auto py-4 px-2">
+                <Spinner />
+            </div>
+        );
+    }
 
     return (
         <div className="container mx-auto py-4 px-4">
@@ -61,17 +83,13 @@ export default function BrandsPage() {
                 <h1 className="text-2xl font-bold">Marcas</h1>
                 <Button onClick={() => openCreate()} className="rounded-md bg-primary px-4 py-2 text-primary-foreground">Crear Marca</Button>
             </div>
-            {loading ? (
-                <Spinner />
-            ) : (
-                <BrandDataTable
-                    columns={getColumns({fetchBrands})}
-                    data={data}
-                    filter={brandFilter}
-                    handleFilter={handleFilter}
-                    totalPages={pages?.totalPages ?? 1}
-                />
-            )}
+            <BrandDataTable
+                columns={getColumns({ fetchBrands })}
+                data={data}
+                filter={brandFilter}
+                handleFilter={handleFilter}
+                totalPages={pages?.totalPages ?? 1}
+            />
             <BrandFormModal
                 fetchData={fetchBrands}
                 onSuccess={() => close()}

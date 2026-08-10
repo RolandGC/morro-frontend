@@ -31,6 +31,7 @@ export default function ProductsPage() {
     const [data, setData] = useState<Product[]>([]);
     const [pages, setPages] = useState<PaginationMeta | null>(null);
     const [loading, setLoading] = useState(true);
+    const [filterLoading, setFilterLoading] = useState(false);
     const [productFilter, setProductFilter] = useState<ProductQueryParams>({
         name: '',
         brand_id: undefined,
@@ -56,8 +57,14 @@ export default function ProductsPage() {
     };
 
     const fetchData = async () => {
+        const isInitial = loading;
+
         try {
-            setLoading(true);
+            if (isInitial) {
+                setLoading(true);
+            } else {
+                setFilterLoading(true);
+            }
             const response = await productService.getAll(productFilter);
             if (response.status === 200) {
                 setData(response.data.data)
@@ -68,12 +75,20 @@ export default function ProductsPage() {
         } catch (error) {
             console.error('Error fetching products:', error);
         } finally {
-            setLoading(false);
+            if (isInitial) {
+                setLoading(false);
+            } else {
+                setFilterLoading(false);
+            }
         }
     }
-    
+
     useEffect(() => {
-        fetchData();
+        const timer = setTimeout(() => {
+            fetchData();
+        }, 350);
+
+        return () => clearTimeout(timer);
     }, [productFilter?.name, productFilter?.page]);
 
     useEffect(() => {
@@ -104,19 +119,21 @@ export default function ProductsPage() {
         console.log("testtsts", product)
     }, [product])
 
-
-
+    if (loading) {
+        return (
+            <div className="container mx-auto py-4 px-2">
+                <Spinner />
+            </div>
+        );
+    }
     return (
         <div className="container mx-auto py-4 px-4">
             <div className="flex justify-between">
                 <h1 className="text-2xl font-bold dark:text-yellow-300">Productos</h1>
                 <Button onClick={() => openCreate()} className="rounded-md bg-primary px-4 py-2 text-primary-foreground">Crear producto</Button>
             </div>
-            {loading ? (
-                <Spinner />
-            ) : (
-                <DataTable columns={getColumns({fetchData})} data={data} productFilter={productFilter} handleProductFilter={handleProductFilter} totalPages={pages?.totalPages ?? 1} />
-            )}
+
+            <DataTable columns={getColumns({ fetchData })} data={data} productFilter={productFilter} handleProductFilter={handleProductFilter} totalPages={pages?.totalPages ?? 1} />
             <ProductForm onSuccess={() => close()} />
             <ProductUnitModal onSuccess={() => close()} />
             <RequirePermission permission="products.read">

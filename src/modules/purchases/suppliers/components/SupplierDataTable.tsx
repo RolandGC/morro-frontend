@@ -75,21 +75,14 @@ export function SupplierDataTable<TData, TValue>({
             rowSelection,
         },
     })
-    const [search, setSearch] = useState(filter.name ?? "");
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            handleFilter("name", search);
-        }, 350);
 
-        return () => clearTimeout(timer);
-    }, [search]);
     return (
         <div>
             <div className="flex items-center py-4">
                 <Input
                     placeholder="Filtrar nombres..."
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
+                    value={filter.name}
+                    onChange={(event) => handleFilter("name", event.target.value)}
                     className="max-w-sm"
                 />
                 <DropdownMenu>

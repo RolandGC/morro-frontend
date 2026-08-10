@@ -16,6 +16,7 @@ export default function UserPage() {
     const [data, setData] = useState<User[]>([]);
     const [pages, setPages] = useState<PaginationMeta | null>(null);
     const [loading, setLoading] = useState(true);
+    const [filterLoading, setFilterLoading] = useState(false);
 
     const [userFilter, setUserFilter] = useState<UserQueryParams>({
         name: '',
@@ -36,8 +37,14 @@ export default function UserPage() {
         }));
     };
     const fetchUsers = async () => {
+        const isInitial = loading;
+
         try {
-            setLoading(true);
+            if (isInitial) {
+                setLoading(true);
+            } else {
+                setFilterLoading(true);
+            }
             const response = await userService.getAll(userFilter);
             if (response.status === 200) {
                 setData(response.data.data);
@@ -46,13 +53,29 @@ export default function UserPage() {
         } catch (error) {
             console.error("Error fetching users:", error);
         } finally {
-            setLoading(false);
+            if (isInitial){
+                setLoading(false);
+            } else {
+                setFilterLoading(false);
+            }
         }
     };
 
     useEffect(() => {
-        fetchUsers();
-    }, [userFilter?.name, userFilter?.page]);
+        const timer = setTimeout(() => {
+            fetchUsers();
+        }, 350);
+
+        return () => clearTimeout(timer);
+    }, [userFilter.name, userFilter.page]);
+
+    if (loading) {
+        return (
+            <div className="container mx-auto py-4 px-2">
+                <Spinner />
+            </div>
+        );
+    }
 
     return (
         <div className="container mx-auto p-4">
@@ -60,17 +83,14 @@ export default function UserPage() {
                 <h1 className="text-2xl font-bold dark:text-yellow-300">Usuarios</h1>
                 <Button onClick={() => openCreate()} className="rounded-md bg-primary px-4 py-2 text-primary-foreground">Crear usuario</Button>
             </div>
-            {loading ? (
-                <Spinner />
-            ) : (
-                <UserDataTable
-                    columns={getColumns({ fetchUsers })}
-                    data={data} userFilter={userFilter}
-                    handleFilter={handleFilter}
-                    totalPages={pages?.totalPages ?? 1}
-                />
-            )}
-            <UserFormModal onSuccess={() => close()} fectchUsers={fetchUsers} />
+            <UserDataTable
+                columns={getColumns({ fetchUsers })}
+                data={data}
+                userFilter={userFilter}
+                handleFilter={handleFilter}
+                totalPages={pages?.totalPages ?? 1}
+            />
+            <UserFormModal onSuccess={() => close()} fetchUsers={fetchUsers} />
         </div>
     );
 }
