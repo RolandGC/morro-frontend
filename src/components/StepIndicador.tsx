@@ -18,9 +18,12 @@ export function StepIndicator({ steps }: StepIndicatorProps) {
     const pathname = usePathname();
     const router = useRouter();
 
-    const currentIndex = steps.findIndex((step) =>
-        pathname.startsWith(step.href)
-    );
+    // Busca el paso cuya ruta coincida con la actual, priorizando la más específica
+    // (p. ej. "/sales/sale/add/cliente" debe marcar el paso "Cliente", no "Productos").
+    const currentIndex = steps
+        .map((step, index) => ({ step, index }))
+        .filter(({ step }) => pathname.startsWith(step.href))
+        .sort((a, b) => b.step.href.length - a.step.href.length)[0]?.index ?? -1;
 
     const handleStepClick = (step: Step, index: number) => {
         // Solo permite volver a pasos anteriores

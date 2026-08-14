@@ -13,6 +13,9 @@ export interface Product {
     has_igv: boolean;
     track_stock: boolean;
     is_active: boolean;
+    unit_price?: number;
+    price?: number;
+    stock?: number;
     brands: Brand;
     categories: Category;
     created_at: string;

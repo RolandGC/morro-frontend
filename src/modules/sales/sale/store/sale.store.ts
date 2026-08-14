@@ -1,147 +1,90 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { Sale, SaleItem } from "../types/sale.types";
+import { Sale } from "../types/sale.types";
 import { SaleForm } from "../validators/saleSchema";
-import { sale_type } from "@/types/types";
-
-const initialState: SaleForm = {
-  company_id: "",
-  warehouse_id: "",
-  customer_id: "",
-  price_list_id: "",
-  currency_id: "",
-  exchange_rate: 1,
-  sale_type: sale_type.cash,
-  sale_date: "",
-  items: [],
-};
 
 interface SaleStore {
-  open: boolean;
-  rehydrated?: boolean;
+  draft: SaleForm | null;
   isEditing: boolean;
-  sale: SaleForm;
   sale_id: string | null;
   sales: Sale[];
 
-  openCreate: () => void;
-  openEdit: (
-    sale: SaleForm,
-    sale_id: string | null
-  ) => void;
-  close: () => void;
-  reset: () => void;
-
   setSales: (sales: Sale[]) => void;
-
-  updateField: <K extends keyof SaleForm>(
-    field: K,
-    value: SaleForm[K]
-  ) => void;
-
-  addItem: (item: SaleItem) => void;
-  updateItem: (
-    index: number,
-    item: Partial<SaleItem>
-  ) => void;
-  removeItem: (index: number) => void;
-  setItems: (items: SaleItem[]) => void;
+  setDraft: (draft: SaleForm) => void;
+  startNew: () => void;
+  startEdit: (draft: SaleForm, saleId: string) => void;
+  clearDraft: () => void;
 }
 
-export const useSaleStore = create<PersistedSaleStore>()(
+type PersistedSaleState = Pick<
+  SaleStore,
+  "draft" | "isEditing" | "sale_id"
+>;
+
+export const useSaleStore = create<SaleStore>()(
   persist(
     (set) => ({
-      rehydrated: false,
-      open: false,
+      draft: null,
       isEditing: false,
-      sale: initialState,
       sale_id: null,
       sales: [],
-
-      openCreate: () =>
-        set({
-          open: true,
-          isEditing: false,
-          sale: initialState,
-          sale_id: null,
-        }),
-
-      openEdit: (sale, sale_id) =>
-        set({
-          open: true,
-          isEditing: true,
-          sale,
-          sale_id,
-        }),
-
-      close: () =>
-        set({
-          open: false,
-        }),
-
-      reset: () =>
-        set({
-          sale: initialState,
-          sale_id: null,
-          isEditing: false,
-        }),
 
       setSales: (sales) =>
         set({
           sales,
         }),
 
-      updateField: (field, value) =>
-        set((state) => ({
-          sale: {
-            ...state.sale,
-            [field]: value,
-          },
-        })),
+      setDraft: (draft) =>
+        set({
+          draft,
+        }),
 
-      addItem: (item) =>
-        set((state) => ({
-          sale: {
-            ...state.sale,
-            items: [...state.sale.items, item],
-          },
-        })),
+      startNew: () =>
+        set({
+          draft: null,
+          isEditing: false,
+          sale_id: null,
+        }),
 
-      updateItem: (index, item) =>
-        set((state) => ({
-          sale: {
-            ...state.sale,
-            items: state.sale.items.map((current, i) =>
-              i === index ? { ...current, ...item } : current
-            ),
-          },
-        })),
+      startEdit: (draft, saleId) =>
+        set({
+          draft,
+          isEditing: true,
+          sale_id: saleId,
+        }),
 
-      removeItem: (index) =>
-        set((state) => ({
-          sale: {
-            ...state.sale,
-            items: state.sale.items.filter((_, i) => i !== index),
-          },
-        })),
-
-      setItems: (items) =>
-        set((state) => ({
-          sale: {
-            ...state.sale,
-            items,
-          },
-        })),
+      clearDraft: () =>
+        set({
+          draft: null,
+          isEditing: false,
+          sale_id: null,
+        }),
     }),
     {
       name: "morro.sale",
-      partialize: (state) => ({ sale: state.sale, sale_id: state.sale_id, isEditing: state.isEditing }),
-      onRehydrateStorage: () => (persistedState) => {
-        // mark rehydration complete
-        set(() => ({ rehydrated: true }));
+      version: 1,
+      partialize: (state): PersistedSaleState => ({
+        draft: state.draft,
+        isEditing: state.isEditing,
+        sale_id: state.sale_id,
+      }),
+      migrate: (persistedState, version): PersistedSaleState => {
+        if (version === 0) {
+          const old = persistedState as {
+            sale?: SaleForm;
+            isEditing?: boolean;
+            sale_id?: string | null;
+          };
+
+          return {
+            draft: old.sale ?? null,
+            isEditing: old.isEditing ?? false,
+            sale_id: old.sale_id ?? null,
+          };
+        }
+
+        return persistedState as PersistedSaleState;
       },
     }
   )
 );
-
-type PersistedSaleStore = SaleStore;

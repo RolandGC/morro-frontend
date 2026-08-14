@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useFormContext, Controller } from "react-hook-form";
 import SimpleSelector from "@/components/SimpleSelector";
-import InputText from "@/components/InputText";
 import { companyService } from "@/modules/core/companies/services/company.service";
 import { warehouseService } from "@/modules/core/warehouses/services/warehouse.service";
 import { customerService } from "@/modules/sales/customers/services/customer.service";
@@ -13,10 +12,11 @@ import { Company } from "@/modules/core/companies/types/company.type";
 import { Warehouse } from "@/modules/core/warehouses/types/warehouse.types";
 import { Customer } from "@/modules/sales/customers/types/customer.type";
 import { Currency } from "@/modules/finances/currency/types/currency.types";
+import { SaleForm } from "@/modules/sales/sale/validators/saleSchema";
 
 export default function ClienteStep() {
     const router = useRouter();
-    const { trigger, control, formState } = useFormContext();
+    const { trigger, control } = useFormContext<SaleForm>();
 
     const [companies, setCompanies] = useState<Company[]>([]);
     const [warehouses, setWarehouses] = useState<Warehouse[]>([]);

@@ -1,5 +1,5 @@
 import { Input } from "./ui/input";
-import { FieldError, UseFormRegister } from "react-hook-form";
+import { FieldError, RegisterOptions, UseFormRegister } from "react-hook-form";
 
 type InputProps = {
     name: string;
@@ -7,6 +7,7 @@ type InputProps = {
     type?: string;
     register: UseFormRegister<any>;
     error?: FieldError;
+    registerOptions?: RegisterOptions<any, string>;
 };
 
 export default function InputText({
@@ -15,6 +16,7 @@ export default function InputText({
     type = "text",
     register,
     error,
+    registerOptions,
 }: InputProps) {
     return (
         <div className="flex flex-col gap-2">
@@ -23,7 +25,7 @@ export default function InputText({
             <Input
                 id={name}
                 type={type}
-                {...register(name)}
+                {...register(name, registerOptions)}
             />
 
             {error && (

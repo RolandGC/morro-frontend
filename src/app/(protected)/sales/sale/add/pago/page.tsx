@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
 import { useFormContext, Controller } from "react-hook-form";
 import { useSaleStore } from "@/modules/sales/sale/store/sale.store";
@@ -9,24 +9,28 @@ import { showToast } from "@/hooks/useToast";
 import InputText from "@/components/InputText";
 import SimpleSelector from "@/components/SimpleSelector";
 import { sale_type } from "@/types/types";
+import { SaleForm } from "@/modules/sales/sale/validators/saleSchema";
 
 export default function PagoStep() {
     const router = useRouter();
-    const { trigger, handleSubmit, reset, control } = useFormContext();
-    const { isEditing, sale_id } = useSaleStore();
+    const { trigger, handleSubmit, control, register } = useFormContext<SaleForm>();
 
     const saleTypes = [
-        { id: "1", name: "Efectivo", value: sale_type.cash },
-        { id: "2", name: "Crédito", value: sale_type.credit },
+        { id: sale_type.cash, name: "Efectivo" },
+        { id: sale_type.credit, name: "Crédito" },
     ];
 
-    const onSubmit = async (data: any) => {
+    const onSubmit = async (data: SaleForm) => {
+        const { isEditing, sale_id } = useSaleStore.getState();
+
         try {
-            const response = isEditing && sale_id ? await saleService.update(sale_id, data) : await saleService.create(data);
+            const response = isEditing && sale_id
+                ? await saleService.update(sale_id, data)
+                : await saleService.create(data);
 
             if (response.status === 201 || response.status === 200) {
                 showToast(isEditing ? "Venta actualizada correctamente" : "Venta creada correctamente", "success");
-                reset();
+                useSaleStore.getState().startNew();
                 router.push("/sales/sale");
             }
         } catch (error) {
@@ -46,17 +50,19 @@ export default function PagoStep() {
                     render={({ field }) => (
                         <SimpleSelector
                             label="Tipo de venta"
-                            value={saleTypes.find((r) => r.value === field.value)?.id}
+                            value={field.value}
                             options={saleTypes}
-                            onSelect={(id) => {
-                                const selected = saleTypes.find((r) => r.id === id);
-                                field.onChange(selected?.value ?? sale_type.cash);
-                            }}
+                            onSelect={field.onChange}
                         />
                     )}
                 />
 
-                <InputText name="exchange_rate" label="Tipo de cambio" register={control.register ?? (() => {})} />
+                <InputText
+                    name="exchange_rate"
+                    label="Tipo de cambio"
+                    register={register}
+                    registerOptions={{ valueAsNumber: true }}
+                />
             </div>
 
             <div className="mt-6 flex justify-between">
