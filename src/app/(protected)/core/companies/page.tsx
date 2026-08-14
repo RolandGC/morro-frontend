@@ -10,6 +10,7 @@ import CompanyForm from "@/modules/core/companies/components/CompanyForm";
 import { PaginationMeta } from "@/types/types";
 import { CompanyDataTable } from "@/modules/core/companies/components/CompanyDataTable";
 import { Spinner } from "@/components/Spinner";
+import { RequirePermission } from "@/components/RequirePermission";
 
 export default function CompaniesPage() {
     const [data, setData] = useState<Company[]>([]);
@@ -87,9 +88,11 @@ export default function CompaniesPage() {
         <div className="container mx-auto py-4 px-2">
             <div className="flex justify-between">
                 <h1 className="text-2xl font-bold">Empresas</h1>
-                <Button onClick={() => openCreate()}>
-                    Crear Empresa
-                </Button>
+                <RequirePermission permission="companies.create">
+                    <Button onClick={() => openCreate()}>
+                        Crear Empresa
+                    </Button>
+                </RequirePermission>
             </div>
             <CompanyDataTable
                 columns={getColumns({ fetchCompanies })}

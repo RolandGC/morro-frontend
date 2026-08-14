@@ -16,6 +16,7 @@ export interface Product {
     brands: Brand;
     categories: Category;
     created_at: string;
+    product_units: ProductUnit[];
 }
 
 export interface ProductUnit {
