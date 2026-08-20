@@ -114,3 +114,9 @@ export enum warehouse_type {
     warehouse = "warehouse",
     store = "store",
 }
+
+export enum series_type {
+    general = "general",
+    zofra = "zofra",
+    order_note = "order_note",
+}

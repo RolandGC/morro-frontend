@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useFormContext, Controller } from "react-hook-form";
+import { useFormContext, Controller, useFieldArray } from "react-hook-form";
 import SimpleSelector from "@/components/SimpleSelector";
 import { companyService } from "@/modules/core/companies/services/company.service";
 import { warehouseService } from "@/modules/core/warehouses/services/warehouse.service";
@@ -10,9 +10,11 @@ import { customerService } from "@/modules/sales/customers/services/customer.ser
 import { currencyService } from "@/modules/finances/currency/services/currency.service";
 import { Company } from "@/modules/core/companies/types/company.type";
 import { Warehouse } from "@/modules/core/warehouses/types/warehouse.types";
-import { Customer } from "@/modules/sales/customers/types/customer.type";
+import { Customer, CustomerQueryParams } from "@/modules/sales/customers/types/customer.type";
 import { Currency } from "@/modules/finances/currency/types/currency.types";
 import { SaleForm } from "@/modules/sales/sale/validators/saleSchema";
+import { Search } from "lucide-react";
+import { CustomerSearchItem } from "@/modules/sales/customers/components/CustomerSearchItem";
 
 export default function ClienteStep() {
     const router = useRouter();
@@ -22,6 +24,16 @@ export default function ClienteStep() {
     const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [currencies, setCurrencies] = useState<Currency[]>([]);
+    const [searchCustomer, setSearchCustomer] = useState("");
+    const [customerLoading, setCustomerLoading] = useState(false);
+    const [customerResults, setCustomerResults] = useState<Customer[]>([]);
+    const [customerFilter, setCustomerFilter] = useState<CustomerQueryParams>({
+        full_name: '',
+        is_active: true,
+        page: 1,
+        limit: 6,
+        //order: "asc",
+    });
 
     useEffect(() => {
         const fetch = async () => {
@@ -42,11 +54,7 @@ export default function ClienteStep() {
     useEffect(() => {
         const fetch = async () => {
             try {
-                const [custResp, currResp] = await Promise.all([
-                    customerService.getAll({ is_active: true }),
-                    currencyService.getAll({ is_active: true }),
-                ]);
-                if (custResp.status === 200) setCustomers(custResp.data.data);
+                const  currResp = await currencyService.getAll({ is_active: true })
                 if (currResp.status === 200) setCurrencies(currResp.data.data);
             } catch (e) {
                 console.error(e);
@@ -54,6 +62,36 @@ export default function ClienteStep() {
         };
         fetch();
     }, []);
+
+    useEffect(() => {
+        const value = searchCustomer.trim();
+
+        if (!value) {
+            setCustomerResults([]);
+            return;
+        }
+
+        const timeout = setTimeout(async () => {
+            try {
+                setCustomerLoading(true);
+
+                const response = await customerService.getAll(customerFilter);
+
+                if (response.status === 200) {
+                    setCustomerResults(response.data.data);
+                } else {
+                    setCustomerResults([]);
+                }
+            } catch (error) {
+                console.error("Error buscando clientes:", error);
+                setCustomerResults([]);
+            } finally {
+                setCustomerLoading(false);
+            }
+        }, 300);
+
+        return () => clearTimeout(timeout);
+    }, [searchCustomer]);
 
     return (
         <div className="container mx-auto py-4 px-4">
@@ -94,13 +132,59 @@ export default function ClienteStep() {
                     name="customer_id"
                     control={control}
                     render={({ field, fieldState }) => (
-                        <SimpleSelector
-                            label="Cliente"
-                            value={field.value}
-                            options={customers.map((c) => ({ id: c.id, name: c.full_name }))}
-                            onSelect={field.onChange}
-                            error={fieldState.error}
-                        />
+                        <div className="md:col-span-2">
+                            <label className="mb-2 block text-sm font-medium text-gray-700">
+                                Cliente
+                            </label>
+
+                            {/* Buscador */}
+                            <div className="relative">
+                                <Search
+                                    size={20}
+                                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                                />
+
+                                <input
+                                    type="text"
+                                    value={searchCustomer}
+                                    onChange={(e) =>
+                                        setSearchCustomer(e.target.value)
+                                    }
+                                    placeholder="Buscar cliente..."
+                                    className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 outline-none transition focus:border-primary focus:ring-1 focus:ring-primary"
+                                />
+                            </div>
+
+                            {/* Listado */}
+                            <div className="mt-3 space-y-2 max-h-[500px] overflow-y-auto pr-1">
+                                {customerLoading ? (
+                                    <div className="py-8 text-center text-sm text-gray-400">
+                                        Buscando cliente...
+                                    </div>
+                                ) : customerResults.length === 0 ? (
+                                    <div className="py-8 text-center text-sm text-gray-400">
+                                        No se encontraron clientes.
+                                    </div>
+                                ) : (
+                                    customerResults.map((customer) => (
+                                        <CustomerSearchItem
+                                            key={customer.id}
+                                            customer={customer}
+                                            selected={field.value === customer.id}
+                                            onSelect={(customer) =>
+                                                field.onChange(customer.id)
+                                            }
+                                        />
+                                    ))
+                                )}
+                            </div>
+
+                            {fieldState.error && (
+                                <p className="mt-1 text-sm text-red-500">
+                                    {fieldState.error.message}
+                                </p>
+                            )}
+                        </div>
                     )}
                 />
 

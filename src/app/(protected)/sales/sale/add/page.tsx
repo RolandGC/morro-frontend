@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useFormContext, useFieldArray } from "react-hook-form";
 import { productService } from "@/modules/inventory/products/services/product.service";
 import { Product } from "@/modules/inventory/products/types/produc.type";
-import { ScanBarcode, Search } from "lucide-react";
+import { ScanBarcode, Search, ShoppingCart } from "lucide-react";
 import { ProductCard } from "@/modules/inventory/products/components/ProductCard";
 import { ProductSearchItem } from "@/modules/inventory/products/components/ProductListSell";
 import { SaleForm } from "@/modules/sales/sale/validators/saleSchema";
@@ -37,7 +37,7 @@ export default function SaleAddPage() {
         model: "",
         track_stock: undefined,
         page: 1,
-        limit: 6,
+        limit: 7,
         //order: "asc",
     });
 
@@ -132,6 +132,13 @@ export default function SaleAddPage() {
         );
     };
 
+    const subTotal = items?.reduce((acc, item) => {
+        const quantity = Number(item.quantity ?? 0);
+        const unitPrice = Number(item.unit_price ?? 0);
+
+        return acc + quantity * unitPrice;
+    }, 0) ?? 0;
+
     return (
         <div className="container mx-auto py-4 px-4">
             <h2 className="text-lg font-medium mb-4">Productos</h2>
@@ -145,7 +152,7 @@ export default function SaleAddPage() {
                         <input
                             type="text"
                             placeholder="Escanear código de barras (presione Enter)..."
-                            className="w-full pl-10 pr-3 py-2 border rounded-md pl-10"
+                            className="w-full pl-10 pr-3 py-2 border rounded-md pl-10 text-sm"
                         />
                     </div>
 
@@ -183,49 +190,132 @@ export default function SaleAddPage() {
                     </div>
                 </div>
                 <div className="flex-1">
+                    <div className="flex">
+                        <ShoppingCart size={24} />
+                        <h2 className="ml-2">Carrito</h2>
+                    </div>
                     <div className="mt-4 space-y-3">
-                        {items?.map((item, index) => {
-                            const product = products.find(
-                                (p) => p.id === item?.product_id
-                            );
+                        {!items || items.length === 0 ? (
+                            <div className="flex min-h-[350px] flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 px-6 text-center">
+                                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
+                                    <ShoppingCart
+                                        size={28}
+                                        strokeWidth={1.5}
+                                        className="text-gray-400"
+                                    />
+                                </div>
 
-                            if (!product) return null;
+                                <h3 className="text-base font-medium text-gray-700">
+                                    No hay productos en el carrito
+                                </h3>
 
-                            return (
-                                <ProductCard
-                                    key={fields[index]?.id}
-                                    product={product}
-                                    onIncrease={() => handleIncrease(index)}
-                                    onDecrease={() => handleDecrease(index)}
-                                    onRemove={() => remove(index)}
-                                    quantity={Number(items?.[index]?.quantity ?? 0)}
-                                    onChangeQuantity={(q) =>
-                                        setValue(`items.${index}.quantity`, q, { shouldValidate: true, shouldDirty: true })
-                                    }
-                                    units={product.product_units}
-                                    selectedUnitId={items?.[index]?.product_unit_id}
-                                    onSelectUnit={(unitId) => setValue(`items.${index}.product_unit_id`, unitId, { shouldValidate: true, shouldDirty: true })}
-                                    unitPrice={Number(items?.[index]?.unit_price ?? product.unit_price)}
-                                />
-                            );
-                        })}
+                                <p className="mt-1 text-sm text-gray-400">
+                                    Busca y agrega productos para continuar
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {items.map((item, index) => {
+                                    const product = products.find(
+                                        (p) => p.id === item?.product_id
+                                    );
+
+                                    if (!product) return null;
+
+                                    return (
+                                        <ProductCard
+                                            key={fields[index]?.id}
+                                            product={product}
+                                            onIncrease={() => handleIncrease(index)}
+                                            onDecrease={() => handleDecrease(index)}
+                                            onRemove={() => remove(index)}
+                                            quantity={Number(
+                                                items[index]?.quantity ?? 0
+                                            )}
+                                            onChangeQuantity={(q) =>
+                                                setValue(
+                                                    `items.${index}.quantity`,
+                                                    q,
+                                                    {
+                                                        shouldValidate: true,
+                                                        shouldDirty: true,
+                                                    }
+                                                )
+                                            }
+                                            units={product.product_units}
+                                            selectedUnitId={
+                                                items[index]?.product_unit_id
+                                            }
+                                            onSelectUnit={(unitId) =>
+                                                setValue(
+                                                    `items.${index}.product_unit_id`,
+                                                    unitId,
+                                                    {
+                                                        shouldValidate: true,
+                                                        shouldDirty: true,
+                                                    }
+                                                )
+                                            }
+                                            unitPrice={Number(
+                                                items[index]?.unit_price ??
+                                                product.unit_price
+                                            )}
+                                            onChangeUnitPrice={(price) =>
+                                                setValue(
+                                                    `items.${index}.unit_price`,
+                                                    price,
+                                                    {
+                                                        shouldValidate: true,
+                                                        shouldDirty: true,
+                                                    }
+                                                )
+                                            }
+                                        />
+                                    );
+                                })}
+
+                                <div className="w-full rounded-md border p-3">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-gray-600">
+                                            Subtotal:
+                                        </span>
+
+                                        <span className="font-medium">
+                                            S/ {subTotal.toFixed(2)}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="w-full rounded-md border p-3">
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-medium">
+                                            TOTAL:
+                                        </span>
+
+                                        <span className="font-semibold">
+                                            S/ {subTotal.toFixed(2)}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                 </div>
             </div>
 
-            <div className="mt-6 flex justify-end gap-2">
-                <button
+            <div className="mt-6 flex justify-center gap-2">
+                {/* <button
                     type="button"
                     className="rounded-md border px-3 py-1 text-sm text-muted-foreground cursor-not-allowed"
                     disabled
                 >
                     Anterior
-                </button>
+                </button> */}
 
                 <button
                     type="button"
-                    className="rounded-md bg-primary px-3 py-1 text-sm text-white"
+                    className="rounded-md bg-primary px-5 py-2 text-sm text-white"
                     onClick={async () => {
                         const valid = await trigger?.("items");
                         if (valid) {

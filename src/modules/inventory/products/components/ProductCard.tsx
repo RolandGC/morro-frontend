@@ -14,6 +14,7 @@ interface ProductCardProps {
     selectedUnitId?: string;
     onSelectUnit?: (unitId: string) => void;
     unitPrice?: number;
+    onChangeUnitPrice?: (q: number) => void;
 }
 
 export function ProductCard({
@@ -27,16 +28,17 @@ export function ProductCard({
     selectedUnitId,
     onSelectUnit,
     unitPrice,
+    onChangeUnitPrice,
 }: ProductCardProps) {
     return (
         <div className="relative rounded-xl border border-gray-200 bg-white px-3 py-3">
             <div className="flex items-start justify-between">
                 <div>
-                    <h3 className="text-[18px] font-normal leading-5 text-gray-900">
+                    <h3 className="text-[15px] font-normal leading-5 text-gray-900">
                         {product.name}
                     </h3>
 
-                    <p className="mt-1 text-[14px] text-gray-500">
+                    <p className="mt-1 text-[13px] text-gray-500">
                         <span>unid</span>
                         {/* <span className="ml-2">
                             Stock disponible: {product.warehouse_stock} unid
@@ -98,7 +100,7 @@ export function ProductCard({
                         className="mx-auto w-20 rounded-md border px-2 py-1 text-center text-[18px] text-gray-900 outline-none"
                     />
 
-                    <div className="mt-1 text-[14px] text-gray-500">unid</div>
+                    <div className="mt-1 text-[13px] text-gray-500">unid</div>
                 </div>
 
                 <button
@@ -111,9 +113,17 @@ export function ProductCard({
                 </button>
 
                 <input
-                    type="text"
-                    value={Number(unitPrice ?? product.unit_price ?? 0).toFixed(5)}
-                    readOnly
+                    type="number"
+                    value={unitPrice ?? 0}
+                    min={0}
+                    step="0.01"
+                    onChange={(e) => {
+                        const value = e.target.value;
+
+                        onChangeUnitPrice?.(
+                            value === "" ? 0 : Number(value)
+                        );
+                    }}
                     className="h-9 w-full rounded-md border border-gray-200 bg-white px-3 text-right text-[18px] text-gray-900 outline-none"
                 />
             </div>

@@ -62,6 +62,10 @@ const data = {
           title: "Almacenes",
           url: "/core/warehouses",
         },
+        {
+          title: "Series",
+          url: "/core/series",
+        },
       ],
     },
     {

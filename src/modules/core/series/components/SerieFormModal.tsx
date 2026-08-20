@@ -6,23 +6,28 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/useToast";
 import SimpleSelector from "@/components/SimpleSelector";
-import { useCurrencyStore } from "../store/currency.store";
-import { CurrencyForm, currencySchema } from "../validators/currencySchema";
-import { currencyService } from "../services/currency.service";
+import { useSerieStore } from "../store/serie.store";
+import { SerieForm, serieSchema } from "../validators/serieSchema";
+import { serieService } from "../services/serie.service";
+import { User } from "../../user/types/user.types";
+import { userService } from "../../user/services/user.service";
+import { series_type } from "@/types/types";
 
-interface CurrencyFormProps {
+interface SerieFormProps {
     onSuccess?: () => void;
     fetchData: () => void,
 }
 const booleanOptions = [
-    { id: "1", name: "Sí", value: true },
-    { id: "2", name: "No", value: false },
+    { id: "1", name: "Nota de Pedido", value: series_type.order_note },
+    { id: "2", name: "Régimen General", value: series_type.general },
+    { id: "3", name: "Régimen Zofra", value: series_type.zofra },
 ];
 
-export default function CurrencyFormModal({ onSuccess, fetchData }: CurrencyFormProps) {
-    const { isEditing, currency, open, close, currency_id } = useCurrencyStore();
-    const defaultValues = currency;
+export default function SerieFormModal({ onSuccess, fetchData }: SerieFormProps) {
+    const { isEditing, serie, open, close, serie_id } = useSerieStore();
+    const defaultValues = serie;
     const { notify: showToast } = useToast();
+    const [data, setData] = useState<User[]>([]);
 
     const { register, handleSubmit,
         control, reset: resetForm,
@@ -30,36 +35,53 @@ export default function CurrencyFormModal({ onSuccess, fetchData }: CurrencyForm
         setValue,
         formState: { errors, isSubmitting },
         setError,
-    } = useForm<CurrencyForm>({
-        resolver: zodResolver(currencySchema),
-        defaultValues: currency,
+    } = useForm<SerieForm>({
+        resolver: zodResolver(serieSchema),
+        defaultValues: serie,
     });
 
 
     useEffect(() => {
-        if (isEditing && currency) {
+        if (isEditing && serie) {
             resetForm({
-                name: currency.name ?? "",
-                code: currency.code ?? "",
-                symbol: currency.symbol ?? "",
-                is_base: currency.is_base ?? "",
+                user_id: serie.user_id ?? "",
+                series: serie.series ?? "",
+                type: serie.type ?? "",
+                next_number: serie.next_number ?? 0,
             });
         } else {
             resetForm(defaultValues);
         }
-    }, [currency, isEditing, resetForm]);
+    }, [serie, isEditing, resetForm]);
 
-    const onSubmit = async (currency: CurrencyForm) => {
+    const fetchUsers = async () => {
+
+        try {
+
+            const response = await userService.getAll({ is_active: true });
+            if (response.status === 200) {
+                setData(response.data.data);
+            }
+        } catch (error) {
+            console.error("Error fetching users:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchUsers();
+    }, [])
+
+    const onSubmit = async (serie: SerieForm) => {
         try {
             let response;
-            if (isEditing && currency_id) {
-                response = await currencyService.update(currency_id, currency);
+            if (isEditing && serie_id) {
+                response = await serieService.update(serie_id, serie);
             } else {
-                response = await currencyService.create(currency);
+                response = await serieService.create(serie);
             }
             if (response.status === 201 || response.status === 200) {
                 showToast(
-                    isEditing ? "Moneda actualizado correctamente" : "Moneda creado correctamente",
+                    isEditing ? "Serie actualizado correctamente" : "Serie creado correctamente",
                     "success"
                 );
                 resetForm();
@@ -68,7 +90,7 @@ export default function CurrencyFormModal({ onSuccess, fetchData }: CurrencyForm
                 onSuccess?.();
             }
         } catch (error) {
-            showToast("Error al guardar la Moneda", "error")
+            showToast("Error al guardar la Serie", "error")
             console.error(error)
         }
     };
@@ -77,38 +99,51 @@ export default function CurrencyFormModal({ onSuccess, fetchData }: CurrencyForm
         <Dialog open={open} onOpenChange={close}>
             <DialogContent className="lg:max-w-2xl max-h-[90vh] overflow-y-auto sm:max-w-sm">
                 <DialogHeader>
-                    <DialogTitle className="font-bold text-2xl">{isEditing ? "Editar moneda" : "Crear moneda"}</DialogTitle>
+                    <DialogTitle className="font-bold text-2xl">{isEditing ? "Editar serie" : "Crear serie"}</DialogTitle>
                 </DialogHeader>
                 <div className="flex flex-col gap-4 w-full">
                     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 w-full">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <InputText
-                                name="name"
-                                label="Nombre"
+                                name="series"
+                                label="Número de Serie"
                                 register={register}
-                                error={errors.name}
+                                error={errors.series}
                             />
-                            <InputText
-                                name="code"
-                                label="Código"
-                                register={register}
-                                error={errors.code}
+                            <Controller
+                                name="user_id"
+                                control={control}
+                                render={({ field }) => (
+                                    <SimpleSelector
+                                        label="Marca"
+                                        value={field.value}
+                                        options={data.map((user) => ({
+                                            id: user.id,
+                                            name: user.name,
+                                        }))}
+                                        onSelect={field.onChange}
+                                        error={errors.user_id}
+                                    />
+                                )}
                             />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <InputText
-                                name="symbol"
-                                label="Símbolo"
+                                name="next_number"
+                                label="Inicio"
                                 register={register}
-                                error={errors.symbol}
+                                error={errors.next_number}
+                                registerOptions={{
+                                    valueAsNumber: true,
+                                }}
                             />
                             <Controller
-                                name="is_base"
+                                name="type"
                                 control={control}
                                 render={({ field }) => (
                                     <SimpleSelector
-                                        label="Base"
+                                        label="Tipo"
                                         value={
                                             field.value
                                                 ? booleanOptions[0].id

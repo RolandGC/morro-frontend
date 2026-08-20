@@ -117,5 +117,12 @@ export const endpoints = {
     CASHBOX: {
         GET_ALL: `${baseUrl}/cash-sessions`,
         
-    }
+    },
+    SERIES: {
+        GET_ALL: `${baseUrl}/seller-series`,
+        CREATE: `${baseUrl}/seller-series`,
+        UPDATE: `${baseUrl}/seller-series`,
+        DELETE: `${baseUrl}/seller-series`,
+        GET_BY_ID: `${baseUrl}/seller-series`,
+    },
 }
