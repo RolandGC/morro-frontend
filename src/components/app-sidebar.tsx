@@ -149,6 +149,10 @@ const data = {
           title: "Caja",
           url: "/finance/cashbox",
         },
+        {
+          title: "Cuentas",
+          url: "/finance/account",
+        },
       ],
     },
     {

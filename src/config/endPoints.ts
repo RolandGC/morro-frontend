@@ -118,6 +118,13 @@ export const endpoints = {
         GET_ALL: `${baseUrl}/cash-sessions`,
         
     },
+    ACCOUNTS: {
+        GET_ALL: `${baseUrl}/payment-accounts`,
+        CREATE: `${baseUrl}/payment-accounts`,
+        UPDATE: `${baseUrl}/payment-accounts`,
+        DELETE: `${baseUrl}/payment-accounts`,
+        GET_BY_ID: `${baseUrl}/payment-accounts`,
+    },
     SERIES: {
         GET_ALL: `${baseUrl}/seller-series`,
         CREATE: `${baseUrl}/seller-series`,
