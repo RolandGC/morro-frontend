@@ -8,6 +8,7 @@ type InputProps = {
     register: UseFormRegister<any>;
     error?: FieldError;
     registerOptions?: RegisterOptions<any, string>;
+    support?: string;
 };
 
 export default function InputText({
@@ -17,6 +18,7 @@ export default function InputText({
     register,
     error,
     registerOptions,
+    support,
 }: InputProps) {
     return (
         <div className="flex flex-col gap-2">
@@ -33,6 +35,11 @@ export default function InputText({
                     {error.message}
                 </p>
             )}
+           {/*  {support && (
+                <p className="text-[13px] text-gray-500 px-2 -my-2">
+                    {support}
+                </p>
+            )} */}
         </div>
     );
 }
