@@ -32,6 +32,21 @@ export const endpoints = {
         DELETE: `${baseUrl}/warehouses`,
         GET_BY_ID: `${baseUrl}/warehouses`,
     },
+    PERMISSIONS: {
+        BY_USER: (userId: string) => `${baseUrl}/users/${userId}/permissions`,
+        ASIGN_PERMISSION_TO_ROLE: (id: string) => `${baseUrl}/roles/${id}/permissions`,
+    },
+    ROLES: {
+        GET_PERMISSIONS: `${baseUrl}/permissions`,
+        GET_ALL: `${baseUrl}/roles`,
+        CREATE: `${baseUrl}/roles`,
+        GET_BY_ID: `${baseUrl}/roles`,
+        UPDATE: `${baseUrl}/roles`,
+        DELETE: `${baseUrl}/roles`,
+        USERS_BY_ROLE: (userId: string) => `${baseUrl}/users/${userId}/roles`,
+        GET_ROLE_BY_USER: (userId: string) => `${baseUrl}/users/${userId}/roles`,
+        ROLE_DELETE_BY_USER: (userId: string) => `${baseUrl}/users/${userId}/roles`,
+    },
     CATEGORIES: {
         GET_ALL: `${baseUrl}/categories`,
         CREATE: `${baseUrl}/categories`,
@@ -74,15 +89,6 @@ export const endpoints = {
         DELETE: `${baseUrl}/suppliers`,
         GET_BY_ID: `${baseUrl}/suppliers`,
     },
-    SALES: {
-        GET_ALL: `${baseUrl}/sales`,
-        CREATE: `${baseUrl}/sales`,
-        UPDATE: `${baseUrl}/sales`,
-        DELETE: `${baseUrl}/sales`,
-        GET_BY_ID: `${baseUrl}/sales`,
-        COMPLETE: (id: string) => `${baseUrl}/sales/${id}/complete`,
-        CANCEL: (id: string) => `${baseUrl}/sales/${id}/cancel`,
-    },
     PURCHASES: {
         GET_ALL: `${baseUrl}/purchases`,
         CREATE: `${baseUrl}/purchases`,
@@ -92,6 +98,39 @@ export const endpoints = {
         COMPLETE: (id: string) => `${baseUrl}/purchases/${id}/complete`,
         CANCEL: (id: string) => `${baseUrl}/purchases/${id}/cancel`,
     },
+    WAREHOUSE_STOCK: {
+        GET_ALL: `${baseUrl}/warehouse-stock`,
+        GET_BY_ID: `${baseUrl}/warehouse-stock`,
+    },
+    KARDEX: {
+        GET_ALL: `${baseUrl}/kardex`,
+        GET_HISTORY: `${baseUrl}/kardex`,
+        GET_BY_ID: `${baseUrl}/kardex`,
+    },
+    LOTS: {
+        GET_ALL: `${baseUrl}/lots`,
+        GET_BY_ID: `${baseUrl}/lots`,
+    },
+    SALES: {
+        GET_ALL: `${baseUrl}/sales`,
+        CREATE: `${baseUrl}/sales`,
+        UPDATE: `${baseUrl}/sales`,
+        DELETE: `${baseUrl}/sales`,
+        GET_BY_ID: `${baseUrl}/sales`,
+        COMPLETE: (id: string) => `${baseUrl}/sales/${id}/complete`,
+        CANCEL: (id: string) => `${baseUrl}/sales/${id}/cancel`,
+    },
+    RECEIVABLES: {
+        GET_ALL: `${baseUrl}/receivables`,
+        GET_BY_ID: `${baseUrl}/receivables`,
+        REGISTER: (id: string) => `${baseUrl}/receivables/${id}/payments`,
+    },
+    VOUCHERS: {
+        GET_ALL: `${baseUrl}/vouchers`,
+        GET_BY_ID: `${baseUrl}/vouchers`,
+        SEND: (id: string) => `${baseUrl}/vouchers/${id}/send`,
+        QUERY: (id: string) => `${baseUrl}/vouchers/${id}/check-status`,
+    },
     CURRENCIES: {
         GET_ALL: `${baseUrl}/currencies`,
         CREATE: `${baseUrl}/currencies`,
@@ -99,24 +138,36 @@ export const endpoints = {
         DELETE: `${baseUrl}/currencies`,
         GET_BY_ID: `${baseUrl}/currencies`,
     },
-    PERMISSIONS: {
-        BY_USER: (userId: string) => `${baseUrl}/users/${userId}/permissions`,
-        ASIGN_PERMISSION_TO_ROLE:(id: string) => `${baseUrl}/roles/${id}/permissions`,
+    SOTK_ADJUSTMENTS:{
+        GET_ALL: `${baseUrl}/stock-adjustments`,
+        CREATE: `${baseUrl}/stock-adjustments`,
+        GET_BY_ID: `${baseUrl}/stock-adjustments`,
     },
-    ROLES: {
-        GET_PERMISSIONS: `${baseUrl}/permissions`,
-        GET_ALL: `${baseUrl}/roles`,
-        CREATE: `${baseUrl}/roles`,
-        GET_BY_ID: `${baseUrl}/roles`,
-        UPDATE: `${baseUrl}/roles`,
-        DELETE: `${baseUrl}/roles`,
-        USERS_BY_ROLE: (userId: string) => `${baseUrl}/users/${userId}/roles`,
-        GET_ROLE_BY_USER: (userId: string) => `${baseUrl}/users/${userId}/roles`,
-        ROLE_DELETE_BY_USER: (userId: string) => `${baseUrl}/users/${userId}/roles`,
-    },
-    CASHBOX: {
+    CASH_SESSIONS: {
         GET_ALL: `${baseUrl}/cash-sessions`,
-        
+        OPEN: `${baseUrl}/cash-sessions`,
+        GET_BY_ID: `${baseUrl}/cash-sessions`,
+        CLOSE: `${baseUrl}/cash-sessions`,
+    },
+    DAILY_CLOSINGS: {
+        GET_ALL: `${baseUrl}/daily-closings`,
+        OPEN: `${baseUrl}/daily-closings`,
+        GET_BY_ID: `${baseUrl}/daily-closings`,
+        CLOSE: `${baseUrl}/daily-closings`,
+    },
+    PURCHASE_RETURNS: {
+        GET_ALL: `${baseUrl}/purchase-returns`,
+        CREATE: `${baseUrl}/purchase-returns`,
+        GET_BY_ID: `${baseUrl}/purchase-returns`,
+        COMPLETE: (id: string) => `${baseUrl}/purchase-returns/${id}/complete`,
+        CANCEL: (id: string) => `${baseUrl}/purchase-returns/${id}/cancel`,
+    },
+    STOCK_MOVEMENTS: {
+        GET_ALL: `${baseUrl}/stock-movements`,
+        CREATE: `${baseUrl}/stock-movements`,
+        GET_BY_ID: `${baseUrl}/stock-movements`,
+        COMPLETE: (id: string) => `${baseUrl}/stock-movements/${id}/complete`,
+        CANCEL: (id: string) => `${baseUrl}/stock-movements/${id}/cancel`,
     },
     ACCOUNTS: {
         GET_ALL: `${baseUrl}/payment-accounts`,

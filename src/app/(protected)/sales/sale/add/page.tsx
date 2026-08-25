@@ -319,7 +319,7 @@ export default function SaleAddPage() {
                     onClick={async () => {
                         const valid = await trigger?.("items");
                         if (valid) {
-                            router.push("/sales/sale/add/cliente");
+                            router.push("/sales/sale/add/customer");
                         }
                     }}
                 >

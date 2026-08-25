@@ -27,14 +27,7 @@ export default function ClienteStep() {
     const [searchCustomer, setSearchCustomer] = useState("");
     const [customerLoading, setCustomerLoading] = useState(false);
     const [customerResults, setCustomerResults] = useState<Customer[]>([]);
-    const [customerFilter, setCustomerFilter] = useState<CustomerQueryParams>({
-        full_name: '',
-        is_active: true,
-        page: 1,
-        limit: 6,
-        //order: "asc",
-    });
-
+    
     useEffect(() => {
         const fetch = async () => {
             try {
@@ -63,35 +56,41 @@ export default function ClienteStep() {
         fetch();
     }, []);
 
+
+    const fetchCustomers = async (full_name = "") => {
+        try {
+            setCustomerLoading(true);
+
+            const response = await customerService.getAll({
+                full_name,
+                is_active: true,
+                page: 1,
+                limit: 6,
+            });
+
+            if (response.status === 200) {
+                setCustomerResults(response.data.data);
+            } else {
+                setCustomerResults([]);
+            }
+        } catch (error) {
+            console.error("Error obteniendo clientes:", error);
+            setCustomerResults([]);
+        } finally {
+            setCustomerLoading(false);
+        }
+    };
+
     useEffect(() => {
         const value = searchCustomer.trim();
 
-        if (!value) {
-            setCustomerResults([]);
-            return;
-        }
-
-        const timeout = setTimeout(async () => {
-            try {
-                setCustomerLoading(true);
-
-                const response = await customerService.getAll(customerFilter);
-
-                if (response.status === 200) {
-                    setCustomerResults(response.data.data);
-                } else {
-                    setCustomerResults([]);
-                }
-            } catch (error) {
-                console.error("Error buscando clientes:", error);
-                setCustomerResults([]);
-            } finally {
-                setCustomerLoading(false);
-            }
+        const timeout = setTimeout(() => {
+            fetchCustomers(value);
         }, 300);
 
         return () => clearTimeout(timeout);
     }, [searchCustomer]);
+
 
     return (
         <div className="container mx-auto py-4 px-4">
@@ -217,7 +216,7 @@ export default function ClienteStep() {
                     className="rounded-md bg-primary px-3 py-1 text-sm text-white"
                     onClick={async () => {
                         const ok = await trigger?.(["company_id", "warehouse_id", "customer_id", "currency_id"]);
-                        if (ok) router.push("/sales/sale/add/pago");
+                        if (ok) router.push("/sales/sale/add/payments");
                     }}
                 >
                     Siguiente

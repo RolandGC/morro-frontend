@@ -153,23 +153,6 @@ export default function AccountFormModal({ onSuccess, fetchData }: AccountFormPr
                                 register={register}
                                 error={errors.account_number}
                             />
-                            {/* <Controller
-                                name="type"
-                                control={control}
-                                render={({ field }) => (
-                                    <SimpleSelector
-                                        label="Tipo"
-                                        value={field.value ?? optionsAccounts[0]?.id}
-                                        options={optionsAccounts}
-                                        onSelect={(id) => {
-                                            const selected = optionsAccounts.find(
-                                                (option) => option.id === id
-                                            );
-                                            field.onChange(selected?.value);
-                                        }}
-                                    />
-                                )}
-                            /> */}
                             <Controller
                                 name="type"
                                 control={control}
@@ -230,8 +213,8 @@ export default function AccountFormModal({ onSuccess, fetchData }: AccountFormPr
                             {isSubmitting
                                 ? "Guardando..."
                                 : isEditing
-                                    ? "Actualizar Moneda"
-                                    : "Guardar Moneda"}
+                                    ? "Actualizar cuenta"
+                                    : "Guardar cuenta"}
                         </Button>
                     </form>
 

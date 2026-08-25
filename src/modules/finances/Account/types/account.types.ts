@@ -8,7 +8,7 @@ export interface Account {
     account_number: string;
     bank_name: string;
     currency_id: string;
-    is_active: true
+    is_active?: true
 }
 export interface AccountQueryParams {
     page?: number | undefined; // default: 1

@@ -28,7 +28,7 @@ export const accountSchema = z.object({
 
     currency_id: z.uuid("Moneda inválida"),
 
-    is_active: z.boolean(),
+    is_active: z.boolean().optional(),
 });
 
 export type AccountForm = z.infer<typeof accountSchema>;

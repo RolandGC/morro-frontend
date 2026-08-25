@@ -6,7 +6,7 @@ import { PaginationResponse } from "@/types/types";
 
 class CashboxService {
     async getAll(params: CashboxQueryParams): Promise<AxiosResponse<PaginationResponse<Cashbox>>>{
-        const response = await apiClient.get(endpoints.CASHBOX.GET_ALL, {
+        const response = await apiClient.get(endpoints.CASH_SESSIONS.GET_ALL, {
             params,
         });
         return response;

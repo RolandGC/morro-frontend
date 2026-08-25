@@ -20,12 +20,12 @@ export default function SaleNewLayout({
         {
             id: "cliente",
             label: "Cliente",
-            href: "/sales/sale/add/cliente",
+            href: "/sales/sale/add/customer",
         },
         {
             id: "pago",
             label: "Pago",
-            href: "/sales/sale/add/pago",
+            href: "/sales/sale/add/payments",
         },
     ];
 
