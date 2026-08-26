@@ -13,7 +13,7 @@ import { useAuthStore } from '@/modules/auth/store/authStore';
 import { useToast } from '@/hooks/useToast';
 import axios from 'axios';
 
-export function LoginForm({
+export function LoginFormData({
   className,
   ...props
 }: React.ComponentProps<'div'>) {
@@ -58,7 +58,7 @@ export function LoginForm({
             <img src="/logo-morro.png" alt="" />
           </div>
           <CardTitle className="text-xl">Bienvenido</CardTitle>
-          <CardDescription>Login a tu cuenta para continuar</CardDescription>
+          <CardDescription>Ingrese sus credenciales</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)}>

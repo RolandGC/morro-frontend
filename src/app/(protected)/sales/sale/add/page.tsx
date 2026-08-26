@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useFormContext, useFieldArray } from "react-hook-form";
 import { productService } from "@/modules/inventory/products/services/product.service";
 import { Product } from "@/modules/inventory/products/types/produc.type";
-import { ScanBarcode, Search, ShoppingCart } from "lucide-react";
+import { Package, ScanBarcode, Search, ShoppingCart } from "lucide-react";
 import { ProductCard } from "@/modules/inventory/products/components/ProductCard";
 import { ProductSearchItem } from "@/modules/inventory/products/components/ProductListSell";
 import { SaleForm } from "@/modules/sales/sale/validators/saleSchema";
@@ -141,7 +141,10 @@ export default function SaleAddPage() {
 
     return (
         <div className="container mx-auto py-4 px-4">
-            <h2 className="text-lg font-medium mb-4">Productos</h2>
+            <div className="flex">
+                <Package size={24} />
+                <h2 className="text-lg font-medium mb-4 ml-2">Productos</h2>
+            </div>
             <div className="flex flex-col md:flex-row gap-4">
                 <div className="flex-1">
                     <div className="relative">

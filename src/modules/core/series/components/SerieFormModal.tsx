@@ -17,7 +17,7 @@ interface SerieFormProps {
     onSuccess?: () => void;
     fetchData: () => void,
 }
-const booleanOptions = [
+const typeOptions = [
     { id: "1", name: "Nota de Pedido", value: series_type.order_note },
     { id: "2", name: "Régimen General", value: series_type.general },
     { id: "3", name: "Régimen Zofra", value: series_type.zofra },
@@ -115,7 +115,7 @@ export default function SerieFormModal({ onSuccess, fetchData }: SerieFormProps)
                                 control={control}
                                 render={({ field }) => (
                                     <SimpleSelector
-                                        label="Marca"
+                                        label="Usuario"
                                         value={field.value}
                                         options={data.map((user) => ({
                                             id: user.id,
@@ -145,28 +145,31 @@ export default function SerieFormModal({ onSuccess, fetchData }: SerieFormProps)
                                     <SimpleSelector
                                         label="Tipo"
                                         value={
-                                            field.value
-                                                ? booleanOptions[0].id
-                                                : booleanOptions[1].id
+                                            typeOptions.find(
+                                                (option) => option.value === field.value
+                                            )?.id ?? ""
                                         }
-                                        options={booleanOptions}
+                                        options={typeOptions}
                                         onSelect={(id) => {
-                                            const selected = booleanOptions.find(
+                                            const selected = typeOptions.find(
                                                 (option) => option.id === id
                                             );
-                                            field.onChange(selected?.value ?? true);
+
+                                            field.onChange(selected?.value ?? "");
                                         }}
+                                        error={errors.type}
                                     />
                                 )}
                             />
+
                         </div>
 
                         <Button type="submit" disabled={isSubmitting}>
                             {isSubmitting
                                 ? "Guardando..."
                                 : isEditing
-                                    ? "Actualizar Moneda"
-                                    : "Guardar Moneda"}
+                                    ? "Actualizar Serie"
+                                    : "Guardar Serie"}
                         </Button>
                     </form>
 

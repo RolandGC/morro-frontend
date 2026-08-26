@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import InputText from "@/components/InputText";
@@ -11,6 +11,7 @@ import { CustomerForm, customerSchema } from "../validators/customerSchema";
 import { customerService } from "../services/customer.service";
 import { APIS_PERU_BASE_URL, APIS_PERU_TOKEN } from "@/config/environment";
 import { doc_type } from "@/types/types";
+import axios from "axios";
 
 interface CustomerFormProps {
     onSuccess?: () => void;
@@ -262,6 +263,18 @@ export default function CustomerFormModal({ onSuccess, fetchData }: CustomerForm
         } catch (error) {
             showToast("Error al guardar el cliente", "error")
             console.error(error)
+            if (axios.isAxiosError(error)) {
+
+                if (error.response?.status === 409) {
+                    setError("doc_number", {
+                        type: "backend",
+                        message: error.response?.data?.message || "Ya existe un cliente con ese documento",
+                    });
+                    return;
+                }
+            } else {
+                console.log('Error desconocido:', error);
+            }
         }
     };
 
@@ -269,7 +282,8 @@ export default function CustomerFormModal({ onSuccess, fetchData }: CustomerForm
         <Dialog open={open} onOpenChange={close}>
             <DialogContent className="lg:max-w-2xl max-h-[90vh] overflow-y-auto sm:max-w-sm">
                 <DialogHeader>
-                    <DialogTitle className="font-bold text-2xl">{isEditing ? "Editar Cliente" : "Crear Cliente"}</DialogTitle>
+                    <DialogTitle className="font-bold text-2xl">{isEditing ? "Editar Cliente" : "Agregar Cliente"}</DialogTitle>
+                    <DialogDescription>{isEditing ? "Modifica la información del cliente" : "Completa los datos para registrar un cliente"}</DialogDescription>
                 </DialogHeader>
                 <div className="flex flex-col gap-4 w-full">
                     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 w-full">
@@ -285,10 +299,7 @@ export default function CustomerFormModal({ onSuccess, fetchData }: CustomerForm
                                             options={docTypes}
                                             onSelect={(id) => {
                                                 const selected = docTypes.find((r) => r.id === id);
-
                                                 field.onChange(selected?.value ?? "");
-
-                                                // Limpiar datos anteriores
                                                 setValue("doc_number", "");
                                                 setValue("full_name", "");
                                                 setValue("address", "");
@@ -325,7 +336,7 @@ export default function CustomerFormModal({ onSuccess, fetchData }: CustomerForm
                                 error={errors.full_name}
                             />
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                             <InputText
                                 name="address"
                                 label="Dirección"

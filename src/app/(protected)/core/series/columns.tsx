@@ -11,6 +11,7 @@ import Swal from "sweetalert2"
 import { Serie } from "@/modules/core/series/types/serie.types"
 import { useSerieStore } from "@/modules/core/series/store/serie.store"
 import { serieService } from "@/modules/core/series/services/serie.service"
+import { translateSerieType } from "@/modules/core/series/utils"
 
 interface ColumnsProps {
     fetchData: () => Promise<void>;
@@ -24,7 +25,7 @@ export const getColumns = ({ fetchData }: ColumnsProps): ColumnDef<Serie>[] => [
     },
     
     {
-        accessorFn: (row) => row.type,
+        accessorFn: (row) => translateSerieType(row.type),
         id: "tipo",
         header: "Tipo",
     },

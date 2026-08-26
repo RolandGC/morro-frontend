@@ -181,7 +181,7 @@ export default function ModalUserForm({ onSuccess, fetchUsers }: UserFormProps) 
         <Dialog open={open} onOpenChange={close}>
             <DialogContent className="lg:max-w-2xl max-h-[90vh] overflow-y-auto sm:max-w-sm">
                 <DialogHeader>
-                    <DialogTitle className="font-bold text-2xl">{isEditing ? "Editar empresa" : "Crear Empresa"}</DialogTitle>
+                    <DialogTitle className="font-bold text-2xl">{isEditing ? "Editar usuario" : "Crear usuario"}</DialogTitle>
                 </DialogHeader>
                 <div className="flex flex-col gap-4 w-full">
                     <form
