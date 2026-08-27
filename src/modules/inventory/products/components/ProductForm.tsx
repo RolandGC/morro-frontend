@@ -25,12 +25,12 @@ export default function ProductFormModal({ onSuccess, fetchData }: ProductFormPr
     const { notify: showToast } = useToast();
     const defaultValues = product
 
-    const { register, handleSubmit, 
-        control, reset: resetForm, 
+    const { register, handleSubmit,
+        control, reset: resetForm,
         formState: { errors } } = useForm<ProductForm>({
-        resolver: zodResolver(productSchema),
-        defaultValues,
-    });
+            resolver: zodResolver(productSchema),
+            defaultValues,
+        });
     const brands = useBrandStore((state) => state.brands);
     const categories = useCategoryStore((state) => state.categories);
 
@@ -233,10 +233,18 @@ export default function ProductFormModal({ onSuccess, fetchData }: ProductFormPr
                                 )}
                             />
                         </div>
-
-                        <Button type="submit">
-                            {isEditing ? "Actualizar producto" : "Guardar producto"}
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={close}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button type="submit">
+                                {isEditing ? "Actualizar producto" : "Guardar producto"}
+                            </Button>
+                        </div>
                     </form>
                 </div>
             </DialogContent>

@@ -27,12 +27,12 @@ export default function WarehouseFormModal({ onSuccess, fetchWarehouses }: Wareh
     const defaultValues = warehouse;
     const { notify: showToast } = useToast();
     //const {company, companies} = useCompanyStore()
-    const [companies, setCompanies ] = useState<Company[]>([]);
+    const [companies, setCompanies] = useState<Company[]>([]);
 
     useEffect(() => {
         const fetchCompanies = async () => {
             try {
-                const categoryResponse = await companyService.getAllCompanies({is_active: true});
+                const categoryResponse = await companyService.getAllCompanies({ is_active: true });
                 if (categoryResponse.status === 200) {
                     setCompanies(categoryResponse.data.data);
                 }
@@ -122,7 +122,7 @@ export default function WarehouseFormModal({ onSuccess, fetchWarehouses }: Wareh
                             />
                         </div>
                         <div>
-                        <Controller
+                            <Controller
                                 name="company_id"
                                 control={control}
                                 render={({ field }) => (
@@ -140,7 +140,7 @@ export default function WarehouseFormModal({ onSuccess, fetchWarehouses }: Wareh
                             />
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            
+
 
                             <Controller
                                 name="type"
@@ -179,14 +179,22 @@ export default function WarehouseFormModal({ onSuccess, fetchWarehouses }: Wareh
                                 )}
                             />
                         </div>
-
-                        <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting
-                                ? "Guardando..."
-                                : isEditing
-                                    ? "Actualizar almacén"
-                                    : "Guardar almacén"}
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={close}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button type="submit" disabled={isSubmitting}>
+                                {isSubmitting
+                                    ? "Guardando..."
+                                    : isEditing
+                                        ? "Actualizar almacén"
+                                        : "Guardar almacén"}
+                            </Button>
+                        </div>
                     </form>
 
                 </div>

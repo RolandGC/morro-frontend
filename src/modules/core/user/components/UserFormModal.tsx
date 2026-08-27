@@ -33,7 +33,7 @@ export default function ModalUserForm({ onSuccess, fetchUsers }: UserFormProps) 
     const { user, isEditing, user_id, open, close } = useUserStore();
     const { notify: showToast } = useToast();
     const [companies, setCompanies] = useState<Company[]>([]);
-    const [roles, setRules]= useState<Role[]>([])
+    const [roles, setRules] = useState<Role[]>([])
     const [isSearchingDni, setIsSearchingDni] = useState(false);
 
     const {
@@ -327,7 +327,7 @@ export default function ModalUserForm({ onSuccess, fetchUsers }: UserFormProps) 
                                                                     field.value.filter(
                                                                         (id) =>
                                                                             id !==
-                                                                        role.id
+                                                                            role.id
                                                                     )
                                                                 );
                                                             }
@@ -395,14 +395,22 @@ export default function ModalUserForm({ onSuccess, fetchUsers }: UserFormProps) 
                             />
 
                         </div>
-
-                        <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting
-                                ? "Guardando..."
-                                : isEditing
-                                    ? "Actualizar usuario"
-                                    : "Guardar usuario"}
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={close}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button type="submit" disabled={isSubmitting}>
+                                {isSubmitting
+                                    ? "Guardando..."
+                                    : isEditing
+                                        ? "Actualizar usuario"
+                                        : "Guardar usuario"}
+                            </Button>
+                        </div>
                     </form>
                 </div>
             </DialogContent>

@@ -187,14 +187,22 @@ export default function SupplierFormModal({ onSuccess, fetchData }: SupplierForm
                                 />
                             )}
                         />
-
-                        <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting
-                                ? "Guardando..."
-                                : isEditing
-                                    ? "Actualizar proveedor"
-                                    : "Guardar proveedor"}
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={close}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button type="submit" disabled={isSubmitting}>
+                                {isSubmitting
+                                    ? "Guardando..."
+                                    : isEditing
+                                        ? "Actualizar proveedor"
+                                        : "Guardar proveedor"}
+                            </Button>
+                        </div>
                     </form>
 
                 </div>

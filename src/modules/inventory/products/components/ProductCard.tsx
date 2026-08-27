@@ -71,7 +71,7 @@ export function ProductCard({
                 <button
                     type="button"
                     onClick={onRemove}
-                    className="mt-1 text-red-500 hover:text-red-600"
+                    className="mt-1 ml-2 bg-red-600 text-white hover:bg-red-400 rounded-sm"
                 >
                     <X size={18} strokeWidth={1.8} />
                 </button>

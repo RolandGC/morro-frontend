@@ -163,14 +163,22 @@ export default function SerieFormModal({ onSuccess, fetchData }: SerieFormProps)
                             />
 
                         </div>
-
-                        <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting
-                                ? "Guardando..."
-                                : isEditing
-                                    ? "Actualizar Serie"
-                                    : "Guardar Serie"}
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={close}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button type="submit" disabled={isSubmitting}>
+                                {isSubmitting
+                                    ? "Guardando..."
+                                    : isEditing
+                                        ? "Actualizar Serie"
+                                        : "Guardar Serie"}
+                            </Button>
+                        </div>
                     </form>
 
                 </div>

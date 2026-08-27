@@ -78,7 +78,7 @@ export default function CompanyFormModal({ onSuccess, fetchCompanies }: CompanyF
             setIsSearch(false);
         }
     };
-    
+
     const onSubmit = async (company: CompanyForm) => {
         try {
             let response;
@@ -156,13 +156,22 @@ export default function CompanyFormModal({ onSuccess, fetchCompanies }: CompanyF
                             />
                         </div>
 
-                        <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting
-                                ? "Guardando..."
-                                : isEditing
-                                    ? "Actualizar empresa"
-                                    : "Guardar empresa"}
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={close}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button type="submit" disabled={isSubmitting}>
+                                {isSubmitting
+                                    ? "Guardando..."
+                                    : isEditing
+                                        ? "Actualizar empresa"
+                                        : "Guardar empresa"}
+                            </Button>
+                        </div>
                     </form>
 
                 </div>

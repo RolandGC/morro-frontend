@@ -110,14 +110,22 @@ export default function BrandFormModal({ onSuccess, fetchData }: BrandFormProps)
                                 )}
                             />
                         </div>
-
-                        <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting
-                                ? "Guardando..."
-                                : isEditing
-                                    ? "Actualizar marca"
-                                    : "Guardar marca"}
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={close}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button type="submit" disabled={isSubmitting}>
+                                {isSubmitting
+                                    ? "Guardando..."
+                                    : isEditing
+                                        ? "Actualizar marca"
+                                        : "Guardar marca"}
+                            </Button>
+                        </div>
                     </form>
 
                 </div>

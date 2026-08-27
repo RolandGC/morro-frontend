@@ -125,14 +125,22 @@ export default function CurrencyFormModal({ onSuccess, fetchData }: CurrencyForm
                                 )}
                             />
                         </div>
-
-                        <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting
-                                ? "Guardando..."
-                                : isEditing
-                                    ? "Actualizar Moneda"
-                                    : "Guardar Moneda"}
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={close}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button type="submit" disabled={isSubmitting}>
+                                {isSubmitting
+                                    ? "Guardando..."
+                                    : isEditing
+                                        ? "Actualizar Moneda"
+                                        : "Guardar Moneda"}
+                            </Button>
+                        </div>
                     </form>
 
                 </div>

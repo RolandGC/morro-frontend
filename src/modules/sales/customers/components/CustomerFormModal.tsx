@@ -360,14 +360,22 @@ export default function CustomerFormModal({ onSuccess, fetchData }: CustomerForm
                                 error={errors.phone}
                             />
                         </div>
-
-                        <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting
-                                ? "Guardando..."
-                                : isEditing
-                                    ? "Actualizar cliente"
-                                    : "Guardar cliente"}
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={close}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button type="submit" disabled={isSubmitting}>
+                                {isSubmitting
+                                    ? "Guardando..."
+                                    : isEditing
+                                        ? "Actualizar cliente"
+                                        : "Guardar cliente"}
+                            </Button>
+                        </div>
                     </form>
 
                 </div>

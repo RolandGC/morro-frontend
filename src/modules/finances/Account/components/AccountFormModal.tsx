@@ -118,9 +118,9 @@ export default function AccountFormModal({ onSuccess, fetchData }: AccountFormPr
                     <DialogTitle className="font-bold text-2xl">{isEditing ? "Editar cuenta" : "Crear cuenta"}</DialogTitle>
                 </DialogHeader>
                 <div className="flex flex-col gap-4 w-full">
-                    <form onSubmit={handleSubmit(onSubmit,(errors) => {
+                    <form onSubmit={handleSubmit(onSubmit, (errors) => {
                         console.log("❌ ERRORES ZOD:", errors);
-        })} className="flex flex-col gap-4 w-full">
+                    })} className="flex flex-col gap-4 w-full">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <Controller
                                 name="company_id"
@@ -206,16 +206,24 @@ export default function AccountFormModal({ onSuccess, fetchData }: AccountFormPr
                                     />
                                 )}
                             />
-                            
-                        </div>
 
-                        <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting
-                                ? "Guardando..."
-                                : isEditing
-                                    ? "Actualizar cuenta"
-                                    : "Guardar cuenta"}
-                        </Button>
+                        </div>
+                        <div className="flex items-center justify-end gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={close}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button type="submit" disabled={isSubmitting}>
+                                {isSubmitting
+                                    ? "Guardando..."
+                                    : isEditing
+                                        ? "Actualizar cuenta"
+                                        : "Guardar cuenta"}
+                            </Button>
+                        </div>
                     </form>
 
                 </div>

@@ -232,19 +232,27 @@ export default function RoleFormModal({ onSuccess, fetchData }: RoleFormProps) {
                                     />
                                 </div>
                             )}
-
-                            <Button
-                                type="submit"
-                                disabled={isEditing ? permissionsForm.formState.isSubmitting : createForm.formState.isSubmitting}
-                            >
-                                {isEditing
-                                    ? permissionsForm.formState.isSubmitting
-                                        ? "Guardando..."
-                                        : "Actualizar permisos"
-                                    : createForm.formState.isSubmitting
-                                        ? "Guardando..."
-                                        : "Guardar Rol"}
-                            </Button>
+                            <div className="flex items-center justify-end gap-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={close}
+                                >
+                                    Cancelar
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    disabled={isEditing ? permissionsForm.formState.isSubmitting : createForm.formState.isSubmitting}
+                                >
+                                    {isEditing
+                                        ? permissionsForm.formState.isSubmitting
+                                            ? "Guardando..."
+                                            : "Actualizar permisos"
+                                        : createForm.formState.isSubmitting
+                                            ? "Guardando..."
+                                            : "Guardar Rol"}
+                                </Button>
+                            </div>
                         </form>
                     )}
                 </div>
