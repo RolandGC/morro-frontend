@@ -34,6 +34,11 @@ export default function CompaniesPage() {
     }, []);
 
     const handleSelectCompany = (company: Company) => {
+        localStorage.setItem(
+            'selected_company',
+            JSON.stringify(company)
+        );
+
         const selectedCompany = async () => {
             try {
                 const response = await companyService.selectCompany(company.id);
@@ -48,9 +53,7 @@ export default function CompaniesPage() {
                 setError('No se pudo seleccionar la empresa');
             }
         };
-
         selectedCompany();
-        
     };
 
     if (loading) {

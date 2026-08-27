@@ -136,7 +136,7 @@ export default function ProductsPage() {
             </div>
 
             <DataTable columns={getColumns({ fetchData })} data={data} productFilter={productFilter} handleProductFilter={handleProductFilter} totalPages={pages?.totalPages ?? 1} />
-            <ProductForm onSuccess={() => close()} />
+            <ProductForm onSuccess={() => close()} fetchData={fetchData} />
             <ProductUnitModal onSuccess={() => close()} />
             <RequirePermission permission="products.read">
                 <p>Contenido protegido: Solo usuarios con permiso "products.view" pueden ver esto.</p>

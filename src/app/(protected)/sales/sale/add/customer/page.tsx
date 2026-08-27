@@ -27,6 +27,12 @@ export default function ClienteStep() {
     const [searchCustomer, setSearchCustomer] = useState("");
     const [customerLoading, setCustomerLoading] = useState(false);
     const [customerResults, setCustomerResults] = useState<Customer[]>([]);
+
+    const storedCompany = localStorage.getItem('selected_company');
+
+    const company: Company | null = storedCompany
+        ? JSON.parse(storedCompany)
+        : null;
     
     useEffect(() => {
         const fetch = async () => {
@@ -97,19 +103,7 @@ export default function ClienteStep() {
             <h2 className="text-lg font-medium mb-4">Cliente</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Controller
-                    name="company_id"
-                    control={control}
-                    render={({ field, fieldState }) => (
-                        <SimpleSelector
-                            label="Empresa"
-                            value={field.value}
-                            options={companies.map((c) => ({ id: c.id, name: c.name }))}
-                            onSelect={field.onChange}
-                            error={fieldState.error}
-                        />
-                    )}
-                />
+                <input type="text" value={company?.name} />
 
                 <Controller
                     name="warehouse_id"
@@ -155,7 +149,7 @@ export default function ClienteStep() {
                             </div>
 
                             {/* Listado */}
-                            <div className="mt-3 space-y-2 max-h-[500px] overflow-y-auto pr-1">
+                            <div className="mt-3 space-y-2 max-h-125 overflow-y-auto pr-1">
                                 {customerLoading ? (
                                     <div className="py-8 text-center text-sm text-gray-400">
                                         Buscando cliente...

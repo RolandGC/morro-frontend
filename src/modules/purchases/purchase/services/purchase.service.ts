@@ -24,6 +24,14 @@ class PurchaseService {
         const response = await apiClient.delete(`${endpoints.PURCHASES.DELETE}/${id}`);
         return response;
     }
+    async complete(id: string){
+        const response = await apiClient.post(endpoints.PURCHASES.COMPLETE(id));
+        return response;
+    }
+    async cancel(id: string) {
+        const response = await apiClient.post(endpoints.PURCHASES.CANCEL(id));
+        return response;
+    }
 }
 
 export const purchaseService = new PurchaseService();

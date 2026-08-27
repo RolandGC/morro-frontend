@@ -17,9 +17,10 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 
 interface ProductFormProps {
     onSuccess?: () => void;
+    fetchData: () => void,
 }
 
-export default function ProductFormModal({ onSuccess }: ProductFormProps) {
+export default function ProductFormModal({ onSuccess, fetchData }: ProductFormProps) {
     const { product, isEditing, product_id, open, close } = useProductStore();
     const { notify: showToast } = useToast();
     const defaultValues = product
@@ -76,7 +77,7 @@ export default function ProductFormModal({ onSuccess }: ProductFormProps) {
             resetForm({
                 name: product.name ?? "",
                 model: product.model ?? "",
-                unit_base: product.unit_base ?? "",
+                //unit_base: product.unit_base ?? "",
                 brand_id: product.brand_id ?? "",
                 category_id: product.category_id ?? "",
                 regime: product.regime,
@@ -105,8 +106,8 @@ export default function ProductFormModal({ onSuccess }: ProductFormProps) {
                     "success"
                 );
                 resetForm();
-                //resetStore();
-
+                await fetchData();
+                close();
                 onSuccess?.();
             }
         } catch (error) {
@@ -193,12 +194,12 @@ export default function ProductFormModal({ onSuccess }: ProductFormProps) {
                             )}
                         />
 
-                        <InputText
+                        {/* <InputText
                             name="unit_base"
                             label="Unidad de medida"
                             register={register}
                             error={errors.unit_base}
-                        />
+                        /> */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <Controller
                                 name="has_igv"

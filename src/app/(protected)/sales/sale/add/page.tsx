@@ -13,16 +13,12 @@ import { SaleForm } from "@/modules/sales/sale/validators/saleSchema";
 export default function SaleAddPage() {
     const { control, getValues, setValue, watch, trigger } = useFormContext<SaleForm>();
     const router = useRouter();
-
     const { fields, append, remove } = useFieldArray<SaleForm, "items">({
         control,
         name: "items",
     });
-
     const items = watch("items");
-
     const [products, setProducts] = useState<Product[]>([]);
-
     const [searchProduct, setSearchProduct] = useState("");
     const [productResults, setProductResults] = useState<Product[]>([]);
     const [productLoading, setProductLoading] = useState(false);
@@ -44,24 +40,18 @@ export default function SaleAddPage() {
     const fetchProducts = async () => {
         try {
             setProductLoading(true);
-
             const response = await productService.getAll(productFilter);
-
             if (response.status === 200) {
                 const newProducts: Product[] = response.data.data;
 
                 setProductResults(newProducts);
-
-                // Guardamos los productos encontrados en cache
                 setProducts((prev) => {
                     const map = new Map(
                         prev.map((product) => [product.id, product])
                     );
-
                     newProducts.forEach((product) => {
                         map.set(product.id, product);
                     });
-
                     return Array.from(map.values());
                 });
             } else {
@@ -155,7 +145,7 @@ export default function SaleAddPage() {
                         <input
                             type="text"
                             placeholder="Escanear código de barras (presione Enter)..."
-                            className="w-full pl-10 pr-3 py-2 border rounded-md pl-10 text-sm"
+                            className="w-full pl-10 pr-3 py-2 border rounded-md text-sm"
                         />
                     </div>
 
@@ -169,10 +159,10 @@ export default function SaleAddPage() {
                             value={searchProduct}
                             onChange={(e) => setSearchProduct(e.target.value)}
                             placeholder="Buscar producto..."
-                            className="w-full pl-10 pr-3 py-2 border rounded-md pl-10"
+                            className="w-full pl-10 pr-3 py-2 border rounded-md"
                         />
                     </div>
-                    <div className="mt-3 space-y-2 max-h-[500px] overflow-y-auto pr-1">
+                    <div className="mt-3 space-y-2 max-h-125 overflow-y-auto pr-1">
                         {productLoading ? (
                             <div className="py-8 text-center text-sm text-gray-400">
                                 Buscando productos...
@@ -199,7 +189,7 @@ export default function SaleAddPage() {
                     </div>
                     <div className="mt-4 space-y-3">
                         {!items || items.length === 0 ? (
-                            <div className="flex min-h-[350px] flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 px-6 text-center">
+                            <div className="flex min-h-87.5 flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 px-6 text-center">
                                 <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
                                     <ShoppingCart
                                         size={28}

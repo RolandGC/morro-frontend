@@ -1,18 +1,16 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { MoreHorizontal, ArrowUpDown, Pencil, Trash2 } from "lucide-react"
+import { MoreHorizontal, ArrowUpDown, Pencil, Trash2, CircleCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu"
 import { Checkbox } from "@/components/ui/checkbox"
 import { formatDate } from "@/hooks/dateFormat"
 import { useToast } from "@/hooks/useToast"
 import Swal from "sweetalert2"
-import { Supplier } from "@/modules/purchases/suppliers/types/suppliers.types"
-import { useSupplierStore } from "@/modules/purchases/suppliers/store/supplier.store"
-import { supplierService } from "@/modules/purchases/suppliers/services/supplier.service"
 import { Purchase } from "@/modules/purchases/purchase/types/purchase.types"
 import { translatePurchaseStatus } from "@/modules/purchases/purchase/utils"
+import { purchaseService } from "@/modules/purchases/purchase/services/purchase.service"
 
 interface ColumnsProps {
     fetchData: () => Promise<void>;
@@ -44,32 +42,71 @@ export const getColumns = ({ fetchData }: ColumnsProps): ColumnDef<Purchase>[] =
         id: "created_at",
         header: "Fecha de creación",
     }, */
-    /* {
+    {
         id: "Opciones",
         header: "Opciones",
         cell: ({ row }) => {
-            const supplier = row.original;
-            const { openEdit } = useSupplierStore();
+            const purchase = row.original;
             const { notify } = useToast();
 
-            const handleEdit = () => {
-                openEdit({
-                    name: supplier.name,
-                    ruc: supplier.ruc,
-                    email: supplier.email,
-                    phone: supplier.phone,
-                    company_id: supplier.company_id,
-                }, supplier.id);
-            };
+            const handleConfirm = async () => {
 
-            const handleDelete = async () => {
                 const result = await Swal.fire({
                     title: "¿Estás seguro?",
-                    text: `Se eliminará el proveedor "${supplier.name}" de forma permanente.`,
+                    text: `Se confirmará la compra "${purchase.reference_doc}".`,
+                    icon: "info",
+                    showCancelButton: true,
+                    confirmButtonText: "Sí, confirmar",
+                    cancelButtonText: "Cancelar",
+                    reverseButtons: true,
+                    customClass: {
+                        confirmButton:
+                            "bg-green-600 hover:bg-gray-300 text-white font-medium px-4 py-2 rounded-lg ml-2",
+                        cancelButton:
+                            "bg-gray-500 hover:bg-gray-600 text-white font-medium px-4 py-2 rounded-lg mr-2",
+                    },
+                    buttonsStyling: false
+                });
+
+                // Si el usuario cancela
+                if (!result.isConfirmed) {
+                    return;
+                }
+
+                try {
+                    await purchaseService.complete(purchase.id);
+
+                    await Swal.fire({
+                        title: "¡Confirmado!",
+                        text: "La compra fue confirmado correctamente.",
+                        icon: "success",
+                        confirmButtonText: "Aceptar"
+                    });
+
+                    notify("Compra confirmada correctamente", "success", 3000);
+
+                    await fetchData();
+
+                } catch (error) {
+                    Swal.fire({
+                        title: "Error",
+                        text: "No se pudo confirmar la compra.",
+                        icon: "error"
+                    });
+
+                    notify("Error al confirmar la compra", "error", 3000);
+                    console.error(error);
+                }
+            };
+
+            const handleCancel = async () => {
+                const result = await Swal.fire({
+                    title: "¿Cancelar compra?",
+                    text: `Se cancelará la compra "${purchase.reference_doc}".`,
                     icon: "warning",
                     showCancelButton: true,
-                    confirmButtonText: "Sí, eliminar",
-                    cancelButtonText: "Cancelar",
+                    confirmButtonText: "Sí, cancelar",
+                    cancelButtonText: "No, volver",
                     reverseButtons: true,
                     customClass: {
                         confirmButton:
@@ -86,41 +123,53 @@ export const getColumns = ({ fetchData }: ColumnsProps): ColumnDef<Purchase>[] =
                 }
 
                 try {
-                    await supplierService.delete(supplier.id);
+                    await purchaseService.cancel(purchase.id);
 
                     await Swal.fire({
-                        title: "¡Eliminado!",
-                        text: "La proveedor fue eliminada correctamente.",
+                        title: "¡Cancelado!",
+                        text: "La compra fue cancelada correctamente.",
                         icon: "success",
                         confirmButtonText: "Aceptar"
                     });
 
-                    notify("Proveedor eliminada correctamente", "success", 3000);
+                    notify("Compra cancelada correctamente", "success", 3000);
 
                     await fetchData();
 
                 } catch (error) {
                     Swal.fire({
                         title: "Error",
-                        text: "No se pudo eliminar el proveedor.",
+                        text: "No se pudo cancelar la compra.",
                         icon: "error"
                     });
 
-                    notify("Error al eliminar el proveedor", "error", 3000);
+                    notify("Error al cancelar la compra", "error", 3000);
                     console.error(error);
                 }
             };
 
             return (
                 <div className="flex gap-2">
-                    <Button variant="ghost" size="icon" onClick={handleEdit} title="Editar proveedor">
-                        <Pencil className="h-4 w-4" />
+                    <Button
+                        variant="ghost"
+                        onClick={handleConfirm}
+                        disabled={purchase.status !== "pending"}
+                        className="bg-green-700 text-white hover:bg-green-800 hover:text-white text-xs"
+                        title="confirmar compra"
+                    >
+                        Confirmar
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={handleDelete} title="Eliminar proveedor">
-                        <Trash2 className="h-4 w-4 text-red-500" />
+                    <Button
+                        variant="ghost"
+                        onClick={handleCancel}
+                        title="Cancelar compra"
+                        disabled={purchase.status !== "pending"}
+                        className="bg-red-700 text-white hover:bg-red-800 hover:text-white text-xs"
+                    >
+                        Cancelar
                     </Button>
                 </div>
             );
         },
-    } */
+    }
 ]

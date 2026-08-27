@@ -37,8 +37,8 @@ export const productSchema = z.object({
         .string()
         .trim()
         .min(1, "La unidad base es obligatoria")
-        .max(10, "La unidad base no puede superar los 10 caracteres"),
-
+        .max(10, "La unidad base no puede superar los 10 caracteres")
+        .optional(),
     regime: z.nativeEnum(regime),
 
     has_igv: z.boolean(),

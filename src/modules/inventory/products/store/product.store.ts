@@ -5,7 +5,7 @@ import { ProductForm } from "../validators/productSchema";
 const initialState: ProductForm = {
     name: "",
     model: "",
-    unit_base: "",
+    //unit_base: "",
     regime: regime.general,
     has_igv: true,
     track_stock: true,

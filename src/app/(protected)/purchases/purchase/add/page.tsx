@@ -365,12 +365,15 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
                         )}
                     />
                 </div>
-                <Button
-                    type="button"
-                    onClick={handleAddProduct}
-                >
-                    + Agregar producto
-                </Button>
+                <div className="flex items-center justify-center">
+                    <Button
+                        type="button"
+                        onClick={handleAddProduct}
+                        className="px-6"
+                    >
+                        + Agregar producto
+                    </Button>
+                </div>
                 <div className="overflow-hidden rounded-md border">
                     <Table>
                         <TableHeader>
@@ -543,13 +546,15 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
                         )}
                     </DialogContent>
                 </Dialog>
-                <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting
-                        ? "Guardando..."
-                        : isEditing
-                            ? "Actualizar compra"
-                            : "Guardar compra"}
-                </Button>
+                <div className="flex items-center justify-center">
+                    <Button type="submit" className="px-6" disabled={isSubmitting}>
+                        {isSubmitting
+                            ? "Guardando..."
+                            : isEditing
+                                ? "Actualizar compra"
+                                : "Guardar compra"}
+                    </Button>
+                </div>
             </form>
         </div>
     );

@@ -94,12 +94,12 @@ const data = {
       ),
       items: [
         {
-          title: "Proveedores",
-          url: "/purchases/suppliers",
-        },
-        {
           title: "Compras",
           url: "/purchases/purchase",
+        },
+        {
+          title: "Proveedores",
+          url: "/purchases/suppliers",
         },
       ],
     },
