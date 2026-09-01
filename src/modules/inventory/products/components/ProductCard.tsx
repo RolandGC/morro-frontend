@@ -81,8 +81,8 @@ export function ProductCard({
                 <button
                     type="button"
                     onClick={onDecrease}
-                    //disabled={quantity <= 1}
-                    className="flex h-9 w-[35px] items-center justify-center rounded-xl border border-gray-200 text-gray-900 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={quantity <= 1}
+                    className="flex h-9 w-8.75 items-center justify-center rounded-xl border border-gray-200 text-gray-900 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     <Minus size={16} strokeWidth={1.5} />
                 </button>
@@ -107,7 +107,7 @@ export function ProductCard({
                     type="button"
                     onClick={onIncrease}
                     //disabled={quantity >= stock || stock === undefined}
-                    className="flex h-9 w-[35px] items-center justify-center rounded-xl border border-gray-200 text-gray-900 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-9 w-8.75 items-center justify-center rounded-xl border border-gray-200 text-gray-900 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     <Plus size={16} strokeWidth={1.5} />
                 </button>

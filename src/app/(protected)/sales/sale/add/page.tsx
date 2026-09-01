@@ -9,10 +9,12 @@ import { Package, ScanBarcode, Search, ShoppingCart } from "lucide-react";
 import { ProductCard } from "@/modules/inventory/products/components/ProductCard";
 import { ProductSearchItem } from "@/modules/inventory/products/components/ProductListSell";
 import { SaleForm } from "@/modules/sales/sale/validators/saleSchema";
+import { useToast } from "@/hooks/useToast";
 
 export default function SaleAddPage() {
     const { control, getValues, setValue, watch, trigger } = useFormContext<SaleForm>();
     const router = useRouter();
+    const { success, error } = useToast();
     const { fields, append, remove } = useFieldArray<SaleForm, "items">({
         control,
         name: "items",
@@ -32,6 +34,7 @@ export default function SaleAddPage() {
         is_active: true,
         model: "",
         track_stock: undefined,
+        barcode: '',
         page: 1,
         limit: 7,
         //order: "asc",
@@ -68,8 +71,17 @@ export default function SaleAddPage() {
     };
 
     useEffect(() => {
-        fetchProducts().catch((e) => console.error(e));
+        if (productFilter.barcode) {
+            return;
+        }
+
+        const timeout = setTimeout(() => {
+            fetchProducts().catch((e) => console.error(e));
+        }, 300);
+
+        return () => clearTimeout(timeout);
     }, [productFilter]);
+
 
     useEffect(() => {
         const timeout = setTimeout(() => {
@@ -84,6 +96,36 @@ export default function SaleAddPage() {
     }, [searchProduct]);
 
     const handleSelectProduct = async (product: Product) => {
+        const availableStock = getAvailableStock(product);
+
+        if (availableStock <= 0) {
+            error(`No hay stock disponible de ${product.name}`);
+            return;
+        }
+
+        const existingIndex = items.findIndex(
+            (item) => item.product_id === product.id
+        );
+
+        if (existingIndex !== -1) {
+            const currentQuantity = Number(
+                getValues(`items.${existingIndex}.quantity`) || 0
+            );
+
+            setValue(
+                `items.${existingIndex}.quantity`,
+                currentQuantity + 1,
+                {
+                    shouldValidate: true,
+                    shouldDirty: true,
+                }
+            );
+
+            success(`${product.name} agregado al carrito`);
+
+            return;
+        }
+
         append({
             product_id: product.id,
             product_unit_id: "",
@@ -94,19 +136,56 @@ export default function SaleAddPage() {
             subtotal: 0,
             is_bonus: false,
         });
+
+        success(`${product.name} agregado al carrito`);
     };
 
+
     const handleIncrease = (index: number) => {
-        const currentQuantity = Number(
-            getValues(`items.${index}.quantity`) || 0
+        const item = getValues(`items.${index}`);
+
+        if (!item) return;
+
+        const product = products.find(
+            (p) => p.id === item.product_id
         );
+
+        if (!product) return;
+
+        const currentQuantity = Number(item.quantity || 0);
+        const stock = Number(
+            product.warehouse_stock?.[0]?.quantity ?? 0
+        );
+
+        // Cantidad de ESTE producto considerando todos los cards
+        const quantityInCart = items.reduce((total, currentItem, i) => {
+            if (i === index) return total;
+
+            if (currentItem.product_id !== product.id) {
+                return total;
+            }
+
+            return total + Number(currentItem.quantity ?? 0);
+        }, 0);
+
+        // Stock que queda disponible para este incremento
+        const availableStock =
+            stock - quantityInCart - currentQuantity;
+
+        if (availableStock <= 0) {
+            return;
+        }
 
         setValue(
             `items.${index}.quantity`,
             currentQuantity + 1,
-            { shouldValidate: true, shouldDirty: true }
+            {
+                shouldValidate: true,
+                shouldDirty: true,
+            }
         );
     };
+
 
     const handleDecrease = (index: number) => {
         const currentQuantity = Number(
@@ -129,6 +208,123 @@ export default function SaleAddPage() {
         return acc + quantity * unitPrice;
     }, 0) ?? 0;
 
+    const getAvailableStock = (product: Product) => {
+        const stock = Number(
+            product?.warehouse_stock?.[0]?.quantity ?? 0
+        );
+
+        const quantityInCart =
+            items?.reduce((total, item) => {
+                if (item.product_id !== product.id) {
+                    return total;
+                }
+
+                return total + Number(item.quantity ?? 0);
+            }, 0) ?? 0;
+
+        return Math.max(0, stock - quantityInCart);
+    };
+
+    const handleBarcodeSearch = async () => {
+        const barcode = productFilter.barcode.trim();
+
+        if (!barcode) return;
+
+        try {
+            setProductLoading(true);
+
+            const response = await productService.getAll({
+                ...productFilter,
+                barcode,
+                name: "",
+                page: 1,
+                limit: 1,
+            });
+
+            if (
+                response.status !== 200 ||
+                !response.data?.data ||
+                response.data.data.length === 0
+            ) {
+                error(
+                    `No se encontró ningún producto con el código ${barcode}`
+                );
+                return;
+            }
+
+            const product: Product = response.data.data[0];
+
+            // Guardamos el producto para poder mostrarlo en el carrito
+            setProducts((prev) => {
+                const map = new Map(
+                    prev.map((product) => [product.id, product])
+                );
+
+                map.set(product.id, product);
+
+                return Array.from(map.values());
+            });
+
+            const availableStock = getAvailableStock(product);
+
+            if (availableStock <= 0) {
+                error(`No hay stock disponible de ${product.name}`);
+                return;
+            }
+
+            // Buscar si ya está en el carrito
+            const existingIndex = items.findIndex(
+                (item) => item.product_id === product.id
+            );
+
+            if (existingIndex !== -1) {
+                const currentQuantity = Number(
+                    getValues(`items.${existingIndex}.quantity`) || 0
+                );
+
+                setValue(
+                    `items.${existingIndex}.quantity`,
+                    currentQuantity + 1,
+                    {
+                        shouldValidate: true,
+                        shouldDirty: true,
+                    }
+                );
+            } else {
+                append({
+                    product_id: product.id,
+                    product_unit_id: "",
+                    quantity: 1,
+                    unit_quantity: 1,
+                    unit_price: product.unit_price ?? 0,
+                    igv_amount: 0,
+                    subtotal: 0,
+                    is_bonus: false,
+                });
+            }
+
+            // Toast solamente para el escaneo
+            success(`${product.name} agregado al carrito`);
+        } catch (err) {
+            console.error(
+                "Error buscando producto por código de barras:",
+                err
+            );
+
+            error("Ocurrió un error al buscar el producto");
+        } finally {
+            setProductLoading(false);
+
+            // Limpiar el input del scanner
+            setProductFilter((prev) => ({
+                ...prev,
+                barcode: "",
+            }));
+        }
+    };
+
+
+
     return (
         <div className="container mx-auto py-4 px-4">
             <div className="flex">
@@ -142,12 +338,27 @@ export default function SaleAddPage() {
                             size={20}
                             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                         />
+
                         <input
                             type="text"
                             placeholder="Escanear código de barras (presione Enter)..."
                             className="w-full pl-10 pr-3 py-2 border rounded-md text-sm"
+                            value={productFilter.barcode}
+                            onChange={(e) =>
+                                setProductFilter((prev) => ({
+                                    ...prev,
+                                    barcode: e.target.value,
+                                }))
+                            }
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                    e.preventDefault();
+                                    handleBarcodeSearch();
+                                }
+                            }}
                         />
                     </div>
+
 
                     <div className="relative mt-3">
                         <Search
@@ -177,6 +388,7 @@ export default function SaleAddPage() {
                                     key={product.id}
                                     product={product}
                                     onSelect={handleSelectProduct}
+                                    availableStock={getAvailableStock(product)}
                                 />
                             ))
                         )}

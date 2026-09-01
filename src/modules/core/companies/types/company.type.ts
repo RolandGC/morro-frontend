@@ -1,3 +1,5 @@
+import { Warehouse } from "../../warehouses/types/warehouse.types";
+
 export interface Company {
     id: string;
     name: string;
@@ -11,6 +13,7 @@ export interface Company {
     is_active: boolean;
     created_at: string | null;
     updated_at: string | null;
+    warehouse: Warehouse;
 }
 
 export interface CompanyQueryParams {

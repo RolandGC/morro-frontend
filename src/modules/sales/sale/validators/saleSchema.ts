@@ -30,9 +30,9 @@ export const saleItemSchema = z.object({
 });
 
 export const saleSchema = z.object({
-  company_id: z.uuid("Debe seleccionar una empresa"),
+  company_id: z.uuid("Debe seleccionar una empresa").optional().or(z.literal("")),
 
-  warehouse_id: z.uuid("Debe seleccionar un almacén"),
+  warehouse_id: z.uuid("Debe seleccionar un almacén").optional().or(z.literal("")),
 
   customer_id: z.uuid("Debe seleccionar un cliente"),
 
@@ -55,6 +55,7 @@ export const saleSchema = z.object({
 
 export type SaleItemForm = z.infer<typeof saleItemSchema>;
 export type SaleForm = z.infer<typeof saleSchema>;
+
 
 export function createEmptySaleForm(): SaleForm {
   return {

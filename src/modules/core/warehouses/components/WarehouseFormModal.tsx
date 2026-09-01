@@ -85,7 +85,7 @@ export default function WarehouseFormModal({ onSuccess, fetchWarehouses }: Wareh
             }
             if (response.status === 201 || response.status === 200) {
                 showToast(
-                    isEditing ? "Empresa actualizado correctamente" : "Empresa creado correctamente",
+                    isEditing ? "Almacén actualizado correctamente" : "Almacén creado correctamente",
                     "success"
                 );
                 resetForm();
@@ -94,7 +94,7 @@ export default function WarehouseFormModal({ onSuccess, fetchWarehouses }: Wareh
                 onSuccess?.();
             }
         } catch (error) {
-            showToast("Error al guardar la empresa", "error")
+            showToast("Error al guardar la alamcén", "error")
             console.error(error)
         }
     };

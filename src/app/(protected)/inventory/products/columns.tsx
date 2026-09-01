@@ -23,22 +23,22 @@ export const getColumns = ({ fetchData }: ColumnsProps): ColumnDef<Product>[] =>
         header: "Producto",
     },
     {
-        accessorFn: (row) => row.brands.name,
+        accessorFn: (row) => row?.brands?.name,
         id: "marca",
         header: "Marca",
     },
     {
-        accessorFn: (row) => row.categories.name,
+        accessorFn: (row) => row?.categories?.name,
         id: "categoria",
         header: "Categoría",
     },
     {
-        accessorFn: (row) => row.model,
+        accessorFn: (row) => row?.model,
         id: "modelo",
         header: "Modelo",
     },
     {
-        accessorFn: (row) => formatDate(row.created_at),
+        accessorFn: (row) => formatDate(row?.created_at),
         id: "Fecha de creación",
         header: "Fecha de creación",
     },

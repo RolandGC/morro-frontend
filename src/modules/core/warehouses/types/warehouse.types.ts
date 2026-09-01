@@ -20,3 +20,16 @@ export interface WarehouseQueryParams {
     is_active?: boolean | undefined;
     created_at?: string | undefined;
 }
+
+export interface WarehouseStock {
+    id: string;
+    warehouse_id: string;
+    product_id: string;
+    quantity: string;
+    avg_cost: string;
+    min_stock: string | null;
+    reorder_point: string | null;
+    updated_at: string;
+    created_at: string;
+    company_id: string;
+}

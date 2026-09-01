@@ -28,6 +28,7 @@ export interface Sale {
   companies: Company;
   warehouses: Warehouse;
   users: User;
+  notaPedidoBase64: string;
 }
 
 export interface SaleItem {

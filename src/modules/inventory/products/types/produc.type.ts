@@ -1,6 +1,7 @@
 import { Category } from "@/modules/core/category/types/category.types";
 import { Brand } from "../../brands/types/brand.types";
 import { regime } from "@/types/types";
+import { WarehouseStock } from "@/modules/core/warehouses/types/warehouse.types";
 
 export interface Product {
     id: string;
@@ -20,6 +21,7 @@ export interface Product {
     categories: Category;
     created_at: string;
     product_units: ProductUnit[];
+    warehouse_stock: WarehouseStock[];
 }
 
 export interface ProductUnit {
@@ -43,5 +45,6 @@ export interface ProductQueryParams {
     has_igv?: boolean | undefined;
     track_stock?: boolean | undefined;
     is_active?: boolean | undefined;
+    barcode?: string | undefined;
     order?: "asc" | "desc";
 }

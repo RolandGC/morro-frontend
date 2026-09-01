@@ -5,17 +5,22 @@ import { Product } from "@/modules/inventory/products/types/produc.type";
 interface ProductSearchItemProps {
     product: Product;
     onSelect: (product: Product) => void;
+    availableStock: number;
 }
 
 export function ProductSearchItem({
     product,
     onSelect,
+    availableStock,
 }: ProductSearchItemProps) {
+    const disabled = availableStock <= 0;
     return (
         <button
             type="button"
+            disabled={disabled}
             onClick={() => onSelect(product)}
-            className="w-full text-left"
+            //className="w-full text-left"
+            className={`w-full text-left ${disabled ? "cursor-not-allowed opacity-50" : "" }`}
         >
             <div className="flex items-center gap-3 rounded-xl border border-gray-200 px-3 py-2.5 transition hover:bg-gray-50">
 
@@ -33,8 +38,13 @@ export function ProductSearchItem({
                         {product.name}
                     </div>
 
-                    <div className="mt-0.5 text-xs text-gray-400">
-                        Stock: {product.stock ?? 0} unid
+                    <div
+                        className={`mt-0.5 text-xs ${availableStock <= 0
+                                ? "text-red-500"
+                                : "text-gray-400"
+                            }`}
+                    >
+                        Stock: {availableStock} unid
                     </div>
                 </div>
 
@@ -45,7 +55,7 @@ export function ProductSearchItem({
                     </div>
 
                     <div className="text-xs text-gray-400">
-                        General
+                        {product?.regime}
                     </div>
                 </div>
 
