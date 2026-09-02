@@ -33,12 +33,12 @@ export default function ProtectedLayout({
                                 <BreadcrumbList>
                                     <BreadcrumbItem className="hidden md:block">
                                         <BreadcrumbLink href="/dashboard">
-                                            Build Your Application
+                                            Dashboard
                                         </BreadcrumbLink>
                                     </BreadcrumbItem>
                                     <BreadcrumbSeparator className="hidden md:block" />
                                     <BreadcrumbItem>
-                                        <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+                                        <BreadcrumbPage>Ruta</BreadcrumbPage>
                                     </BreadcrumbItem>
                                 </BreadcrumbList>
                             </Breadcrumb>

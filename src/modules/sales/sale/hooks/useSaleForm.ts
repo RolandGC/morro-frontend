@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useSaleStore } from "../store/sale.store";
 import {
@@ -18,14 +18,6 @@ function areDraftsEqual(
   return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 }
 
-/**
- * Puente entre React Hook Form y el store de Zustand.
- *
- * - Carga el borrador persistido en RHF una vez que Zustand termina de hidratar.
- * - Escribe (write-through) cada cambio de RHF en el store, que persiste en storage.
- * - Reacciona a cambios externos del store (startNew / startEdit / clearDraft)
- *   re-sincronizando el formulario.
- */
 export function useSaleForm() {
   const form = useForm<SaleForm>({
     resolver: zodResolver(saleSchema),
@@ -34,49 +26,101 @@ export function useSaleForm() {
 
   const [ready, setReady] = useState(false);
 
-  // 1) Hidratación: recuperar el borrador persistido y cargarlo en RHF.
+  // Evita que un cambio que acaba de venir de RHF
+  // provoque un reset innecesario desde Zustand.
+  const syncingFromForm = useRef(false);
+
+  // =========================================================
+  // 1. HIDRATACIÓN
+  // =========================================================
+
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
 
     const hydrate = () => {
       const { draft } = useSaleStore.getState();
-      form.reset(normalizeSaleForm(draft));
+
+      const normalizedDraft = normalizeSaleForm(draft);
+
+      form.reset(normalizedDraft);
+
       setReady(true);
     };
 
     if (useSaleStore.persist.hasHydrated()) {
       hydrate();
     } else {
-      unsubscribe = useSaleStore.persist.onFinishHydration(hydrate);
+      unsubscribe =
+        useSaleStore.persist.onFinishHydration(hydrate);
     }
 
     return () => unsubscribe?.();
   }, [form]);
 
-  // 2) Write-through: RHF -> store (se persiste automáticamente al modificar).
+  // =========================================================
+  // 2. RHF → ZUSTAND
+  // =========================================================
+
   useEffect(() => {
     if (!ready) return;
 
     const subscription = form.watch((values) => {
-      useSaleStore.getState().setDraft(values as SaleForm);
+      syncingFromForm.current = true;
+
+      useSaleStore
+        .getState()
+        .setDraft(values as SaleForm);
+
+      // Permitimos nuevamente la sincronización
+      // después de que Zustand procese el cambio.
+      queueMicrotask(() => {
+        syncingFromForm.current = false;
+      });
     });
 
-    // Sincronización inicial para cubrir el reset de la hidratación.
-    useSaleStore.getState().setDraft(form.getValues());
+    // Sincronización inicial
+    useSaleStore
+      .getState()
+      .setDraft(form.getValues());
 
     return () => subscription.unsubscribe();
   }, [ready, form]);
 
-  // 3) Store -> RHF: re-sincronizar cuando el borrador cambia externamente.
+  // =========================================================
+  // 3. ZUSTAND → RHF
+  // =========================================================
+
   useEffect(() => {
     if (!ready) return;
 
-    const unsubscribe = useSaleStore.subscribe((state, prevState) => {
-      if (state.draft === prevState.draft) return;
-      if (!areDraftsEqual(state.draft, form.getValues())) {
-        form.reset(normalizeSaleForm(state.draft));
+    const unsubscribe = useSaleStore.subscribe(
+      (state, prevState) => {
+        if (state.draft === prevState.draft) {
+          return;
+        }
+
+        // Si el cambio viene desde RHF,
+        // NO debemos hacer reset().
+        if (syncingFromForm.current) {
+          return;
+        }
+
+        const storeDraft = normalizeSaleForm(
+          state.draft
+        );
+
+        const currentValues = form.getValues();
+
+        if (
+          !areDraftsEqual(
+            storeDraft,
+            currentValues
+          )
+        ) {
+          form.reset(storeDraft);
+        }
       }
-    });
+    );
 
     return unsubscribe;
   }, [ready, form]);

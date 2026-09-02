@@ -24,6 +24,14 @@ class SaleService {
         const response = await apiClient.delete(`${endpoints.SALES.DELETE}/${id}`);
         return response;
     }
+    async complete(id: string) {
+        const response = await apiClient.post(endpoints.SALES.COMPLETE(id));
+        return response;
+    }
+    async cancel(id: string) {
+        const response = await apiClient.post(endpoints.SALES.CANCEL(id));
+        return response;
+    }
 }
 
 export const saleService = new SaleService();

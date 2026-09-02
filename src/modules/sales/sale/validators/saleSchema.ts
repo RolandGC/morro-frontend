@@ -29,6 +29,22 @@ export const saleItemSchema = z.object({
   is_bonus: z.boolean(),
 });
 
+export const salePaymentSchema = z.object({
+  payment_account_id: z.uuid("Debe seleccionar una cuenta de pago"),
+
+  /* cash_session_id: z
+    .uuid("Debe seleccionar una sesión de caja")
+    .optional(), */
+
+  currency_id: z.uuid("Debe seleccionar una moneda"),
+
+  amount: z.number().min(0, "El monto debe ser mayor o igual a 0"),
+
+  exchange_rate: z.number().positive("El tipo de cambio debe ser mayor que 0"),
+
+  notes: z.string().optional(),
+});
+
 export const saleSchema = z.object({
   company_id: z.uuid("Debe seleccionar una empresa").optional().or(z.literal("")),
 
@@ -51,9 +67,11 @@ export const saleSchema = z.object({
   items: z
     .array(saleItemSchema)
     .min(1, "Debe agregar al menos un producto"),
+  payments: z.array(salePaymentSchema).optional(),
 });
 
 export type SaleItemForm = z.infer<typeof saleItemSchema>;
+export type SalePaymentForm = z.infer<typeof salePaymentSchema>;
 export type SaleForm = z.infer<typeof saleSchema>;
 
 
@@ -68,6 +86,7 @@ export function createEmptySaleForm(): SaleForm {
     sale_type: sale_type.cash,
     sale_date: undefined,
     items: [],
+    payments: [],
   };
 }
 
@@ -91,6 +110,11 @@ export function normalizeSaleForm(draft: SaleForm | null | undefined): SaleForm 
       unit_price: toNumber(item.unit_price, 0),
       igv_amount: toNumber(item.igv_amount, 0),
       subtotal: toNumber(item.subtotal, 0),
+    })),
+    payments: (draft.payments ?? []).map((p) => ({
+      ...p,
+      amount: toNumber((p as any).amount, 0),
+      exchange_rate: toNumber((p as any).exchange_rate, 1),
     })),
   };
 }

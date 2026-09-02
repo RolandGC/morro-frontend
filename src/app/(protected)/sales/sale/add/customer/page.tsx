@@ -15,56 +15,22 @@ import { Currency } from "@/modules/finances/currency/types/currency.types";
 import { SaleForm } from "@/modules/sales/sale/validators/saleSchema";
 import { Search } from "lucide-react";
 import { CustomerSearchItem } from "@/modules/sales/customers/components/CustomerSearchItem";
+import { Button } from "@/components/ui/button";
+import { useCustomerStore } from "@/modules/sales/customers/store/customer.store";
+import CustomerFormModal from "@/modules/sales/customers/components/CustomerFormModal";
 
 export default function ClienteStep() {
     const router = useRouter();
     const { trigger, control, setValue } = useFormContext<SaleForm>();
+    const { openCreate } = useCustomerStore()
 
-    const [companies, setCompanies] = useState<Company[]>([]);
-    const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [currencies, setCurrencies] = useState<Currency[]>([]);
     const [searchCustomer, setSearchCustomer] = useState("");
     const [customerLoading, setCustomerLoading] = useState(false);
     const [customerResults, setCustomerResults] = useState<Customer[]>([]);
 
-    const [company, setCompany] = useState<Company | null>(null);
-    const [warehouse, setWarehouse] = useState<Warehouse | null>(null);
-
-    useEffect(() => {
-        try {
-            const storedCompany = localStorage.getItem("selected_company");
-
-            if (!storedCompany ) {
-                console.error("No existe empresa o almacén seleccionado");
-                return;
-            }
-
-            const parsedCompany: Company = JSON.parse(storedCompany);
-
-            /* setCompany(parsedCompany);
-            setWarehouse(parsedCompany?.); */
-
-            // Setear directamente en react-hook-form
-           /*  setValue("company_id", parsedCompany.id, {
-                shouldValidate: true,
-                shouldDirty: false,
-            });
-
-            setValue("warehouse_id", parsedWarehouse.id, {
-                shouldValidate: true,
-                shouldDirty: false,
-            }); */
-        } catch (error) {
-            console.error(
-                "Error recuperando empresa/almacén del storage:",
-                error
-            );
-        }
-    }, [setValue]);
-
-
-    useEffect(() => {
+    /* useEffect(() => {
         const fetch = async () => {
             try {
                 const [cResp, wResp] = await Promise.all([
@@ -78,7 +44,7 @@ export default function ClienteStep() {
             }
         };
         fetch();
-    }, []);
+    }, []); */
 
     useEffect(() => {
         const fetch = async () => {
@@ -133,51 +99,11 @@ export default function ClienteStep() {
             <h2 className="text-lg font-medium mb-4">Cliente</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-700">
-                                Empresa
-                            </label>
-
-                            <input
-                                type="text"
-                                value={company?.name ?? ""}
-                                disabled
-                                readOnly
-                                className="w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-2"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-700">
-                                Almacén
-                            </label>
-
-                            <input
-                                type="text"
-                                value={warehouse?.name ?? ""}
-                                disabled
-                                readOnly
-                                className="w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-2"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                {/* <Controller
-                    name="warehouse_id"
-                    control={control}
-                    render={({ field, fieldState }) => (
-                        <SimpleSelector
-                            label="Almacén"
-                            value={field.value}
-                            options={warehouses.map((w) => ({ id: w.id, name: w.name }))}
-                            onSelect={field.onChange}
-                            error={fieldState.error}
-                        />
-                    )}
-                /> */}
+                <Button
+                    onClick={() => openCreate()}
+                >
+                    Agregar cliente
+                </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -241,19 +167,7 @@ export default function ClienteStep() {
                     )}
                 />
 
-                <Controller
-                    name="currency_id"
-                    control={control}
-                    render={({ field, fieldState }) => (
-                        <SimpleSelector
-                            label="Moneda"
-                            value={field.value}
-                            options={currencies.map((c) => ({ id: c.id, name: c.name }))}
-                            onSelect={field.onChange}
-                            error={fieldState.error}
-                        />
-                    )}
-                />
+                
             </div>
 
             <div className="mt-6 flex justify-between">
@@ -269,13 +183,18 @@ export default function ClienteStep() {
                     type="button"
                     className="rounded-md bg-primary px-3 py-1 text-sm text-white"
                     onClick={async () => {
-                        const ok = await trigger?.([ "customer_id", "currency_id"]);
+                        const ok = await trigger?.(["customer_id"]);
                         if (ok) router.push("/sales/sale/add/payments");
                     }}
                 >
                     Siguiente
                 </button>
             </div>
+
+            <CustomerFormModal
+                fetchData={fetchCustomers}
+                onSuccess={() => close()}
+            />
         </div>
     );
 }

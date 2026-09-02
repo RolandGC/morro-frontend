@@ -78,7 +78,7 @@ export default function SalePage() {
         <div className="container mx-auto py-4 px-4">
             <div className="flex justify-between">
                 <h1 className="text-2xl font-bold">Ventas</h1>
-                <Button onClick={() => router.push("/sales/sale/add")} className="rounded-md bg-primary px-4 py-2 text-primary-foreground">Crear Venta</Button>
+                <Button onClick={() => router.push("/sales/sale/add")} className="rounded-md bg-primary px-4 py-2 text-primary-foreground">Nueva Venta</Button>
             </div>
             <SaleDataTable
                 columns={getColumns({ fetchData })}
