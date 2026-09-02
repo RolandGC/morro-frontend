@@ -66,7 +66,6 @@ export default function WarehouseFormModal({ onSuccess, fetchWarehouses }: Wareh
             resetForm({
                 name: warehouse.name ?? "",
                 address: warehouse.address ?? "",
-                company_id: warehouse.company_id ?? "",
                 type: warehouse.type ?? "",
                 is_active: warehouse.is_active ?? "",
             });
@@ -121,24 +120,7 @@ export default function WarehouseFormModal({ onSuccess, fetchWarehouses }: Wareh
                                 error={errors.address}
                             />
                         </div>
-                        <div>
-                            <Controller
-                                name="company_id"
-                                control={control}
-                                render={({ field }) => (
-                                    <SimpleSelector
-                                        label="Empresa"
-                                        value={field.value}
-                                        options={companies.map((company) => ({
-                                            id: company.id,
-                                            name: company.name,
-                                        }))}
-                                        onSelect={field.onChange}
-                                        error={errors.company_id}
-                                    />
-                                )}
-                            />
-                        </div>
+                        
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
 

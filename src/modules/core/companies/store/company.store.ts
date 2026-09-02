@@ -10,19 +10,26 @@ const initialState: CompanyForm = {
   address: "",
   phone: "",
   logo_url: null,
-  //settings_json: {},
+  warehouse_id: "",
 };
 
 interface CompanyStore {
   open: boolean;
   isEditing: boolean;
+
   company: CompanyForm;
   company_id: string | null;
+
   companies: Company[];
 
   openCreate: () => void;
-  openEdit: (company: CompanyForm, company_id: string | null) => void;
-  setCompanies: (brands: Company[]) => void;
+  openEdit: (
+    company: CompanyForm,
+    company_id: string | null
+  ) => void;
+
+  setCompanies: (companies: Company[]) => void;
+
   close: () => void;
 
   updateField: <K extends keyof CompanyForm>(
@@ -33,48 +40,54 @@ interface CompanyStore {
   reset: () => void;
 }
 
-export const useCompanyStore = create<CompanyStore>((set) => ({
-  open: false,
-  isEditing: false,
-  company: initialState,
-  company_id: null,
-  companies: [],
+export const useCompanyStore =
+  create<CompanyStore>((set) => ({
+    open: false,
+    isEditing: false,
 
-  openCreate: () =>
-    set({
-      open: true,
-      isEditing: false,
-      company: initialState,
-      company_id: null,
-    }),
+    company: initialState,
+    company_id: null,
 
-  openEdit: (company, company_id) =>
-    set({
-      open: true,
-      isEditing: true,
-      company,
-      company_id,
-    }),
+    companies: [],
 
-  close: () =>
-    set({
-      open: false,
-    }),
+    openCreate: () =>
+      set({
+        open: true,
+        isEditing: false,
+        company: initialState,
+        company_id: null,
+      }),
 
-  setCompanies: (companies) => set ({companies}),
+    openEdit: (company, company_id) =>
+      set({
+        open: true,
+        isEditing: true,
+        company,
+        company_id,
+      }),
 
-  updateField: (field, value) =>
-    set((state) => ({
-      company: {
-        ...state.company,
-        [field]: value,
-      },
-    })),
+    close: () =>
+      set({
+        open: false,
+      }),
 
-  reset: () =>
-    set({
-      company: initialState,
-      isEditing: false,
-      company_id: null,
-    }),
-}));
+    setCompanies: (companies) =>
+      set({
+        companies,
+      }),
+
+    updateField: (field, value) =>
+      set((state) => ({
+        company: {
+          ...state.company,
+          [field]: value,
+        },
+      })),
+
+    reset: () =>
+      set({
+        company: initialState,
+        isEditing: false,
+        company_id: null,
+      }),
+  }));

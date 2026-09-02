@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useCompanyStore } from "../store/company.store";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { CompanyForm, companySchema } from "../validators/companySchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import InputText from "@/components/InputText";
@@ -9,6 +9,9 @@ import { Button } from "@/components/ui/button";
 import { APIS_PERU_BASE_URL, APIS_PERU_TOKEN } from "@/config/environment";
 import { useToast } from "@/hooks/useToast";
 import { companyService } from "../services/company.service";
+import SimpleSelector from "@/components/SimpleSelector";
+import { Warehouse } from "../../warehouses/types/warehouse.types";
+import { warehouseService } from "../../warehouses/services/warehouse.service";
 
 interface CompanyFormProps {
     onSuccess?: () => void;
@@ -16,6 +19,7 @@ interface CompanyFormProps {
 }
 export default function CompanyFormModal({ onSuccess, fetchCompanies }: CompanyFormProps) {
     const { isEditing, company, open, close, company_id } = useCompanyStore();
+    const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
     const [isSearch, setIsSearch] = useState(false)
     const defaultValues = company;
     const { notify: showToast } = useToast();
@@ -39,11 +43,28 @@ export default function CompanyFormModal({ onSuccess, fetchCompanies }: CompanyF
                 trade_name: company.trade_name ?? "",
                 phone: company.phone ?? "",
                 ruc: company.ruc ?? "",
+                warehouse_id: company.warehouse_id ?? "",
             });
         } else {
             resetForm(defaultValues);
         }
     }, [company, isEditing, resetForm]);
+
+    useEffect(() => {
+        const fetchwarehouses = async () => {
+            try {
+                const response = await warehouseService.getAll({ is_active: true });
+                if (response.status === 200) {
+                    setWarehouses(response.data.data);
+                }
+            } catch (error) {
+                console.error('Error fetching warehouses:', error);
+            }
+
+        };
+
+        fetchwarehouses();
+    }, [setWarehouses]);
 
     const searchRuc = async () => {
         const docNumber = getValues("ruc")?.trim();
@@ -153,6 +174,22 @@ export default function CompanyFormModal({ onSuccess, fetchCompanies }: CompanyF
                                 label="Celular"
                                 register={register}
                                 error={errors.phone}
+                            />
+                            <Controller
+                                name="warehouse_id"
+                                control={control}
+                                render={({ field }) => (
+                                    <SimpleSelector
+                                        label="Almacén"
+                                        value={field.value}
+                                        options={warehouses.map((warehouse) => ({
+                                            id: warehouse.id,
+                                            name: warehouse.name,
+                                        }))}
+                                        onSelect={field.onChange}
+                                        error={errors.warehouse_id}
+                                    />
+                                )}
                             />
                         </div>
 

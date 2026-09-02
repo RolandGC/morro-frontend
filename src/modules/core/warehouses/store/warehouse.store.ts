@@ -5,7 +5,6 @@ import { warehouse_type } from "@/types/types";
 const initialState: WarehouseForm = {
     name: "",
     type: warehouse_type.warehouse,
-    company_id: "",
     address: "",
     is_active: true,
 };

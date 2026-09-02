@@ -57,7 +57,8 @@ export const getColumns = ({ fetchCompanies }: ColumnsProps): ColumnDef<Company>
                     address: company?.address,
                     phone: company.phone,
                     trade_name: company.trade_name,
-                    parent_company_id: company.parent_company_id
+                    parent_company_id: company.parent_company_id,
+                    warehouse_id: company.warehouse?.id
                 }, company.id);
             };
 

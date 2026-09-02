@@ -7,8 +7,8 @@ export const warehouseSchema = z.object({
     .min(3, "El nombre debe tener al menos 3 caracteres")
     .max(255, "El nombre no puede superar los 255 caracteres"),
 
-  company_id: z
-    .uuid("Debe seleccionar una empresa válida"),
+  /* company_id: z
+    .uuid("Debe seleccionar una empresa válida"), */
 
   type: z.nativeEnum(warehouse_type),
 

@@ -12,6 +12,9 @@ export const companySchema = z.object({
     .max(255)
     .optional(),
 
+  warehouse_id: z
+    .uuid("Debe ser un UUID válido"),
+
   parent_company_id: z
     .uuid("Debe ser un UUID válido")
     .optional()

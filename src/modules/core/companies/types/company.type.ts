@@ -13,6 +13,7 @@ export interface Company {
     is_active: boolean;
     created_at: string | null;
     updated_at: string | null;
+    warehouse_id: string | null;
     warehouse: Warehouse;
 }
 
