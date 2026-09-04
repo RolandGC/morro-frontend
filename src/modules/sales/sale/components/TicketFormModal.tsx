@@ -1,24 +1,12 @@
 "use client";
-
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/useToast";
 import { saleService } from "../services/sale.service";
 import { TicketForm } from "../validators/saleSchema";
-import {
-    Eye,
-    Download,
-    FileText,
-    Loader2,
-} from "lucide-react";
+import { Eye, Download, FileText, Loader2 } from "lucide-react";
 import { SaleDetail } from "../types/sale.types";
 
 interface TicketFormModalProps {
@@ -26,7 +14,6 @@ interface TicketFormModalProps {
     onOpenChange: (open: boolean) => void;
     saleId?: string;
     sale?: SaleDetail | null;
-
     onClosed?: () => void;
     onSuccess?: () => void;
 }
@@ -55,12 +42,8 @@ interface ComprobantePdf extends ComprobanteResponse {
  * Convierte Base64 PDF a Blob URL.
  */
 function base64ToPdfUrl(base64: string): string {
-    const cleanBase64 = base64.includes(",")
-        ? base64.split(",")[1]
-        : base64;
-
+    const cleanBase64 = base64.includes(",") ? base64.split(",")[1] : base64;
     const byteChars = atob(cleanBase64);
-
     const byteNumbers = new Array(byteChars.length);
 
     for (let i = 0; i < byteChars.length; i++) {
@@ -68,10 +51,7 @@ function base64ToPdfUrl(base64: string): string {
     }
 
     const byteArray = new Uint8Array(byteNumbers);
-
-    const blob = new Blob([byteArray], {
-        type: "application/pdf",
-    });
+    const blob = new Blob([byteArray], { type: "application/pdf" });
 
     return URL.createObjectURL(blob);
 }
@@ -85,26 +65,16 @@ export default function TicketFormModal({
 }: TicketFormModalProps) {
     const { notify } = useToast();
 
-    const [sale, setSale] = useState<SaleDetail | null>(
-        saleFromProps ?? null
-    );
-
+    const [sale, setSale] = useState<SaleDetail | null>(saleFromProps ?? null);
     const [items, setItems] = useState<SaleItem[]>([]);
-
     const [loadingSale, setLoadingSale] = useState(false);
-
-    const [comprobantes, setComprobantes] = useState<
-        ComprobantePdf[]
-    >([]);
+    const [comprobantes, setComprobantes] = useState<ComprobantePdf[]>([]);
 
     const {
         register,
         handleSubmit,
         reset,
-        formState: {
-            errors,
-            isSubmitting,
-        },
+        formState: { errors, isSubmitting },
         setValue,
         control,
     } = useForm<TicketForm>({
@@ -115,11 +85,10 @@ export default function TicketFormModal({
         },
     });
 
-    const selectedItemIds =
-        useWatch({
-            control,
-            name: "sale_item_ids",
-        }) ?? [];
+    const selectedItemIds = useWatch({
+        control,
+        name: "sale_item_ids",
+    }) ?? [];
 
     /**
      * Convierte la venta recibida en props
@@ -132,9 +101,7 @@ export default function TicketFormModal({
                 item.products?.name ?? item.product_name,
                 item.products?.model,
                 item.product_units?.name,
-            ]
-                .filter(Boolean)
-                .join(" - "),
+            ].filter(Boolean).join(" - "),
             regime: item.products?.regime,
         }));
     };
@@ -144,10 +111,7 @@ export default function TicketFormModal({
      */
     const initializeSale = (saleData: SaleDetail) => {
         setSale(saleData);
-
-        const mappedItems = mapSaleItems(saleData);
-
-        setItems(mappedItems);
+        setItems(mapSaleItems(saleData));
 
         reset({
             sale_id: saleData.id,
@@ -165,27 +129,13 @@ export default function TicketFormModal({
      * 2. saleId -> consultar backend.
      */
     useEffect(() => {
-        if (!open) {
-            return;
-        }
+        if (!open) return;
 
-        /**
-         * Tenemos la venta completa.
-         *
-         * Esto ocurre cuando venimos directamente
-         * después de crear la venta.
-         */
         if (saleFromProps) {
             initializeSale(saleFromProps);
             return;
         }
 
-        /**
-         * No tenemos la venta completa,
-         * pero sí tenemos su ID.
-         *
-         * Esto ocurre desde el listado.
-         */
         if (!saleId) {
             setSale(null);
             setItems([]);
@@ -205,37 +155,21 @@ export default function TicketFormModal({
             try {
                 setLoadingSale(true);
 
-                const response =
-                    await saleService.getById(saleId);
+                const response = await saleService.getById(saleId);
 
                 if (response.status !== 200) {
-                    throw new Error(
-                        "No se pudo obtener la venta"
-                    );
+                    throw new Error("No se pudo obtener la venta");
                 }
 
-                if (cancelled) {
-                    return;
-                }
+                if (cancelled) return;
 
-                const saleData: SaleDetail =
-                    response.data;
-
+                const saleData: SaleDetail = response.data;
                 initializeSale(saleData);
             } catch (error) {
-                if (cancelled) {
-                    return;
-                }
+                if (cancelled) return;
 
-                console.error(
-                    "Error cargando información de la venta:",
-                    error
-                );
-
-                notify(
-                    "No se pudo cargar la información de la venta",
-                    "error"
-                );
+                console.error("Error cargando información de la venta:", error);
+                notify("No se pudo cargar la información de la venta", "error");
 
                 setSale(null);
                 setItems([]);
@@ -257,30 +191,24 @@ export default function TicketFormModal({
         return () => {
             cancelled = true;
         };
-    }, [
-        open,
-        saleId,
-        saleFromProps,
-        reset,
-        notify,
-    ]);
+    }, [open, saleId, saleFromProps, reset, notify]);
 
     /**
      * Cuando se cierra el modal limpiamos
      * los datos internos.
      */
     useEffect(() => {
-        if (!open) {
-            setSale(null);
-            setItems([]);
-            setLoadingSale(false);
+        if (!open) return;
 
-            reset({
-                sale_id: "",
-                customer_id: "",
-                sale_item_ids: [],
-            });
-        }
+        setSale(null);
+        setItems([]);
+        setLoadingSale(false);
+
+        reset({
+            sale_id: "",
+            customer_id: "",
+            sale_item_ids: [],
+        });
     }, [open, reset]);
 
     /**
@@ -299,22 +227,15 @@ export default function TicketFormModal({
      */
     const toggleItem = (id: string) => {
         const current = selectedItemIds;
-
         const newValue = current.includes(id)
-            ? current.filter(
-                (itemId) => itemId !== id
-            )
+            ? current.filter((itemId) => itemId !== id)
             : [...current, id];
 
-        setValue(
-            "sale_item_ids",
-            newValue,
-            {
-                shouldValidate: true,
-                shouldDirty: true,
-                shouldTouch: true,
-            }
-        );
+        setValue("sale_item_ids", newValue, {
+            shouldValidate: true,
+            shouldDirty: true,
+            shouldTouch: true,
+        });
     };
 
     /**

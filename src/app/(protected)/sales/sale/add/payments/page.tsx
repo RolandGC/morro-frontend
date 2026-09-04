@@ -177,7 +177,6 @@ export default function PagoStep() {
 
     return (
         <div className="container mx-auto px-4 py-4">
-            {/* ENCABEZADO */}
             <div className="mb-6">
                 <h2 className="text-xl font-semibold">
                     Pago
@@ -189,7 +188,6 @@ export default function PagoStep() {
                 </p>
             </div>
 
-            {/* CONFIGURACIÓN GENERAL */}
             <div className="mb-8 rounded-2xl border bg-card p-4 shadow-sm">
                 <div className="mb-4">
                     <h3 className="font-semibold">
@@ -471,7 +469,6 @@ export default function PagoStep() {
                     onOpenChange={setTicketOpen}
                     sale={createdSale}
                     onSuccess={async () => {
-                        // after creating ticket, reset and navigate
                         useSaleStore.getState().startNew();
                         setTicketOpen(false);
                         setSuccessDialogOpen(false);
