@@ -9,6 +9,8 @@ import { saleService } from "@/modules/sales/sale/services/sale.service";
 import { Sale, SaleQueryParams } from "@/modules/sales/sale/types/sale.types";
 import { PaginationMeta } from "@/types/types";
 import { Spinner } from "@/components/Spinner";
+import TicketFormModal from "@/modules/sales/sale/components/TicketFormModal";
+import { useReceiptStore } from "@/modules/sales/sale/store/ticket.store";
 
 export default function SalePage() {
     const router = useRouter();
@@ -16,6 +18,8 @@ export default function SalePage() {
     const [pages, setPages] = useState<PaginationMeta | null>(null);
     const [loading, setLoading] = useState(true);
     const [filterLoading, setFilterLoading] = useState(false);
+    const [ticketOpen, setTicketOpen] = useState(false);
+    const { open, saleId, close } = useReceiptStore();
 
     const [saleFilter, setSaleFilter] = useState<SaleQueryParams>({
         page: 1,
@@ -86,6 +90,22 @@ export default function SalePage() {
                 filter={saleFilter}
                 handleFilter={handleFilter}
                 totalPages={pages?.totalPages ?? 1}
+            />
+
+            <TicketFormModal
+                open={open}
+                onOpenChange={(next) => {
+                    if (!next) close();
+                }}
+                saleId={saleId ?? undefined}
+                onSuccess={() => {
+                    // recargar listado después de emitir boleta
+                    void fetchData();
+                    close();
+                }}
+                onClosed={() => {
+                    close();
+                }}
             />
         </div>
     );

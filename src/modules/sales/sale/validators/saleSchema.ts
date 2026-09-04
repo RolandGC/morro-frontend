@@ -118,3 +118,12 @@ export function normalizeSaleForm(draft: SaleForm | null | undefined): SaleForm 
     })),
   };
 }
+
+const ticketSchema = z.object({
+  sale_id: z.string(),
+  customer_id: z.string(),
+  sale_item_ids: z.array(z.string()).min(1, "Selecciona al menos un ítem"),
+});
+
+export type TicketForm = z.infer<typeof ticketSchema>;
+

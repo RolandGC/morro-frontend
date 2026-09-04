@@ -17,6 +17,8 @@ import { Currency } from "@/modules/finances/currency/types/currency.types";
 import { currencyService } from "@/modules/finances/currency/services/currency.service";
 import { accountService } from "@/modules/finances/Account/services/account.service";
 import { Account } from "@/modules/finances/Account/types/account.types";
+import TicketFormModal from "@/modules/sales/sale/components/TicketFormModal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function PagoStep() {
     const router = useRouter();
@@ -31,7 +33,7 @@ export default function PagoStep() {
     const [data, setData] = useState<Account[]>([]);
 
     const saleTypes = [
-        { id: sale_type.cash, name: "Efectivo" },
+        { id: sale_type.cash, name: "Al contado" },
         { id: sale_type.credit, name: "Crédito" },
     ];
 
@@ -96,33 +98,16 @@ export default function PagoStep() {
             });
 
             if (response.status === 201 || response.status === 200) {
-                const notaPedidoBase64 =
-                    response.data.notaPedidoBase64;
+                const notaPedidoBase64 = response.data.notaPedidoBase64;
 
-                const result = await Swal.fire({
-                    icon: "success",
-                    title: isEditing
-                        ? "Venta actualizada correctamente"
-                        : "Venta creada correctamente",
-                    text: notaPedidoBase64
-                        ? "¿Deseas imprimir el comprobante?"
-                        : "La venta fue registrada correctamente.",
-                    showCancelButton: !!notaPedidoBase64,
-                    confirmButtonText: notaPedidoBase64
-                        ? "Imprimir comprobante"
-                        : "Aceptar",
-                    cancelButtonText: "Cerrar",
-                    confirmButtonColor: "#2563eb",
-                    cancelButtonColor: "#6b7280",
-                });
+                // store created sale and open success dialog
+                setCreatedSale(response.data);
+                setSuccessDialogOpen(true);
 
-                if (result.isConfirmed && notaPedidoBase64) {
+                if (notaPedidoBase64) {
+                    // keep behavior to allow immediate print
                     openPdf(notaPedidoBase64);
                 }
-
-                useSaleStore.getState().startNew();
-
-                router.push("/sales/sale");
             }
         } catch (error) {
             console.error("Error al guardar la venta:", error);
@@ -185,6 +170,10 @@ export default function PagoStep() {
             notes: "",
         });
     };
+
+    const [successDialogOpen, setSuccessDialogOpen] = useState(false);
+    const [ticketOpen, setTicketOpen] = useState(false);
+    const [createdSale, setCreatedSale] = useState<any | null>(null);
 
     return (
         <div className="container mx-auto px-4 py-4">
@@ -477,6 +466,61 @@ export default function PagoStep() {
                 >
                     Guardar venta
                 </button>
+                <TicketFormModal
+                    open={ticketOpen}
+                    onOpenChange={setTicketOpen}
+                    sale={createdSale}
+                    onSuccess={async () => {
+                        // after creating ticket, reset and navigate
+                        useSaleStore.getState().startNew();
+                        setTicketOpen(false);
+                        setSuccessDialogOpen(false);
+                        router.push("/sales/sale");
+                    }}
+                />
+
+                <Dialog open={successDialogOpen} onOpenChange={setSuccessDialogOpen}>
+                    <DialogContent className="lg:max-w-md sm:max-w-sm">
+                        <DialogHeader>
+                            <DialogTitle>Venta creada correctamente</DialogTitle>
+                        </DialogHeader>
+
+                        <div className="mt-2 flex flex-col gap-4">
+                            <p className="text-sm text-muted-foreground">La venta se creó correctamente.</p>
+
+                            <div className="flex gap-2">
+                                {createdSale?.notaPedidoBase64 && (
+                                    <Button
+                                        onClick={() => openPdf(createdSale.notaPedidoBase64)}
+                                    >
+                                        Imprimir comprobante
+                                    </Button>
+                                )}
+
+                                <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                        setTicketOpen(true);
+                                        setSuccessDialogOpen(false);
+                                    }}
+                                >
+                                    Emitir boleta
+                                </Button>
+
+                                <Button
+                                    variant="ghost"
+                                    onClick={() => {
+                                        useSaleStore.getState().startNew();
+                                        setSuccessDialogOpen(false);
+                                        router.push("/sales/sale");
+                                    }}
+                                >
+                                    Cerrar
+                                </Button>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
             </div>
         </div>
     );

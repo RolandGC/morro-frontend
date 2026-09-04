@@ -131,6 +131,9 @@ export const endpoints = {
         SEND: (id: string) => `${baseUrl}/vouchers/${id}/send`,
         QUERY: (id: string) => `${baseUrl}/vouchers/${id}/check-status`,
     },
+    ORDER_NOTE:{
+        GET_BY_ID: `${baseUrl}/notas-pedido`,
+    },
     CURRENCIES: {
         GET_ALL: `${baseUrl}/currencies`,
         CREATE: `${baseUrl}/currencies`,
@@ -183,4 +186,7 @@ export const endpoints = {
         DELETE: `${baseUrl}/seller-series`,
         GET_BY_ID: `${baseUrl}/seller-series`,
     },
+    TICKETS:{
+        CREATE: `${baseUrl}/boletas`,
+    }
 }
