@@ -28,14 +28,14 @@ export const getColumns = ({ fetchData }: ColumnsProps): ColumnDef<Product>[] =>
         header: "Marca",
     },
     {
-        accessorFn: (row) => row?.categories?.name,
-        id: "categoria",
-        header: "Categoría",
-    },
-    {
         accessorFn: (row) => row?.model,
         id: "modelo",
         header: "Modelo",
+    },
+    {
+        accessorFn: (row) => row?.categories?.name,
+        id: "categoria",
+        header: "Categoría",
     },
     {
         accessorFn: (row) => formatDate(row?.created_at),
