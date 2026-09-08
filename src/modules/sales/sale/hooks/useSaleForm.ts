@@ -26,9 +26,8 @@ export function useSaleForm() {
 
   const [ready, setReady] = useState(false);
 
-  // Evita que un cambio que acaba de venir de RHF
-  // provoque un reset innecesario desde Zustand.
   const syncingFromForm = useRef(false);
+  const hydratedRef = useRef(false);
 
   // =========================================================
   // 1. HIDRATACIÓN
@@ -39,19 +38,17 @@ export function useSaleForm() {
 
     const hydrate = () => {
       const { draft } = useSaleStore.getState();
-
       const normalizedDraft = normalizeSaleForm(draft);
 
       form.reset(normalizedDraft);
-
+      hydratedRef.current = true;
       setReady(true);
     };
 
     if (useSaleStore.persist.hasHydrated()) {
       hydrate();
     } else {
-      unsubscribe =
-        useSaleStore.persist.onFinishHydration(hydrate);
+      unsubscribe = useSaleStore.persist.onFinishHydration(hydrate);
     }
 
     return () => unsubscribe?.();
@@ -67,21 +64,23 @@ export function useSaleForm() {
     const subscription = form.watch((values) => {
       syncingFromForm.current = true;
 
-      useSaleStore
-        .getState()
-        .setDraft(values as SaleForm);
+      useSaleStore.getState().setDraft(values as SaleForm);
 
-      // Permitimos nuevamente la sincronización
-      // después de que Zustand procese el cambio.
       queueMicrotask(() => {
         syncingFromForm.current = false;
       });
     });
 
-    // Sincronización inicial
-    useSaleStore
-      .getState()
-      .setDraft(form.getValues());
+    if (hydratedRef.current) {
+      const currentValues = form.getValues();
+      const storeDraft = normalizeSaleForm(
+        useSaleStore.getState().draft
+      );
+
+      if (!areDraftsEqual(currentValues, storeDraft)) {
+        useSaleStore.getState().setDraft(currentValues);
+      }
+    }
 
     return () => subscription.unsubscribe();
   }, [ready, form]);
@@ -99,24 +98,14 @@ export function useSaleForm() {
           return;
         }
 
-        // Si el cambio viene desde RHF,
-        // NO debemos hacer reset().
         if (syncingFromForm.current) {
           return;
         }
 
-        const storeDraft = normalizeSaleForm(
-          state.draft
-        );
-
+        const storeDraft = normalizeSaleForm(state.draft);
         const currentValues = form.getValues();
 
-        if (
-          !areDraftsEqual(
-            storeDraft,
-            currentValues
-          )
-        ) {
+        if (!areDraftsEqual(storeDraft, currentValues)) {
           form.reset(storeDraft);
         }
       }

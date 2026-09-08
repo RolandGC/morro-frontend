@@ -67,6 +67,46 @@ const getUnitConversionFactor = (product: Product, unitId?: string) => {
 
     }, [items]);
 
+    useEffect(() => {
+        const missingProductIds = items
+            .map((item) => item.product_id)
+            .filter(
+                (id): id is string =>
+                    !!id && !products.some((p) => p.id === id)
+            );
+
+        if (missingProductIds.length === 0) return;
+
+        const uniqueIds = Array.from(new Set(missingProductIds));
+
+        const fetchMissingProducts = async () => {
+            try {
+                const response = await productService.getAll({
+                    is_active: true,
+                    page: 1,
+                    limit: 100,
+                });
+
+                const allProducts: Product[] = response.data?.data ?? [];
+                const fetched = allProducts.filter((p) =>
+                    uniqueIds.includes(p.id)
+                );
+
+                if (fetched.length > 0) {
+                    setProducts((prev) => {
+                        const map = new Map(prev.map((p) => [p.id, p]));
+                        fetched.forEach((p) => map.set(p.id, p));
+                        return Array.from(map.values());
+                    });
+                }
+            } catch (err) {
+                console.error("Error cargando productos del draft:", err);
+            }
+        };
+
+        fetchMissingProducts();
+    }, [items, products]);
+
     const fetchProducts = async () => {
         try {
             setProductLoading(true);
