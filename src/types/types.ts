@@ -10,6 +10,25 @@ export interface PaginationResponse<T> {
     meta: PaginationMeta;
 }
 
+export interface Permission {
+    id: string;
+    name: string;
+    module: string;
+    action: string;
+    description: string | null;
+    is_active: boolean;
+    created_at: string | null;
+    updated_at: string | null;
+    display_name: string | null;
+}
+
+export type PermissionAction =
+    | "read"
+    | "create"
+    | "update"
+    | "delete"
+    | "open"
+    | "close";
 
 
 export enum cash_session_status {

@@ -1,7 +1,7 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { MoreHorizontal, ArrowUpDown, Pencil, Trash2 } from "lucide-react"
+import { MoreHorizontal, ArrowUpDown, Pencil, Trash2, Printer, Check, X, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -265,45 +265,67 @@ export const getColumns = ({ fetchData }: ColumnsProps): ColumnDef<Sale>[] => [
             };
 
             return (
-                <div className="flex gap-2">
-                    <Button
-                        variant="ghost"
-                        onClick={handleConfirm}
-                        disabled={sale.status !== "pending"}
-                        className="bg-green-700 text-white hover:bg-green-800 hover:text-white text-xs"
-                        title="confirmar compra"
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            title="Acciones"
+                        >
+                            <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+
+                    <DropdownMenuContent
+                        align="end"
+                        className="w-52"
                     >
-                        Confirmar
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        onClick={handleCancel}
-                        title="Cancelar venta"
-                        disabled={sale.status !== "pending"}
-                        className="bg-red-700 text-white hover:bg-red-800 hover:text-white text-xs"
-                    >
-                        cancelar
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        onClick={handlePrint}
-                        title="imprimir venta"
-                        disabled={sale.status !== "pending"}
-                        className="bg-gray-700 text-white hover:bg-gray-800 hover:text-white text-xs"
-                    >
-                        Imprimir
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        onClick={handleEmit}
-                        title="Emitir boleta"
-                        disabled={sale.status !== "pending"}
-                        className="bg-gray-700 text-white hover:bg-gray-800 hover:text-white text-xs"
-                    >
-                        Emitir Boleta
-                    </Button>
-                </div>
+                        <DropdownMenuLabel>
+                            Acciones
+                        </DropdownMenuLabel>
+
+                        <DropdownMenuSeparator />
+
+                        <DropdownMenuItem
+                            onClick={handleConfirm}
+                            disabled={sale.status !== "pending"}
+                            className="cursor-pointer"
+                        >
+                            <Check className="mr-2 h-4 w-4 text-green-600" />
+                            Confirmar
+                        </DropdownMenuItem>
+
+                        <DropdownMenuItem
+                            onClick={handleCancel}
+                            disabled={sale.status !== "pending"}
+                            className="cursor-pointer"
+                        >
+                            <X className="mr-2 h-4 w-4 text-red-600" />
+                            Cancelar
+                        </DropdownMenuItem>
+
+                        <DropdownMenuItem
+                            onClick={handlePrint}
+                            disabled={sale.status !== "pending"}
+                            className="cursor-pointer"
+                        >
+                            <Printer className="mr-2 h-4 w-4 text-gray-600" />
+                            Imprimir
+                        </DropdownMenuItem>
+
+                        <DropdownMenuItem
+                            onClick={handleEmit}
+                            disabled={sale.status !== "pending"}
+                            className="cursor-pointer"
+                        >
+                            <FileText className="mr-2 h-4 w-4 text-blue-600" />
+                            Emitir boleta
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             );
+
         },
     }
 ]

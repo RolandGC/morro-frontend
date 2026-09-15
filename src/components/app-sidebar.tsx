@@ -44,114 +44,119 @@ const data = {
     {
       title: "Administración",
       url: "#",
-      icon: (
-        <BriefcaseIcon
-        />
-      ),
-      isActive: true,
+      icon: <BriefcaseIcon />,
       items: [
         {
           title: "Empresas",
           url: "/core/companies",
+          permission: "companies.read",
         },
         {
           title: "Usuarios",
           url: "/core/users",
+          permission: "users.read",
         },
         {
           title: "Almacenes",
           url: "/core/warehouses",
+          permission: "warehouses.read",
         },
         {
           title: "Series",
           url: "/core/series",
+          permission: "companies.read",
         },
       ],
     },
+
     {
       title: "Ventas",
       url: "#",
-      icon: (
-        <Store />
-      ),
+      icon: <Store />,
       items: [
-         {
-           title: "Ventas",
-           url: "/sales/sale",
-         },
+        {
+          title: "Ventas",
+          url: "/sales/sale",
+          permission: "sales.read",
+        },
         {
           title: "Clientes",
           url: "/sales/customers",
+          permission: "customers.read",
         },
       ],
     },
+
     {
       title: "Compras",
       url: "#",
-      icon: (
-        <Truck
-        />
-      ),
+      icon: <Truck />,
       items: [
         {
           title: "Compras",
           url: "/purchases/purchase",
+          permission: "purchases.read",
         },
         {
           title: "Proveedores",
           url: "/purchases/suppliers",
+          permission: "suppliers.read",
         },
       ],
     },
+
     {
       title: "Inventario",
       url: "#",
-      icon: (
-        <Package
-        />
-      ),
+      icon: <Package />,
       items: [
         {
           title: "Productos",
           url: "/inventory/products",
+          permission: "products.read",
         },
         {
           title: "Marcas",
           url: "/inventory/brands",
+          permission: "brands.read",
         },
         {
           title: "Categorías",
           url: "/inventory/category",
+          permission: "categories.read",
         },
         {
           title: "Unidad de productos",
           url: "/inventory/product_unit",
+          permission: "product-units.read",
         },
         {
           title: "Ajuste Stock",
           url: "#",
+          permission: "stock-adjustments.read",
         },
       ],
     },
+
     {
       title: "Finanzas",
       url: "#",
-      icon: (
-        <Banknote
-        />
-      ),
+      icon: <Banknote />,
       items: [
         {
           title: "Monedas",
           url: "/finance/currencies",
+          permission: "currencies.read",
         },
         {
           title: "Caja",
           url: "/finance/cashbox",
+          permission: "cash-sessions.read",
         },
         {
           title: "Cuentas",
           url: "/finance/account",
+          permission: "accounts.read",
         },
       ],
     },
@@ -166,36 +171,29 @@ const data = {
         {
           title: "Ventas",
           url: "#",
+          permission: "accounts.read",
         },
         {
           title: "Compras",
           url: "#",
+          permission: "accounts.read",
         },
         {
           title: "Caja",
           url: "#",
+          permission: "accounts.read",
         },
       ],
     },
     {
       title: "Seguridad",
       url: "#",
-      icon: (
-        <Shield
-        />
-      ),
+      icon: <Shield />,
       items: [
         {
           title: "Roles y permisos",
           url: "/security/roles",
-        },
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Notificaciones",
-          url: "#",
+          permission: "roles.read",
         },
       ],
     },
@@ -229,7 +227,7 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const {user} = useAuthStore()
+  const { user } = useAuthStore()
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>

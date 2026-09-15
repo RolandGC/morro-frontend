@@ -198,11 +198,12 @@ export default function TicketFormModal({
      * los datos internos.
      */
     useEffect(() => {
-        if (!open) return;
+        if (open) return;
 
         setSale(null);
         setItems([]);
         setLoadingSale(false);
+        setComprobantes([]);
 
         reset({
             sale_id: "",
@@ -210,6 +211,7 @@ export default function TicketFormModal({
             sale_item_ids: [],
         });
     }, [open, reset]);
+
 
     /**
      * Limpieza de Blob URLs.
@@ -237,6 +239,46 @@ export default function TicketFormModal({
             shouldTouch: true,
         });
     };
+
+    /**
+ * Indica si todos los ítems están seleccionados.
+ */
+    const allItemsSelected =
+        items.length > 0 &&
+        selectedItemIds.length === items.length;
+
+    /**
+     * Indica si hay algunos ítems seleccionados.
+     */
+    const someItemsSelected =
+        selectedItemIds.length > 0 &&
+        selectedItemIds.length < items.length;
+
+    /**
+     * Seleccionar / deseleccionar todos los ítems.
+     */
+    const toggleAllItems = () => {
+        if (allItemsSelected) {
+            setValue("sale_item_ids", [], {
+                shouldValidate: true,
+                shouldDirty: true,
+                shouldTouch: true,
+            });
+
+            return;
+        }
+
+        setValue(
+            "sale_item_ids",
+            items.map((item) => item.id),
+            {
+                shouldValidate: true,
+                shouldDirty: true,
+                shouldTouch: true,
+            }
+        );
+    };
+
 
     /**
      * Emitir boleta.
@@ -397,46 +439,102 @@ export default function TicketFormModal({
                             </div>
                         )}
 
-                        {/* ========================================== */}
-                        {/* ITEMS */}
-                        {/* ========================================== */}
+                            {/* ========================================== */}
+                            {/* ITEMS */}
+                            {/* ========================================== */}
 
-                        <div>
-                            <div className="mb-3">
-                                <p className="font-semibold">
-                                    Ítems de la venta
-                                </p>
+                            <div>
+                                <div className="mb-3">
+                                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                        <div>
+                                            <p className="font-semibold">
+                                                Ítems de la venta
+                                            </p>
 
-                                <p className="text-sm text-muted-foreground">
-                                    Selecciona los
-                                    productos que
-                                    deseas incluir
-                                    en la boleta.
-                                </p>
-                            </div>
+                                            <p className="text-sm text-muted-foreground">
+                                                Selecciona los productos que deseas
+                                                incluir en la boleta.
+                                            </p>
+                                        </div>
 
-                            {items.length === 0 ? (
-                                <div className="rounded-xl border border-dashed p-5 text-center">
-                                    <p className="text-sm text-muted-foreground">
-                                        No se encontraron
-                                        ítems para esta
-                                        venta.
-                                    </p>
+                                        {items.length > 0 && (
+                                            <span className="text-xs font-medium text-muted-foreground">
+                                                {selectedItemIds.length} de {items.length}{" "}
+                                                seleccionados
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
-                            ) : (
-                                <div className="space-y-2">
-                                    {items.map(
-                                        (item) => {
+
+                                {items.length === 0 ? (
+                                    <div className="rounded-xl border border-dashed p-5 text-center">
+                                        <p className="text-sm text-muted-foreground">
+                                            No se encontraron ítems para esta venta.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        {/* ========================================== */}
+                                        {/* SELECCIONAR TODOS */}
+                                        {/* ========================================== */}
+
+                                        <label
+                                            className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors ${allItemsSelected
+                                                    ? "border-primary bg-primary/5"
+                                                    : someItemsSelected
+                                                        ? "border-primary/50 bg-primary/5"
+                                                        : "bg-muted/30 hover:bg-muted/50"
+                                                }`}
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={allItemsSelected}
+                                                ref={(element) => {
+                                                    if (element) {
+                                                        element.indeterminate =
+                                                            someItemsSelected;
+                                                    }
+                                                }}
+                                                onChange={toggleAllItems}
+                                                className="h-4 w-4"
+                                            />
+
+                                            <div className="flex-1">
+                                                <p className="font-semibold">
+                                                    Seleccionar todos
+                                                </p>
+
+                                                <p className="text-xs text-muted-foreground">
+                                                    {allItemsSelected
+                                                        ? "Todos los ítems están seleccionados"
+                                                        : someItemsSelected
+                                                            ? "Hay ítems seleccionados"
+                                                            : "Selecciona todos los ítems de la venta"}
+                                                </p>
+                                            </div>
+
+                                            <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium">
+                                                {selectedItemIds.length}/{items.length}
+                                            </span>
+                                        </label>
+
+                                        {/* ========================================== */}
+                                        {/* SEPARADOR */}
+                                        {/* ========================================== */}
+
+                                        <div className="my-3 border-t" />
+
+                                        {/* ========================================== */}
+                                        {/* ITEMS */}
+                                        {/* ========================================== */}
+
+                                        {items.map((item) => {
                                             const checked =
-                                                selectedItemIds.includes(
-                                                    item.id
-                                                );
+                                                selectedItemIds.includes(item.id);
 
                                             return (
                                                 <label
-                                                    key={
-                                                        item.id
-                                                    }
+                                                    key={item.id}
                                                     className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors ${checked
                                                             ? "border-primary bg-primary/5"
                                                             : "hover:bg-muted/50"
@@ -444,50 +542,36 @@ export default function TicketFormModal({
                                                 >
                                                     <input
                                                         type="checkbox"
-                                                        checked={
-                                                            checked
-                                                        }
+                                                        checked={checked}
                                                         onChange={() =>
-                                                            toggleItem(
-                                                                item.id
-                                                            )
+                                                            toggleItem(item.id)
                                                         }
                                                         className="h-4 w-4"
                                                     />
 
                                                     <div className="flex-1">
                                                         <p className="font-medium">
-                                                            {
-                                                                item.label
-                                                            }
+                                                            {item.label}
                                                         </p>
 
                                                         {item.regime && (
                                                             <p className="text-xs uppercase text-muted-foreground">
-                                                                Régimen:{" "}
-                                                                {
-                                                                    item.regime
-                                                                }
+                                                                Régimen: {item.regime}
                                                             </p>
                                                         )}
                                                     </div>
                                                 </label>
                                             );
-                                        }
-                                    )}
-                                </div>
-                            )}
+                                        })}
+                                    </div>
+                                )}
 
-                            {errors.sale_item_ids && (
-                                <p className="mt-2 text-[13px] text-red-500">
-                                    {
-                                        errors
-                                            .sale_item_ids
-                                            .message as string
-                                    }
-                                </p>
-                            )}
-                        </div>
+                                {errors.sale_item_ids && (
+                                    <p className="mt-2 text-[13px] text-red-500">
+                                        {errors.sale_item_ids.message as string}
+                                    </p>
+                                )}
+                            </div>
 
                         {/* ========================================== */}
                         {/* RESUMEN */}

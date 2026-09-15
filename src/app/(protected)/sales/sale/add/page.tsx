@@ -338,6 +338,31 @@ const getUnitConversionFactor = (product: Product, unitId?: string) => {
         return acc + quantity * unitPrice;
     }, 0);
 
+    const productsMap = new Map(
+        products.map((product) => [product.id, product])
+    );
+
+    const regimeCounts = items.reduce(
+        (acc, item) => {
+            const product = productsMap.get(item.product_id);
+
+            if (product?.regime === "zofra") {
+                acc.zofra += 1;
+            }
+
+            if (product?.regime === "general") {
+                acc.general += 1;
+            }
+
+            return acc;
+        },
+        {
+            zofra: 0,
+            general: 0,
+        }
+    );
+
+
     const handleBarcodeSearch = async () => {
         const barcode = productFilter.barcode.trim();
         if (!barcode) return;
@@ -710,67 +735,98 @@ const getUnitConversionFactor = (product: Product, unitId?: string) => {
                                     )}
                                 </div>
 
-                                <div className="rounded-2xl border bg-primary/5 p-4">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <p className="text-sm font-medium">
-                                                Resumen de venta
-                                            </p>
-
-                                            <p className="text-xs text-muted-foreground">
-                                                {
-                                                    items.length
-                                                }{" "}
-                                                {items.length ===
-                                                    1
-                                                    ? "producto"
-                                                    : "productos"}{" "}
-                                                en el carrito
-                                            </p>
-                                        </div>
-
-                                        <div className="text-right">
-                                            <p className="text-xs text-muted-foreground">
-                                                Total
-                                            </p>
-
-                                            <p className="text-xl font-semibold text-primary">
-                                                S/{" "}
-                                                {subTotal.toFixed(
-                                                    2
-                                                )}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-4 border-t pt-3">
+                                    <div className="rounded-2xl border bg-primary/5 p-4">
                                         <div className="flex items-center justify-between">
-                                            <span className="text-sm text-muted-foreground">
-                                                Subtotal
-                                            </span>
+                                            <div>
+                                                <p className="text-sm font-medium">
+                                                    Resumen de venta
+                                                </p>
 
-                                            <span className="font-medium">
-                                                S/{" "}
-                                                {subTotal.toFixed(
-                                                    2
-                                                )}
-                                            </span>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {items.length}{" "}
+                                                    {items.length === 1
+                                                        ? "producto"
+                                                        : "productos"}{" "}
+                                                    en el carrito
+                                                </p>
+                                            </div>
+
+                                            <div className="text-right">
+                                                <p className="text-xs text-muted-foreground">
+                                                    Total
+                                                </p>
+
+                                                <p className="text-xl font-semibold text-primary">
+                                                    S/ {subTotal.toFixed(2)}
+                                                </p>
+                                            </div>
                                         </div>
 
-                                        <div className="mt-2 flex items-center justify-between">
-                                            <span className="font-medium">
-                                                TOTAL
-                                            </span>
+                                        {/* Resumen por régimen */}
+                                        {/* Regímenes */}
+                                        <div className="mt-4 space-y-2">
+                                            {regimeCounts.zofra > 0 && (
+                                                <div className="flex items-center justify-between rounded-lg border bg-background px-3 py-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
 
-                                            <span className="text-lg font-semibold">
-                                                S/{" "}
-                                                {subTotal.toFixed(
-                                                    2
-                                                )}
-                                            </span>
+                                                        <span className="text-sm font-medium">
+                                                            Régimen ZOFRA
+                                                        </span>
+                                                    </div>
+
+                                                    <span className="text-sm text-muted-foreground">
+                                                        {regimeCounts.zofra}{" "}
+                                                        {regimeCounts.zofra === 1
+                                                            ? "producto"
+                                                            : "productos"}
+                                                    </span>
+                                                </div>
+                                            )}
+
+                                            {regimeCounts.general > 0 && (
+                                                <div className="flex items-center justify-between rounded-lg border bg-background px-3 py-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
+
+                                                        <span className="text-sm font-medium">
+                                                            Régimen General
+                                                        </span>
+                                                    </div>
+
+                                                    <span className="text-sm text-muted-foreground">
+                                                        {regimeCounts.general}{" "}
+                                                        {regimeCounts.general === 1
+                                                            ? "producto"
+                                                            : "productos"}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="mt-4 border-t pt-3">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm text-muted-foreground">
+                                                    Subtotal
+                                                </span>
+
+                                                <span className="font-medium">
+                                                    S/ {subTotal.toFixed(2)}
+                                                </span>
+                                            </div>
+
+                                            <div className="mt-2 flex items-center justify-between">
+                                                <span className="font-medium">
+                                                    TOTAL
+                                                </span>
+
+                                                <span className="text-lg font-semibold">
+                                                    S/ {subTotal.toFixed(2)}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+
                             </>
                         )}
                     </div>

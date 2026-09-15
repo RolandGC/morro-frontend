@@ -39,9 +39,10 @@ export function ProductCard({
     const productLabel = [
         product.name,
         product.model,
-        selectedUnitId
+        /* selectedUnitId
             ? units?.find((unit) => unit.id === selectedUnitId)?.name
-            : product.product_units?.find((unit) => unit.is_default)?.name,
+            : product.product_units?.find((unit) => unit.is_default)?.name, */
+        product?.regime
     ]
         .filter(Boolean)
         .join(" - ");
