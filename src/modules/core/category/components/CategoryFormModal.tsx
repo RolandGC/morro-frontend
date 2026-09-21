@@ -16,13 +16,17 @@ import { categoryService } from "../services/category.service";
 interface CategoryFormProps {
     onSuccess?: () => void;
     fetchData: () => void,
+    onCreated?: (category: {
+        id: string;
+        name: string;
+    }) => void;
 }
 const booleanOptions = [
     { id: "1", name: "Sí", value: true },
     { id: "2", name: "No", value: false },
 ];
 
-export default function CategoryFormModal({ onSuccess, fetchData }: CategoryFormProps) {
+export default function CategoryFormModal({ onSuccess, fetchData, onCreated }: CategoryFormProps) {
     const { isEditing, category, open, close, category_id } = useCategoryStore();
     const defaultValues = category;
     const { notify: showToast } = useToast();
@@ -76,26 +80,49 @@ export default function CategoryFormModal({ onSuccess, fetchData }: CategoryForm
     const onSubmit = async (category: CategoryForm) => {
         try {
             let response;
+
             if (isEditing && category_id) {
-                response = await categoryService.update(category_id, category);
+                response = await categoryService.update(
+                    category_id,
+                    category
+                );
             } else {
-                response = await categoryService.create(category);
+                response = await categoryService.create(
+                    category
+                );
             }
+
             if (response.status === 201 || response.status === 200) {
                 showToast(
-                    isEditing ? "Categoría actualizado correctamente" : "Categoría creado correctamente",
+                    isEditing
+                        ? "Categoría actualizada correctamente"
+                        : "Categoría creada correctamente",
                     "success"
                 );
+
+                if (!isEditing) {
+                    const createdCategory = response.data;
+
+                    await onCreated?.({
+                        id: createdCategory.id,
+                        name: createdCategory.name,
+                    });
+                }
+
                 resetForm();
-                await fetchData();
                 close();
                 onSuccess?.();
             }
         } catch (error) {
-            showToast("Error al guardar la categoría", "error")
-            console.error(error)
+            showToast(
+                "Error al guardar la categoría",
+                "error"
+            );
+
+            console.error(error);
         }
     };
+
 
     return (
         <Dialog open={open} onOpenChange={close}>
@@ -160,13 +187,19 @@ export default function CategoryFormModal({ onSuccess, fetchData }: CategoryForm
                             /> */}
                         </div>
 
-                        <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting
-                                ? "Guardando..."
-                                : isEditing
-                                    ? "Actualizar categoría"
-                                    : "Guardar categoría"}
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={close}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button type="submit">
+                                {isSubmitting
+                                    ? "Guardando..." : isEditing ? "Actualizar categoría" : "Guardar categoría"}
+                            </Button>
+                        </div>
                     </form>
 
                 </div>
