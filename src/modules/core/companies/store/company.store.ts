@@ -11,6 +11,7 @@ const initialState: CompanyForm = {
   phone: "",
   logo_url: null,
   warehouse_id: "",
+  settings_json:{igv_rate: 0.18},
 };
 
 interface CompanyStore {

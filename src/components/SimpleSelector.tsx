@@ -10,7 +10,7 @@ type SimpleSelectorProps = {
 }
 export default function SimpleSelector({ label, options, onSelect, value, error }: SimpleSelectorProps) {
     return (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1">
             <label htmlFor="description">{label}</label>
             <Select onValueChange={onSelect} value={value}>
                 <SelectTrigger className="w-full">
@@ -27,7 +27,7 @@ export default function SimpleSelector({ label, options, onSelect, value, error 
                 </SelectContent>
             </Select>
             {error && (
-                <span className="text-[13px] text-red-500 px-2 -my-2">
+                <span className="text-[13px] text-red-500 px-2 -my-2 py-1">
                     {error.message}
                 </span>
             )}

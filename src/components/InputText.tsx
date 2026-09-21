@@ -9,6 +9,7 @@ type InputProps = {
     error?: FieldError;
     registerOptions?: RegisterOptions<any, string>;
     support?: string;
+    step?: string;
 };
 
 export default function InputText({
@@ -19,19 +20,21 @@ export default function InputText({
     error,
     registerOptions,
     support,
+    step
 }: InputProps) {
     return (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1">
             {label && <label htmlFor={name}>{label}</label>}
 
             <Input
                 id={name}
                 type={type}
                 {...register(name, registerOptions)}
+                step={step}
             />
 
             {error && (
-                <p className="text-[13px] text-red-500 px-2 -my-2">
+                <p className="text-[13px] text-red-500 px-2 -my-2 py-1">
                     {error.message}
                 </p>
             )}

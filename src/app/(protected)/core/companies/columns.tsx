@@ -58,7 +58,11 @@ export const getColumns = ({ fetchCompanies }: ColumnsProps): ColumnDef<Company>
                     phone: company.phone,
                     trade_name: company.trade_name,
                     parent_company_id: company.parent_company_id,
-                    warehouse_id: company.warehouse?.id
+                    warehouse_id: company.warehouse?.id,
+                    logo_url: company.logo_url,
+                    settings_json: {
+                        igv_rate: company.settings_json?.igv_rate ?? 0.18,
+                    },
                 }, company.id);
             };
 

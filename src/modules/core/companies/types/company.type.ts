@@ -9,12 +9,17 @@ export interface Company {
     address: string | null;
     phone: string;
     logo_url: string | null;
-    settings_json?: Record<string, unknown> | null;
+    settings_json?: CompanySettings | null;
     is_active: boolean;
     created_at: string | null;
     updated_at: string | null;
     warehouse_id: string | null;
     warehouse: Warehouse;
+}
+
+export interface CompanySettings {
+    igv_rate: number;
+    [key: string]: unknown; // Permite agregar otras configuraciones opcionales en el futuro
 }
 
 export interface CompanyQueryParams {

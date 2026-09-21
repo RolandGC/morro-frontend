@@ -44,6 +44,10 @@ export default function CompanyFormModal({ onSuccess, fetchCompanies }: CompanyF
                 phone: company.phone ?? "",
                 ruc: company.ruc ?? "",
                 warehouse_id: company.warehouse_id ?? "",
+                logo_url: company.logo_url ?? null,
+                settings_json: company.settings_json ?? {
+                    igv_rate: 0.18,
+                },
             });
         } else {
             resetForm(defaultValues);
@@ -192,6 +196,19 @@ export default function CompanyFormModal({ onSuccess, fetchCompanies }: CompanyF
                                 )}
                             />
                         </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <InputText
+                                name="settings_json.igv_rate"
+                                label="IGV (%)"
+                                type="number"
+                                step="0.01"
+                                register={register}
+                                registerOptions={{
+                                    valueAsNumber: true,
+                                }}
+                                error={errors.settings_json?.igv_rate}
+                            />
+                        </div>
 
                         <div className="flex items-center justify-end gap-2">
                             <Button
@@ -210,9 +227,7 @@ export default function CompanyFormModal({ onSuccess, fetchCompanies }: CompanyF
                             </Button>
                         </div>
                     </form>
-
                 </div>
-
             </DialogContent>
         </Dialog>
     );
