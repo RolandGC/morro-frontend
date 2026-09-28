@@ -17,11 +17,11 @@ export default function SaleNewLayout({
             label: "Productos",
             href: "/sales/sale/add",
         },
-        {
+        /* {
             id: "cliente",
             label: "Cliente",
             href: "/sales/sale/add/customer",
-        },
+        }, */
         {
             id: "pago",
             label: "Pago",
@@ -31,7 +31,7 @@ export default function SaleNewLayout({
 
     return (
         <FormProvider {...form}>
-            <div className="container mx-auto px-4 py-6">
+            <div className="container mx-auto px-4 py-3">
                 <StepIndicator steps={steps} />
 
                 <div className="mt-8">

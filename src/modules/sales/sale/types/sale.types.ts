@@ -28,8 +28,24 @@ export interface Sale {
   customers: Customer;
   companies: Company;
   warehouses: Warehouse;
-  users: User;
   notaPedidoBase64: string;
+  users: User;
+  issued_documents: IssuedDocument[];
+}
+
+export interface IssuedDocument {
+  id: string;
+  sale_id: string;
+  document_type: DocumentType;
+  series: string;
+  number: number;
+  created_at: string;
+  customer_id: string | null;
+  subtotal: number | null;
+  igv: number | null;
+  total: number | null;
+  pdf_base64: string | null;
+  snapshot_json: Record<string, unknown> | null;
 }
 
 export interface SaleItem {

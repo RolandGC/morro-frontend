@@ -12,10 +12,11 @@ import { customerService } from "../services/customer.service";
 import { APIS_PERU_BASE_URL, APIS_PERU_TOKEN } from "@/config/environment";
 import { doc_type } from "@/types/types";
 import axios from "axios";
+import { Customer } from "../types/customer.type";
 
 interface CustomerFormProps {
-    onSuccess?: () => void;
-    fetchData: () => void,
+    onSuccess?: (customer: Customer) => void;
+    fetchData: () => void;
 }
 const booleanOptions = [
     { id: "1", name: "Sí", value: true },
@@ -258,7 +259,7 @@ export default function CustomerFormModal({ onSuccess, fetchData }: CustomerForm
                 resetForm();
                 await fetchData();
                 close();
-                onSuccess?.();
+                onSuccess?.(response.data);
             }
         } catch (error) {
             showToast("Error al guardar el cliente", "error")

@@ -63,7 +63,7 @@ export function StepIndicator({ steps }: StepIndicatorProps) {
                                 {/* Circle */}
                                 <div
                                     className={cn(
-                                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 font-semibold transition-colors",
+                                        "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 font-semibold transition-colors",
                                         completed &&
                                         "border-primary bg-primary text-primary-foreground",
                                         current &&

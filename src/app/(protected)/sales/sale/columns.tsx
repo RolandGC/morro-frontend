@@ -23,30 +23,30 @@ interface ColumnsProps {
 
 export const getColumns = ({ fetchData }: ColumnsProps): ColumnDef<Sale>[] => [
     {
+        accessorFn: (row) => row.issued_documents?.[0]?.series + '-' + row.issued_documents?.[0]?.number,
+        id: "Serie",
+        header: "Serie",
+    },
+    {
         accessorFn: (row) => row.customers.full_name,
         id: "Cliente",
         header: "Cliente",
     },
-    {
+    /* {
         accessorFn: (row) => row.companies.name,
         id: "Empresa",
         header: "Empresa",
+    }, */
+    {
+        accessorFn: (row) => formatDate(row.sale_date),
+        id: "Fecha",
+        header: "Fecha de venta",
     },
     {
         accessorFn: (row) => translateSaleStatus(row.status),
         id: "Estado",
         header: "Estado",
     },
-    /* {
-        accessorFn: (row) => row.model,
-        id: "model",
-        header: "Modelo",
-    },
-    {
-        accessorFn: (row) => formatDate(row.created_at),
-        id: "created_at",
-        header: "Fecha de creación",
-    }, */
     {
         id: "Opciones",
         header: "Opciones",
@@ -237,7 +237,7 @@ export const getColumns = ({ fetchData }: ColumnsProps): ColumnDef<Sale>[] => [
                     URL.revokeObjectURL(pdfUrl);
                 }, 10000);
             };
- 
+
             const handleEmit = async () => {
                 try {
                     const response = await saleService.getById(sale.id);

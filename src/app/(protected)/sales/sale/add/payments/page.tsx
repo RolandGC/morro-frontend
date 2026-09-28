@@ -28,6 +28,7 @@ export default function PagoStep() {
         control,
         register,
         watch,
+        formState: { errors, isSubmitting}
     } = useFormContext<SaleForm>();
 
     const [currencies, setCurrencies] = useState<Currency[]>([]);
@@ -443,7 +444,7 @@ const paymentDifference = totalPaid - totalToPay;
                                                         fieldState,
                                                     }) => (
                                                         <SimpleSelector
-                                                            label="Cuenta de pago"
+                                                            label="Forma de pago"
                                                             value={field.value}
                                                             options={data.map(
                                                                 (account) => ({
@@ -677,7 +678,7 @@ const paymentDifference = totalPaid - totalToPay;
                     type="button"
                     className="w-full rounded-md border px-4 py-2 text-sm transition-colors hover:bg-muted sm:w-auto"
                     onClick={() =>
-                        router.push("/sales/sale/add/cliente")
+                        router.push("/sales/sale/add")
                     }
                 >
                     Anterior
@@ -696,7 +697,7 @@ const paymentDifference = totalPaid - totalToPay;
                         }
                     )}
                 >
-                    Guardar venta
+                    {isSubmitting ? "Guardando..." : "Guardar venta"}
                 </button>
             </div>
 

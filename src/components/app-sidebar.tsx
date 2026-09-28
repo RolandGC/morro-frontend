@@ -52,14 +52,14 @@ const data = {
           permission: "companies.read",
         },
         {
-          title: "Usuarios",
-          url: "/core/users",
-          permission: "users.read",
-        },
-        {
           title: "Almacenes",
           url: "/core/warehouses",
           permission: "warehouses.read",
+        },
+        {
+          title: "Usuarios",
+          url: "/core/users",
+          permission: "users.read",
         },
         {
           title: "Series",
@@ -156,7 +156,7 @@ const data = {
         {
           title: "Cuentas",
           url: "/finance/account",
-          permission: "accounts.read",
+          permission: "payment-accounts.read",
         },
       ],
     },
