@@ -37,7 +37,6 @@ export function NavMain({
 }) {
 
   const { can, canAny } = usePermission();
-  console.log("holaa", (items))
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Módulos</SidebarGroupLabel>

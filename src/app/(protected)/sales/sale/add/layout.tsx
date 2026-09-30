@@ -34,7 +34,7 @@ export default function SaleNewLayout({
             <div className="container mx-auto px-4 py-3">
                 <StepIndicator steps={steps} />
 
-                <div className="mt-8">
+                <div className="mt-4">
                     {children}
                 </div>
             </div>

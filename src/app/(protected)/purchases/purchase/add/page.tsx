@@ -43,8 +43,8 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
     const [openProduct, setOpenProduct] = useState(false);
     const router = useRouter();
     const defaultValues: PurchaseForm = {
-        company_id: "",
-        warehouse_id: "",
+        //company_id: "",
+        //warehouse_id: "",
         supplier_id: "",
         currency_id: "",
         exchange_rate: 1,
@@ -189,6 +189,9 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
     const onSubmit = async (data: PurchaseForm) => {
         console.log(JSON.stringify(data, null, 2));
         console.log("FORMULARIO COMPLETO:", data);
+        const storedCompany = localStorage.getItem("selected_company");
+        const parsedCompany: Company = JSON.parse(storedCompany);
+
         try {
 
             if (!data.items || data.items.length === 0) {
@@ -219,7 +222,11 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
                     data
                 );
             } else {
-                response = await purchaseService.create(data);
+                response = await purchaseService.create({
+                    ...data,
+                    company_id: parsedCompany.id,
+                    warehouse_id: parsedCompany.warehouse?.id,
+                });
             }
 
             if (response.status === 201 || response.status === 200) {
@@ -298,7 +305,7 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
                     />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Controller
+                   {/*  <Controller
                         name="company_id"
                         control={control}
                         render={({ field }) => (
@@ -329,7 +336,7 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
                                 error={errors.warehouse_id}
                             />
                         )}
-                    />
+                    /> */}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Controller

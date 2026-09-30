@@ -34,9 +34,9 @@ export const purchaseItemSchema = z.object({
 });
 
 export const purchaseSchema = z.object({
-  company_id: z.uuid("Debe seleccionar una empresa"),
+  // company_id: z.uuid("Debe seleccionar una empresa").optional(),
 
-  warehouse_id: z.uuid("Debe seleccionar un almacén"),
+  // warehouse_id: z.uuid("Debe seleccionar un almacén").optional(),
 
   supplier_id: z.uuid("Debe seleccionar un proveedor"),
 

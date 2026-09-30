@@ -41,8 +41,15 @@ export const userSchema = z.object({
 
   password: z
     .string()
-    .min(8, "La contraseña debe tener al menos 8 caracteres")
-    .max(100, "La contraseña no puede superar los 100 caracteres"),
+    .optional()
+    .or(z.literal(""))
+    .refine(
+      (value) => !value || value.length >= 8,
+      {
+        message: "La contraseña debe tener al menos 8 caracteres",
+      }
+    ),
+
 
   company_ids: z
     .array(z.uuid("Empresa inválida"))

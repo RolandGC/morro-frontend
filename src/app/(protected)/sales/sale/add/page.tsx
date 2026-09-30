@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useFormContext, useFieldArray, Controller } from "react-hook-form";
-import { Package, ScanBarcode, Search, ShoppingCart, Undo2 } from "lucide-react";
+import { Package, ScanBarcode, Search, ShoppingCart, Undo2, UserRound } from "lucide-react";
 import { productService } from "@/modules/inventory/products/services/product.service";
 import { Product } from "@/modules/inventory/products/types/produc.type";
 import { ProductCard } from "@/modules/inventory/products/components/ProductCard";
@@ -17,6 +17,7 @@ import { Customer } from "@/modules/sales/customers/types/customer.type";
 import { useCustomerStore } from "@/modules/sales/customers/store/customer.store";
 import { customerService } from "@/modules/sales/customers/services/customer.service";
 import { currencyService } from "@/modules/finances/currency/services/currency.service";
+import { useSaleStore } from "@/modules/sales/sale/store/sale.store";
 
 export default function SaleAddPage() {
     const router = useRouter();
@@ -44,6 +45,7 @@ export default function SaleAddPage() {
         model: "",
         track_stock: undefined,
         barcode: "",
+        is_active: true,
         page: 1,
         limit: 6,
     });
@@ -181,9 +183,7 @@ export default function SaleAddPage() {
     };
 
     useEffect(() => {
-        if (productFilter.barcode) {
-            return;
-        }
+        if (productFilter.barcode) return;
 
         const timeout = setTimeout(() => {
             fetchProducts().catch((err) =>
@@ -608,7 +608,7 @@ export default function SaleAddPage() {
     }, [searchCustomer]);
 
     return (
-        <div className="container mx-auto max-w-7xl px-4 py-6">
+        <div className="container mx-auto max-w-7xl px-4 py-3">
             <div className="mb-6">
                 <div>
                     <h1 className="text-2xl font-semibold tracking-tight">
@@ -772,12 +772,10 @@ export default function SaleAddPage() {
                                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                                     <ShoppingCart size={18} />
                                 </div>
-
                                 <div>
                                     <h2 className="font-semibold">
                                         Carrito
                                     </h2>
-
                                     <p className="text-sm text-muted-foreground">
                                         Productos de esta venta.
                                     </p>
@@ -820,117 +818,79 @@ export default function SaleAddPage() {
                             <>
                                 <div className="space-y-3">
                                     {items.map((item, index) => {
-                                        const product = products.find(
-                                            (p) => p.id === item.product_id
-                                        );
-
+                                        const product = products.find((p) => p.id === item.product_id);
                                         if (!product) return null;
 
                                         const isJustAdded =
-                                            `${item.product_id}-${item.product_unit_id}` ===
-                                            justAddedKey;
+                                            `${item.product_id}-${item.product_unit_id}` === justAddedKey;
 
                                         return (
                                             <div
                                                 key={fields[index]?.id}
                                                 className={`overflow-hidden rounded-xl border bg-background transition-all duration-300 ${isJustAdded
-                                                        ? "border-primary ring-2 ring-primary/20"
-                                                        : ""
+                                                    ? "border-primary ring-2 ring-primary/20"
+                                                    : ""
                                                     }`}
                                             >
                                                 <ProductCard
                                                     product={product}
-                                                    onIncrease={() =>
-                                                        handleIncrease(index)
-                                                    }
-                                                    onDecrease={() =>
-                                                        handleDecrease(index)
-                                                    }
-                                                    onRemove={() =>
-                                                        handleRemoveItem(index)
-                                                    }
-                                                    quantity={Number(
-                                                        items[index]?.quantity ?? 0
-                                                    )}
-                                                    onChangeQuantity={(q) =>
-                                                        setValue(
-                                                            `items.${index}.quantity`,
-                                                            q,
-                                                            {
-                                                                shouldValidate: true,
-                                                                shouldDirty: true,
-                                                            }
-                                                        )
-                                                    }
+                                                    quantity={Number(item.quantity ?? 0)}
                                                     units={product.product_units}
-                                                    selectedUnitId={
-                                                        items[index]
-                                                            ?.product_unit_id
+                                                    selectedUnitId={item.product_unit_id}
+                                                    unitPrice={Number(
+                                                        item.unit_price ?? product.unit_price
+                                                    )}
+                                                    availableStock={getAvailableStock(product)}
+                                                    onIncrease={() => handleIncrease(index)}
+                                                    onDecrease={() => handleDecrease(index)}
+                                                    onRemove={() => handleRemoveItem(index)}
+                                                    onChangeQuantity={(q) =>
+                                                        setValue(`items.${index}.quantity`, q, {
+                                                            shouldValidate: true,
+                                                            shouldDirty: true,
+                                                        })
                                                     }
                                                     onSelectUnit={(unitId) => {
-                                                        const unit =
-                                                            product.product_units?.find(
-                                                                (unit) =>
-                                                                    unit.id ===
-                                                                    unitId
-                                                            );
+                                                        const unit = product.product_units?.find(
+                                                            (unit) => unit.id === unitId
+                                                        );
 
                                                         if (!unit) return;
 
-                                                        const conversionFactor =
-                                                            Number(
-                                                                unit.conversion_factor ??
-                                                                1
-                                                            );
-
-                                                        const currentQuantity =
-                                                            Number(
-                                                                items[index]
-                                                                    ?.quantity ?? 0
-                                                            );
-
+                                                        const conversionFactor = Number(
+                                                            unit.conversion_factor ?? 1
+                                                        );
+                                                        const currentQuantity = Number(item.quantity ?? 0);
                                                         const stock = Number(
-                                                            product
-                                                                .warehouse_stock?.[0]
-                                                                ?.quantity ?? 0
+                                                            product.warehouse_stock?.[0]?.quantity ?? 0
                                                         );
 
-                                                        const quantityInOtherItems =
-                                                            items.reduce(
-                                                                (
-                                                                    total,
-                                                                    currentItem,
-                                                                    currentIndex
-                                                                ) => {
-                                                                    if (
-                                                                        currentIndex ===
-                                                                        index ||
-                                                                        currentItem.product_id !==
-                                                                        product.id
-                                                                    ) {
-                                                                        return total;
-                                                                    }
+                                                        const quantityInOtherItems = items.reduce(
+                                                            (total, currentItem, currentIndex) => {
+                                                                if (
+                                                                    currentIndex === index ||
+                                                                    currentItem.product_id !== product.id
+                                                                ) {
+                                                                    return total;
+                                                                }
 
-                                                                    const factor =
-                                                                        getUnitConversionFactor(
-                                                                            product,
-                                                                            currentItem.product_unit_id
-                                                                        );
-
-                                                                    return (
-                                                                        total +
-                                                                        Number(
-                                                                            currentItem.quantity ??
-                                                                            0
-                                                                        ) * factor
+                                                                const factor =
+                                                                    getUnitConversionFactor(
+                                                                        product,
+                                                                        currentItem.product_unit_id
                                                                     );
-                                                                },
-                                                                0
-                                                            );
+
+                                                                return (
+                                                                    total +
+                                                                    Number(currentItem.quantity ?? 0) *
+                                                                    factor
+                                                                );
+                                                            },
+                                                            0
+                                                        );
 
                                                         const newQuantityInBase =
-                                                            currentQuantity *
-                                                            conversionFactor;
+                                                            currentQuantity * conversionFactor;
 
                                                         if (
                                                             quantityInOtherItems +
@@ -961,23 +921,12 @@ export default function SaleAddPage() {
                                                             }
                                                         );
                                                     }}
-                                                    unitPrice={Number(
-                                                        items[index]?.unit_price ??
-                                                        product.unit_price
-                                                    )}
                                                     onChangeUnitPrice={(price) =>
-                                                        setValue(
-                                                            `items.${index}.unit_price`,
-                                                            price,
-                                                            {
-                                                                shouldValidate: true,
-                                                                shouldDirty: true,
-                                                            }
-                                                        )
+                                                        setValue(`items.${index}.unit_price`, price, {
+                                                            shouldValidate: true,
+                                                            shouldDirty: true,
+                                                        })
                                                     }
-                                                    availableStock={getAvailableStock(
-                                                        product
-                                                    )}
                                                 />
                                             </div>
                                         );
@@ -986,10 +935,7 @@ export default function SaleAddPage() {
 
                                 <div className="mt-5 rounded-xl border bg-muted/30 p-4">
                                     <div className="mb-3 flex items-center justify-between">
-                                        <span className="text-sm font-medium">
-                                            Resumen
-                                        </span>
-
+                                        <span className="text-sm font-medium">Resumen</span>
                                         <span className="text-xs text-muted-foreground">
                                             {items.length} productos
                                         </span>
@@ -1000,11 +946,8 @@ export default function SaleAddPage() {
                                             <div className="flex items-center justify-between text-sm">
                                                 <div className="flex items-center gap-2">
                                                     <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                                                    <span>
-                                                        Régimen ZOFRA
-                                                    </span>
+                                                    <span>Régimen ZOFRA</span>
                                                 </div>
-
                                                 <span className="text-muted-foreground">
                                                     {regimeCounts.zofra}
                                                 </span>
@@ -1015,11 +958,8 @@ export default function SaleAddPage() {
                                             <div className="flex items-center justify-between text-sm">
                                                 <div className="flex items-center gap-2">
                                                     <span className="h-2 w-2 rounded-full bg-blue-500" />
-                                                    <span>
-                                                        Régimen General
-                                                    </span>
+                                                    <span>Régimen General</span>
                                                 </div>
-
                                                 <span className="text-muted-foreground">
                                                     {regimeCounts.general}
                                                 </span>
@@ -1030,20 +970,12 @@ export default function SaleAddPage() {
                                     <div className="my-3 h-px bg-border" />
 
                                     <div className="flex items-center justify-between text-sm">
-                                        <span className="text-muted-foreground">
-                                            Subtotal
-                                        </span>
-
-                                        <span>
-                                            S/ {subTotal.toFixed(2)}
-                                        </span>
+                                        <span className="text-muted-foreground">Subtotal</span>
+                                        <span>S/ {subTotal.toFixed(2)}</span>
                                     </div>
 
                                     <div className="mt-2 flex items-center justify-between">
-                                        <span className="font-semibold">
-                                            Total
-                                        </span>
-
+                                        <span className="font-semibold">Total</span>
                                         <span className="text-xl font-bold">
                                             S/ {subTotal.toFixed(2)}
                                         </span>
@@ -1058,7 +990,10 @@ export default function SaleAddPage() {
             <section className="mt-6 rounded-2xl border bg-card shadow-sm">
                 <div className="border-b px-5 py-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                <UserRound size={18} />
+                            </div>
                             <h2 className="font-semibold">
                                 Cliente
                             </h2>
@@ -1176,7 +1111,9 @@ export default function SaleAddPage() {
                     variant="outline"
                     className="w-full sm:w-auto"
                     disabled={isSubmitting}
-                    onClick={() => router.push("/sales/sale")}
+                    onClick={() => {useSaleStore.getState().startNew();
+                        router.push("/sales/sale")
+                    }}
                 >
                     Cancelar
                 </Button>

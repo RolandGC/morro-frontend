@@ -48,7 +48,7 @@ export function ProductCard({
         .join(" - ");
 
     return (
-        <div className="relative rounded-xl border border-gray-200 bg-white px-3 py-3">
+        <div className="relative rounded-xl border border-gray-200 bg-white px-3 py-2.5">
             <div className="flex items-start justify-between">
                 <div>
                     <h3 className="text-[15px] font-normal leading-5 text-gray-900">
@@ -96,7 +96,7 @@ export function ProductCard({
                 </button>
             </div>
 
-            <div className="mt-4 grid grid-cols-[35px_1fr_35px_1fr] items-center gap-3">
+            <div className="mt-3 grid grid-cols-[35px_1fr_35px_1fr] items-center gap-3">
                 <button
                     type="button"
                     onClick={onDecrease}

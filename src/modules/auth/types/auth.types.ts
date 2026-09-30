@@ -14,6 +14,9 @@ export interface User {
   is_active: boolean;
   last_login_at: string; // ISO date
   created_at: string | null;
+  doc_number: string | null;
+  last_name: string | null;
+  updated_at: string | null;
   users_companies?: UserCompany[];
 }
 

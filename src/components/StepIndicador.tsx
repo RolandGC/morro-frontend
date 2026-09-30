@@ -63,7 +63,7 @@ export function StepIndicator({ steps }: StepIndicatorProps) {
                                 {/* Circle */}
                                 <div
                                     className={cn(
-                                        "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 font-semibold transition-colors",
+                                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 font-semibold transition-colors",
                                         completed &&
                                         "border-primary bg-primary text-primary-foreground",
                                         current &&
@@ -99,7 +99,7 @@ export function StepIndicator({ steps }: StepIndicatorProps) {
                             {index < steps.length - 1 && (
                                 <div
                                     className={cn(
-                                        "mx-4 h-[2px] flex-1",
+                                        "mx-4 h-0.5 flex-1",
                                         index < currentIndex
                                             ? "bg-primary"
                                             : "bg-muted"
@@ -145,7 +145,7 @@ export function StepIndicator({ steps }: StepIndicatorProps) {
                                 {index < steps.length - 1 && (
                                     <div
                                         className={cn(
-                                            "mx-2 h-[2px] flex-1",
+                                            "mx-2 h-0.5 flex-1",
                                             index < currentIndex
                                                 ? "bg-primary"
                                                 : "bg-muted"

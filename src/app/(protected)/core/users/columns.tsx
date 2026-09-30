@@ -49,6 +49,7 @@ export const getColumns = ({ fetchUsers }: ColumnsProps): ColumnDef<User>[] => [
             const { openEdit } = useUserStore();
             const { notify } = useToast();
 
+            console.log("hola", user)
             const handleEdit = () => {
                 openEdit({
                     name: user.name,
@@ -58,8 +59,8 @@ export const getColumns = ({ fetchUsers }: ColumnsProps): ColumnDef<User>[] => [
                     is_active: user.is_active,
                     is_superadmin: user.is_superadmin,
                     password: "",
-                    company_ids: user.users_companies.map((company) => company.id),
-                    role_ids: user.user_roles.map((role) => role.id),
+                    company_ids: user.users_companies.map((company) => company.company_id),
+                    role_ids: user.user_roles.map((role) => role.role_id),
                 }, user?.id);
             };
 
