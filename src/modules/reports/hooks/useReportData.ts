@@ -25,6 +25,7 @@ function extractErrorMessage(error: unknown): string {
 export function useReportData<T, P>(
   fetchFn: (params: P) => Promise<AxiosResponse<T>>,
   params: P,
+  enabled = true,
 ) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(false);
@@ -34,6 +35,7 @@ export function useReportData<T, P>(
   const paramsKey = JSON.stringify(params);
 
   useEffect(() => {
+    if (!enabled) return;
     let active = true;
 
     const timer = setTimeout(() => {
@@ -57,7 +59,7 @@ export function useReportData<T, P>(
       clearTimeout(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paramsKey, version]);
+  }, [paramsKey, version, enabled]);
 
   const refetch = useCallback(() => setVersion((value) => value + 1), []);
 
