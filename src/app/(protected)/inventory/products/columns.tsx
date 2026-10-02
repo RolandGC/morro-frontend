@@ -43,6 +43,11 @@ export const getColumns = ({ fetchData }: ColumnsProps): ColumnDef<Product>[] =>
         header: "Fecha de creación",
     },
     {
+        accessorFn: (row) => `${row.warehouse_stock?.[0]?.quantity ?? "0"}  uds`,
+        id: "Stock",
+        header: "Stock",
+    }, 
+    {
         id: "actions",
         header: "Opciones",
         cell: ({ row }) => {

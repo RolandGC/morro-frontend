@@ -8,11 +8,9 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/useToast";
 import SimpleSelector from "@/components/SimpleSelector";
 import { Company } from "@/modules/core/companies/types/company.type";
-import { companyService } from "@/modules/core/companies/services/company.service";
 import { confirmAction } from "@/lib/swal";
 import Swal from "sweetalert2";
 import { Warehouse } from "@/modules/core/warehouses/types/warehouse.types";
-import { warehouseService } from "@/modules/core/warehouses/services/warehouse.service";
 import { currencyService } from "@/modules/finances/currency/services/currency.service";
 import { Currency } from "@/modules/finances/currency/types/currency.types";
 import { Product, ProductUnit } from "@/modules/inventory/products/types/produc.type";
@@ -26,6 +24,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PurchaseItem } from "@/modules/purchases/purchase/types/purchase.types";
 import { purchaseService } from "@/modules/purchases/purchase/services/purchase.service";
 import { useRouter } from "next/navigation";
+import InputSearch from "@/components/InputSearch";
 
 interface PurchaseFormProps {
     onSuccess?: () => void;
@@ -34,13 +33,24 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
     const { isEditing, purchase, open, close, purchase_id } = usePurchaseStore();
     const [isSearch, setIsSearch] = useState(false)
     const { notify: showToast } = useToast();
-    const [companies, setCompanies] = useState<Company[]>([]);
-    const [warehouse, setWarehouse] = useState<Warehouse[]>([])
     const [supplier, setSupplier] = useState<Supplier[]>([])
     const [currency, setCurrency] = useState<Currency[]>([])
-    const [products, setProducts] = useState<Product[]>([]);
     const [productUnits, setProductUnits] = useState<Record<number, ProductUnit[]>>({});
     const [openProduct, setOpenProduct] = useState(false);
+    const [searchProduct, setSearchProduct] = useState<Record<number, string>>({});
+    const [productLoading, setProductLoading] = useState(false);
+    const [productResults, setProductResults] = useState<Product[]>([]);
+    const [selectedProducts, setSelectedProducts] = useState<Record<number, Product>>({});
+
+    const [productFilter, setProductFilter] = useState({
+        name: "",
+        track_stock: undefined,
+        barcode: "",
+        is_active: true,
+        page: 1,
+        limit: 6,
+    });
+
     const router = useRouter();
     const defaultValues: PurchaseForm = {
         //company_id: "",
@@ -77,29 +87,6 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
     });
     const items = watch("items");
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [companiesResponse, warehouseResponse] = await Promise.all([
-                    companyService.getAllCompanies({ is_active: true }),
-                    warehouseService.getAll({ is_active: true }),
-                ]);
-
-                if (companiesResponse.status === 200) {
-                    setCompanies(companiesResponse.data.data);
-                }
-
-                if (warehouseResponse.status === 200) {
-                    setWarehouse(warehouseResponse.data.data);
-                }
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            }
-        };
-
-        fetchData();
-    }, [setCompanies, setWarehouse]);
-
     const fetchCuurencySupplier = async () => {
         try {
             const [supplierResponse, currencyResponse] = await Promise.all([
@@ -125,23 +112,6 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
 
     useEffect(() => {
         fetchCuurencySupplier();
-    }, []);
-
-    const fetchProducts = async () => {
-        const response = await productService.getAll({ is_active: true });
-        if (response.status === 200) {
-            setProducts(response.data.data)
-        } else {
-            console.error("Error fetching products:", response.statusText);
-        }
-    }
-
-    useEffect(() => {
-        try {
-            fetchProducts();
-        } catch (error) {
-            console.error('Error fetching products:', error);
-        }
     }, []);
 
     const loadProductUnits = async (
@@ -187,11 +157,34 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
     }, [purchase, isEditing, resetForm]);
 
     const onSubmit = async (data: PurchaseForm) => {
-        console.log(JSON.stringify(data, null, 2));
         console.log("FORMULARIO COMPLETO:", data);
         const storedCompany = localStorage.getItem("selected_company");
+        if (!storedCompany) {
+            showToast("No existe empresa seleccionada", "error");
+            return;
+        }
         const parsedCompany: Company = JSON.parse(storedCompany);
 
+        const result = await Swal.fire({
+            title: "¿Estás seguro?",
+            text: `Se agregará la compra "${purchase.reference_doc}".`,
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonText: "Sí, agregar",
+            cancelButtonText: "Cancelar",
+            reverseButtons: true,
+            customClass: {
+                confirmButton:
+                    "bg-green-600 hover:bg-gray-300 text-white font-medium px-4 py-2 rounded-lg ml-2",
+                cancelButton:
+                    "bg-gray-500 hover:bg-gray-600 text-white font-medium px-4 py-2 rounded-lg mr-2",
+            },
+            buttonsStyling: false
+        });
+
+        if (!result.isConfirmed) {
+            return;
+        }
         try {
 
             if (!data.items || data.items.length === 0) {
@@ -260,18 +253,48 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
             product_id: "",
             product_unit_id: "",
             quantity: 1,
-            unit_quantity: 1,
+            //unit_quantity: 1,
             unit_cost: 0,
-            total_cost: 0,
+            //total_cost: 0,
             lot_number: "",
             expiry_date: "",
         });
+
+        setSearchProduct((prev) => ({
+            ...prev,
+            [newIndex]: "",
+        }));
 
         setEditingIndex(newIndex);
         setOpenProduct(true);
     };
 
+
     const saveProduct = () => {
+        if (editingIndex === null) return;
+
+        const item = getValues(`items.${editingIndex}`);
+
+        if (!item.product_id) {
+            showToast("Seleccione un producto", "error");
+            return;
+        }
+
+        if (!item.product_unit_id) {
+            showToast("Seleccione una unidad", "error");
+            return;
+        }
+
+        if (!item.quantity || Number(item.quantity) <= 0) {
+            showToast("Ingrese una cantidad válida", "error");
+            return;
+        }
+
+        if (!item.unit_cost || Number(item.unit_cost) <= 0) {
+            showToast("Ingrese un costo válido", "error");
+            return;
+        }
+
         setOpenProduct(false);
         setEditingIndex(null);
     };
@@ -279,14 +302,73 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
     const handleEdit = async (index: number) => {
         setEditingIndex(index);
 
-        const productId = getValues(`items.${index}.product_id`);
+        const item = getValues(`items.${index}`);
 
-        if (productId) {
-            await loadProductUnits(productId, index);
+        if (item?.product_id) {
+            const product = productResults.find(
+                (p) => p.id === item.product_id
+            );
+
+            if (product) {
+                setSelectedProducts((prev) => ({
+                    ...prev,
+                    [index]: product,
+                }));
+
+                setSearchProduct((prev) => ({
+                    ...prev,
+                    [index]: product.name,
+                }));
+            }
+
+            await loadProductUnits(item.product_id, index);
         }
 
         setOpenProduct(true);
     };
+
+
+    const fetchProducts = async () => {
+        try {
+            setProductLoading(true);
+
+            const response = await productService.getAll(productFilter);
+
+            if (response.status === 200) {
+                setProductResults(response.data.data);
+            } else {
+                console.error(
+                    "Error fetching products:",
+                    response.statusText
+                );
+            }
+        } catch (error) {
+            console.error("Error fetching products:", error);
+        } finally {
+            setProductLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchProducts();
+    }, [productFilter]);
+
+    useEffect(() => {
+        if (editingIndex === null) return;
+
+        const search = searchProduct[editingIndex] ?? "";
+
+        const timeout = setTimeout(() => {
+            setProductFilter((prev) => ({
+                ...prev,
+                name: search,
+                page: 1,
+            }));
+        }, 300);
+
+        return () => clearTimeout(timeout);
+    }, [searchProduct, editingIndex]);
+
     return (
         <div className="container mx-auto py-4 px-4">
             <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 w-full">
@@ -303,40 +385,6 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
                         register={register}
                         error={errors.exchange_rate}
                     />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                   {/*  <Controller
-                        name="company_id"
-                        control={control}
-                        render={({ field }) => (
-                            <SimpleSelector
-                                label="Empresa"
-                                value={field.value}
-                                options={companies.map((company) => ({
-                                    id: company.id,
-                                    name: company.name,
-                                }))}
-                                onSelect={field.onChange}
-                                error={errors.company_id}
-                            />
-                        )}
-                    />
-                    <Controller
-                        name="warehouse_id"
-                        control={control}
-                        render={({ field }) => (
-                            <SimpleSelector
-                                label="Almacén"
-                                value={field.value}
-                                options={warehouse.map((warehouse) => ({
-                                    id: warehouse.id,
-                                    name: warehouse.name,
-                                }))}
-                                onSelect={field.onChange}
-                                error={errors.warehouse_id}
-                            />
-                        )}
-                    /> */}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Controller
@@ -383,57 +431,80 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
                 </div>
                 <div className="overflow-hidden rounded-md border">
                     <Table>
-                        <TableHeader>
+                        <TableHeader className="font-bold bg-gray-100">
                             <TableRow>
                                 <TableHead>Producto</TableHead>
+                                <TableHead>Unidad</TableHead>
                                 <TableHead>Cantidad</TableHead>
                                 <TableHead>Costo</TableHead>
                                 <TableHead>Total</TableHead>
-                                <TableHead></TableHead>
+                                <TableHead>Acciones</TableHead>
                             </TableRow>
                         </TableHeader>
 
                         <TableBody>
-                            {fields.map((field, index) => {
-                                const item = items?.[index];
-                                const product = products.find(
-                                    p => p.id === item?.product_id
-                                );
-                                return (
-                                    <TableRow key={field.id}>
-                                        <TableCell>
-                                            {product?.name ?? "-"}
-                                        </TableCell>
-                                        <TableCell>
-                                            {item?.quantity}
-                                        </TableCell>
-                                        <TableCell>
-                                            {item?.unit_cost}
-                                        </TableCell>
-                                        <TableCell>
-                                            {item?.total_cost}
-                                        </TableCell>
-                                        <TableCell className="flex gap-2">
-                                            <Button
-                                                type="button"
-                                                onClick={() => handleEdit(index)}
-                                            >
-                                                Editar
-                                            </Button>
+                            {fields.length === 0 ? (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={5}
+                                        className="text-center text-gray-500 py-8"
+                                    >
+                                        No hay productos agregados
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                fields.map((field, index) => {
+                                    const item = items?.[index];
+                                    const product = selectedProducts[index];
 
-                                            <Button
-                                                type="button"
-                                                variant="destructive"
-                                                onClick={() => remove(index)}
-                                            >
-                                                Eliminar
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })}
+                                    return (
+                                        <TableRow key={field.id}>
+                                            <TableCell>
+                                                {product?.name} {product?.model}
+                                            </TableCell>
+                                            <TableCell>
+                                                {item?.product_unit_id
+                                                    ? productUnits[index]?.find(
+                                                        (unit) => unit.id === item.product_unit_id)?.name
+                                                    : "No disponible"}
+                                            </TableCell>
+                                            <TableCell>
+                                                {item?.quantity}
+                                            </TableCell>
+
+                                            <TableCell>
+                                                {item?.unit_cost}
+                                            </TableCell>
+
+                                            <TableCell>
+                                                {item?.quantity && item?.unit_cost
+                                                    ? (item.quantity * item.unit_cost).toFixed(2)
+                                                    : "0.00"}
+                                            </TableCell>
+
+                                            <TableCell className="flex gap-2">
+                                                <Button
+                                                    type="button"
+                                                    onClick={() => handleEdit(index)}
+                                                >
+                                                    Editar
+                                                </Button>
+
+                                                <Button
+                                                    type="button"
+                                                    variant="destructive"
+                                                    onClick={() => remove(index)}
+                                                >
+                                                    Eliminar
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    )
+                                })
+                            )}
                         </TableBody>
                     </Table>
+
                 </div>
 
                 <Dialog open={openProduct} onOpenChange={setOpenProduct}>
@@ -443,28 +514,69 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
                         </DialogHeader>
 
                         {editingIndex !== null && (
-                            <div className="border rounded-lg p-4 bg-gray-50 space-y-4">
+                            <div className="border rounded-lg p-4 bg-white space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                                    <Controller
-                                        control={control}
-                                        name={`items.${editingIndex}.product_id`}
-                                        render={({ field }) => (
-                                            <SimpleSelector
-                                                label="Producto"
-                                                value={field.value}
-                                                options={products.map(product => ({
-                                                    id: product.id,
-                                                    name: product.name,
-                                                }))}
-                                                onSelect={(value) => {
-                                                    field.onChange(value);
-                                                    loadProductUnits(value, editingIndex);
-                                                }}
-                                            />
-                                        )}
-                                    />
+                                    <InputSearch
+                                        label="Producto"
+                                        placeholder="Buscar producto..."
+                                        value={
+                                            editingIndex !== null
+                                                ? searchProduct[editingIndex] ?? ""
+                                                : ""
+                                        }
+                                        onChange={(value) => {
+                                            if (editingIndex === null) return;
 
+                                            setSearchProduct((prev) => ({
+                                                ...prev,
+                                                [editingIndex]: value,
+                                            }));
+                                        }}
+                                        results={productResults.map((product) => ({
+                                            id: product.id,
+                                            label: `${product.name} ${product?.model}`,
+                                        }))}
+                                        onSelect={(product) => {
+                                            if (editingIndex === null) return;
+
+                                            const index = editingIndex;
+
+                                            setSearchProduct((prev) => ({
+                                                ...prev,
+                                                [index]: product.label,
+                                            }));
+
+                                            const selectedProduct = productResults.find(
+                                                (p) => p.id === product.id
+                                            );
+
+                                            if (selectedProduct) {
+                                                setSelectedProducts((prev) => ({
+                                                    ...prev,
+                                                    [index]: selectedProduct,
+                                                }));
+                                            }
+
+                                            setValue(
+                                                `items.${index}.product_id`,
+                                                product.id,
+                                                {
+                                                    shouldValidate: true,
+                                                    shouldDirty: true,
+                                                }
+                                            );
+                                            setValue(
+                                                `items.${index}.product_unit_id`,
+                                                "",
+                                                {
+                                                    shouldValidate: true,
+                                                    shouldDirty: true,
+                                                }
+                                            );
+                                            loadProductUnits(product.id, index);
+                                        }}
+                                    />
                                     <Controller
                                         control={control}
                                         name={`items.${editingIndex}.product_unit_id`}
@@ -480,35 +592,19 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
                                             />
                                         )}
                                     />
-
                                 </div>
 
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <InputText
                                         label="Cantidad"
                                         name={`items.${editingIndex}.quantity`}
                                         register={register}
                                     />
-
                                     <InputText
-                                        label="Cant. Unidad"
-                                        name={`items.${editingIndex}.unit_quantity`}
-                                        register={register}
-                                    />
-
-                                    <InputText
-                                        label="Costo Unit."
+                                        label={`Costo por ${productUnits[editingIndex]?.find(unit => unit.id === getValues(`items.${editingIndex}.product_unit_id`))?.name ?? "unidad"}`}
                                         name={`items.${editingIndex}.unit_cost`}
                                         register={register}
                                     />
-
-                                    <InputText
-                                        label="Costo Total"
-                                        name={`items.${editingIndex}.total_cost`}
-                                        register={register}
-                                    />
-
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -553,7 +649,18 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
                         )}
                     </DialogContent>
                 </Dialog>
-                <div className="flex items-center justify-center">
+                <div className="mt-6 flex flex-col-reverse gap-3 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full sm:w-auto"
+                        disabled={isSubmitting}
+                        onClick={() => {
+                            router.push("/purchases/purchase")
+                        }}
+                    >
+                        Cancelar
+                    </Button>
                     <Button type="submit" className="px-6" disabled={isSubmitting}>
                         {isSubmitting
                             ? "Guardando..."

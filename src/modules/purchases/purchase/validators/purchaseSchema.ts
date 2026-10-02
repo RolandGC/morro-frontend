@@ -9,17 +9,9 @@ export const purchaseItemSchema = z.object({
     .number()
     .positive("La cantidad debe ser mayor que 0"),
 
-  unit_quantity: z.coerce
-    .number()
-    .positive("La cantidad por unidad debe ser mayor que 0"),
-
   unit_cost: z.coerce
     .number()
     .min(0, "El costo unitario no puede ser negativo"),
-
-  total_cost: z.coerce
-    .number()
-    .min(0, "El costo total no puede ser negativo"),
 
   lot_number: z
     .string()
@@ -34,9 +26,9 @@ export const purchaseItemSchema = z.object({
 });
 
 export const purchaseSchema = z.object({
-  // company_id: z.uuid("Debe seleccionar una empresa").optional(),
+  company_id: z.uuid("Debe seleccionar una empresa").optional().or(z.literal("")),
 
-  // warehouse_id: z.uuid("Debe seleccionar un almacén").optional(),
+  warehouse_id: z.uuid("Debe seleccionar un almacén").optional().or(z.literal("")),
 
   supplier_id: z.uuid("Debe seleccionar un proveedor"),
 
