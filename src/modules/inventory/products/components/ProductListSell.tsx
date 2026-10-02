@@ -35,7 +35,7 @@ export function ProductSearchItem({
                 {/* Información */}
                 <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-semibold text-gray-800">
-                        {product.name}
+                        {product.name} {product?.model}
                     </div>
 
                     <div

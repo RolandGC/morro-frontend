@@ -195,174 +195,185 @@ export default function PagoStep() {
 
 
     return (
-        <div className="container mx-auto px-4 py-4">
-            {/* CABECERA */}
-            <div className="mb-6">
-                <h2 className="text-xl font-semibold">
-                    Pago
-                </h2>
+        <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+            {/* =========================================================
+            HEADER
+        ========================================================== */}
+            <div className="mb-6 flex flex-col gap-2">
+                <div>
+                    <h2 className="text-2xl font-bold tracking-tight">
+                        Registrar pago
+                    </h2>
 
-                <p className="mt-1 text-sm text-muted-foreground">
-                    Selecciona el tipo de venta y configura los pagos
-                    correspondientes.
-                </p>
+                    <p className="text-sm text-muted-foreground">
+                        Configura la venta y registra los medios de pago.
+                    </p>
+                </div>
             </div>
 
-            {/* CONTENIDO PRINCIPAL */}
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                {/* =========================================================
-                COLUMNA IZQUIERDA - INFORMACIÓN DE VENTA
-            ========================================================== */}
-                <div className="space-y-6">
-                    <div className="rounded-2xl border bg-card p-5 shadow-sm">
-                        <div className="mb-5">
-                            <h3 className="font-semibold">
-                                Información de venta
-                            </h3>
+            {/* =========================================================
+            INFORMACIÓN GENERAL
+        ========================================================== */}
+            <section className="mb-6 rounded-2xl border bg-card">
+                <div className="border-b px-5 py-4">
+                    <h3 className="font-semibold">
+                        Información de la venta
+                    </h3>
 
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                Configuración general de la operación.
-                            </p>
-                        </div>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                        Define las condiciones generales de la operación.
+                    </p>
+                </div>
 
-                        <div className="grid grid-cols-1 gap-4">
-                            <Controller
-                                name="sale_type"
-                                control={control}
-                                render={({ field, fieldState }) => (
-                                    <SimpleSelector
-                                        label="Tipo de venta"
-                                        value={field.value}
-                                        options={saleTypes}
-                                        onSelect={field.onChange}
-                                        error={fieldState.error}
-                                    />
-                                )}
+                <div className="grid grid-cols-1 gap-4 p-5 md:grid-cols-3">
+                    <Controller
+                        name="sale_type"
+                        control={control}
+                        render={({ field, fieldState }) => (
+                            <SimpleSelector
+                                label="Tipo de venta"
+                                value={field.value}
+                                options={saleTypes}
+                                onSelect={field.onChange}
+                                error={fieldState.error}
                             />
+                        )}
+                    />
 
-                            <Controller
-                                name="currency_id"
-                                control={control}
-                                render={({ field, fieldState }) => (
-                                    <SimpleSelector
-                                        label="Moneda"
-                                        value={field.value}
-                                        options={currencies.map((currency) => ({
-                                            id: currency.id,
-                                            name: currency.name,
-                                        }))}
-                                        onSelect={field.onChange}
-                                        error={fieldState.error}
-                                    />
-                                )}
+                    <Controller
+                        name="currency_id"
+                        control={control}
+                        render={({ field, fieldState }) => (
+                            <SimpleSelector
+                                label="Moneda"
+                                value={field.value}
+                                options={currencies.map((currency) => ({
+                                    id: currency.id,
+                                    name: currency.name,
+                                }))}
+                                onSelect={field.onChange}
+                                error={fieldState.error}
                             />
+                        )}
+                    />
 
-                            <InputText
-                                name="exchange_rate"
-                                label="Tipo de cambio"
-                                register={register}
-                                registerOptions={{
-                                    valueAsNumber: true,
-                                }}
-                            />
+                    <InputText
+                        name="exchange_rate"
+                        label="Tipo de cambio"
+                        register={register}
+                        registerOptions={{
+                            valueAsNumber: true,
+                        }}
+                    />
+                </div>
+            </section>
+
+            
+            {/* =========================================================
+            CONTENIDO PRINCIPAL
+        ========================================================== */}
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+                {/* =====================================================
+                DETALLE DE VENTA
+            ====================================================== */}
+                <section className="rounded-2xl border bg-card shadow-sm">
+                    <div className="border-b px-5 py-4">
+                        <div className="flex items-center justify-between gap-3">
+                            <div>
+                                <h3 className="font-semibold">
+                                    Detalle de venta
+                                </h3>
+
+                                <p className="mt-1 text-sm text-muted-foreground">
+                                    Productos incluidos en esta operación.
+                                </p>
+                            </div>
+
+                            <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium">
+                                {items.length}{" "}
+                                {items.length === 1 ? "producto" : "productos"}
+                            </span>
                         </div>
                     </div>
 
-                    {/* TOTAL A PAGAR */}
-                    <div className="rounded-2xl border bg-card p-5 shadow-sm">
-                        <div className="mb-4">
-                            <h3 className="font-semibold">
-                                Total a pagar
-                            </h3>
-
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                Monto total calculado de la venta.
-                            </p>
-                        </div>
-
-                        <div className="rounded-xl bg-primary/5 p-5">
-                            <p className="text-sm text-muted-foreground">
-                                Total de la venta
-                            </p>
-
-                            <p className="mt-1 text-3xl font-bold text-primary">
-                                S/ {totalToPay.toFixed(2)}
-                            </p>
-                        </div>
-
-                        {/* DETALLE DE ITEMS */}
-                        <div className="mt-5">
-                            <div className="mb-3 flex items-center justify-between">
-                                <h4 className="text-sm font-semibold">
-                                    Detalle
-                                </h4>
-
-                                <span className="text-xs text-muted-foreground">
-                                    {items.length}{" "}
-                                    {items.length === 1 ? "producto" : "productos"}
-                                </span>
+                    <div className="p-5">
+                        {items.length === 0 ? (
+                            <div className="flex min-h-40 items-center justify-center rounded-xl border border-dashed bg-muted/20">
+                                <p className="text-sm text-muted-foreground">
+                                    No hay productos agregados.
+                                </p>
                             </div>
-
+                        ) : (
                             <div className="space-y-2">
-                                {items.length === 0 ? (
-                                    <div className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
-                                        No hay productos agregados.
-                                    </div>
-                                ) : (
-                                    items.map((item, index) => {
-                                        const quantity = Number(
-                                            item.quantity ?? 0
-                                        );
+                                {items.map((item, index) => {
+                                    const quantity = Number(
+                                        item.quantity ?? 0
+                                    );
 
-                                        const unitPrice = Number(
-                                            item.unit_price ?? 0
-                                        );
+                                    const unitPrice = Number(
+                                        item.unit_price ?? 0
+                                    );
 
-                                        const subtotal =
-                                            quantity * unitPrice;
+                                    const subtotal =
+                                        quantity * unitPrice;
 
-                                        return (
-                                            <div
-                                                key={index}
-                                                className="flex items-center justify-between gap-3 rounded-lg bg-muted/30 px-3 py-2"
-                                            >
+                                    return (
+                                        <div
+                                            key={index}
+                                            className="group flex items-center justify-between gap-4 rounded-xl border bg-background px-4 py-3 transition-colors hover:bg-muted/40"
+                                        >
+                                            <div className="flex min-w-0 items-center gap-3">
+                                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xs font-semibold text-primary">
+                                                    {index + 1}
+                                                </div>
+
                                                 <div className="min-w-0">
                                                     <p className="truncate text-sm font-medium">
                                                         Producto #{index + 1}
                                                     </p>
 
-                                                    <p className="text-xs text-muted-foreground">
+                                                    <p className="mt-0.5 text-xs text-muted-foreground">
                                                         {quantity} × S/{" "}
                                                         {unitPrice.toFixed(2)}
                                                     </p>
                                                 </div>
-
-                                                <span className="shrink-0 text-sm font-semibold">
-                                                    S/ {subtotal.toFixed(2)}
-                                                </span>
                                             </div>
-                                        );
-                                    })
-                                )}
+
+                                            <p className="shrink-0 text-sm font-semibold">
+                                                S/ {subtotal.toFixed(2)}
+                                            </p>
+                                        </div>
+                                    );
+                                })}
                             </div>
+                        )}
+
+                        {/* TOTAL */}
+                        <div className="mt-5 flex items-center justify-between border-t pt-4">
+                            <span className="text-sm font-medium text-muted-foreground">
+                                Total
+                            </span>
+
+                            <span className="text-xl font-bold">
+                                S/ {totalToPay.toFixed(2)}
+                            </span>
                         </div>
                     </div>
-                </div>
+                </section>
 
-                {/* =========================================================
-                COLUMNA DERECHA - PAGOS
-            ========================================================== */}
-                <div>
-                    <div className="rounded-2xl border bg-card p-5 shadow-sm">
-                        {/* CABECERA */}
-                        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                {/* =====================================================
+                PAGOS
+            ====================================================== */}
+                <section className="rounded-2xl border bg-card shadow-sm">
+                    <div className="border-b px-5 py-4">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div>
                                 <h3 className="font-semibold">
-                                    Pagos
+                                    Medios de pago
                                 </h3>
 
                                 <p className="mt-1 text-sm text-muted-foreground">
-                                    Agrega uno o más métodos de pago.
+                                    Registra uno o más pagos para completar la venta.
                                 </p>
                             </div>
 
@@ -374,194 +385,145 @@ export default function PagoStep() {
                                 + Agregar pago
                             </Button>
                         </div>
+                    </div>
 
-                        {/* LISTA DE PAGOS */}
-                        <div className="space-y-4">
-                            {fields.map((field, index) => (
-                                <CardPayment
-                                    key={field.id}
-                                    index={index}
-                                    control={control}
-                                    register={register}
-                                    currencies={currencies}
-                                    accounts={data}
-                                    onRemove={remove}
-                                />
-                            ))
-                            }
-                        </div>
+                    <div className="p-5">
+                        {fields.length === 0 ? (
+                            <div className="flex min-h-48 flex-col items-center justify-center rounded-xl border border-dashed bg-muted/20 px-6 text-center">
+                                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-lg text-primary">
+                                    💳
+                                </div>
 
-                        {/* AGREGAR OTRO */}
-                        {fields.length > 0 && (
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={addPayment}
-                                className="mt-4 w-full"
-                            >
-                                + Agregar otro pago
-                            </Button>
+                                <p className="font-medium">
+                                    No hay pagos registrados
+                                </p>
+
+                                <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+                                    Agrega un medio de pago para registrar cómo se
+                                    cancelará esta venta.
+                                </p>
+
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={addPayment}
+                                    className="mt-4"
+                                >
+                                    + Agregar primer pago
+                                </Button>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="space-y-4">
+                                    {fields.map((field, index) => (
+                                        <CardPayment
+                                            key={field.id}
+                                            index={index}
+                                            control={control}
+                                            register={register}
+                                            currencies={currencies}
+                                            accounts={data}
+                                            onRemove={remove}
+                                        />
+                                    ))}
+                                </div>
+
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={addPayment}
+                                    className="mt-4 w-full border-dashed"
+                                >
+                                    + Agregar otro pago
+                                </Button>
+                            </>
                         )}
                     </div>
-                </div>
+                </section>
             </div>
 
-            {/* =============================================================
+            {/* =========================================================
             RESUMEN FINAL
-        ============================================================= */}
-            <div className="mt-6 rounded-2xl border bg-card p-5 shadow-sm">
-                <div className="mb-5">
-                    <h3 className="font-semibold">
-                        Resumen de pago
-                    </h3>
-
-                    <p className="mt-1 text-sm text-muted-foreground">
-                        Revisa los importes antes de guardar la venta.
-                    </p>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    {/* TOTAL */}
-                    <div className="rounded-xl border bg-muted/20 p-4">
-                        <p className="text-sm text-muted-foreground">
-                            Total a pagar
-                        </p>
-
-                        <p className="mt-1 text-2xl font-bold">
-                            S/ {totalToPay.toFixed(2)}
-                        </p>
-                    </div>
-
-                    {/* PAGADO */}
-                    <div className="rounded-xl border bg-emerald-50 p-4 dark:bg-emerald-950/20">
-                        <p className="text-sm text-muted-foreground">
-                            Total pagado
-                        </p>
-
-                        <p className="mt-1 text-2xl font-bold text-emerald-600">
-                            S/ {totalPaid.toFixed(2)}
-                        </p>
-                    </div>
-
-                    {/* PENDIENTE */}
-                    <div className="rounded-xl border bg-amber-50 p-4 dark:bg-amber-950/20">
-                        <p className="text-sm text-muted-foreground">
-                            Pendiente
-                        </p>
-
-                        <p className="mt-1 text-2xl font-bold text-amber-600">
-                            S/ {pendingAmount.toFixed(2)}
-                        </p>
-                    </div>
-
-                    {/* DIFERENCIA */}
-                    <div
-                        className={`rounded-xl border p-4 ${paymentDifference > 0
-                            ? "bg-blue-50 dark:bg-blue-950/20"
-                            : "bg-muted/20"
-                            }`}
-                    >
-                        <p className="text-sm text-muted-foreground">
-                            Diferencia
-                        </p>
-
-                        <p
-                            className={`mt-1 text-2xl font-bold ${paymentDifference > 0
-                                ? "text-blue-600"
-                                : paymentDifference < 0
-                                    ? "text-red-600"
-                                    : "text-emerald-600"
-                                }`}
-                        >
-                            S/ {paymentDifference.toFixed(2)}
-                        </p>
-                    </div>
-                </div>
-
-                {/* PROGRESO */}
-                <div className="mt-6">
-                    <div className="mb-2 flex items-center justify-between">
-                        <span className="text-sm font-medium">
-                            Progreso del pago
-                        </span>
-
-                        <span className="text-sm font-semibold">
-                            {totalToPay > 0
-                                ? Math.min(
-                                    100,
-                                    (totalPaid / totalToPay) * 100
-                                ).toFixed(0)
-                                : 0}
-                            %
-                        </span>
-                    </div>
-
-                    <div className="h-2.5 overflow-hidden rounded-full bg-muted">
-                        <div
-                            className={`h-full rounded-full transition-all ${pendingAmount === 0
-                                ? "bg-emerald-500"
-                                : "bg-primary"
-                                }`}
-                            style={{
-                                width: `${totalToPay > 0
-                                    ? Math.min(
-                                        100,
-                                        (totalPaid / totalToPay) * 100
-                                    )
-                                    : 0
-                                    }%`,
-                            }}
-                        />
-                    </div>
-                </div>
-
-                {/* ESTADO */}
-                <div className="mt-5 flex flex-col gap-3 rounded-xl bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-between">
+        ========================================================== */}
+            <section className="mt-6 rounded-2xl border bg-card shadow-sm">
+                <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <p className="text-sm font-medium">
-                            {pendingAmount === 0
-                                ? "Pago completado"
-                                : "Pago pendiente"}
+                            Resumen de pago
                         </p>
 
-                        <p className="text-xs text-muted-foreground">
-                            {fields.length}{" "}
-                            {fields.length === 1
-                                ? "método de pago registrado"
-                                : "métodos de pago registrados"}
+                        <p className="mt-1 text-xs text-muted-foreground">
+                            Verifica que el monto registrado coincida con el total
+                            antes de guardar.
                         </p>
                     </div>
 
-                    <div
-                        className={`rounded-full px-3 py-1 text-xs font-semibold ${pendingAmount === 0
-                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400"
-                            : "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400"
-                            }`}
-                    >
-                        {pendingAmount === 0
-                            ? "COMPLETO"
-                            : "PENDIENTE"}
+                    <div className="flex flex-wrap items-center gap-6">
+                        <div>
+                            <p className="text-xs text-muted-foreground">
+                                Total
+                            </p>
+
+                            <p className="font-semibold">
+                                S/ {totalToPay.toFixed(2)}
+                            </p>
+                        </div>
+
+                        <div>
+                            <p className="text-xs text-muted-foreground">
+                                Pagado
+                            </p>
+
+                            <p className="font-semibold text-emerald-600">
+                                S/ {totalPaid.toFixed(2)}
+                            </p>
+                        </div>
+
+                        <div
+                            className={`rounded-xl px-4 py-2 ${pendingAmount > 0
+                                    ? "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400"
+                                    : paymentDifference > 0
+                                        ? "bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400"
+                                        : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400"
+                                }`}
+                        >
+                            <p className="text-xs font-medium">
+                                {pendingAmount > 0
+                                    ? "Pendiente"
+                                    : paymentDifference > 0
+                                        ? "Excedente"
+                                        : "Estado"}
+                            </p>
+
+                            <p className="font-bold">
+                                {pendingAmount > 0
+                                    ? `S/ ${pendingAmount.toFixed(2)}`
+                                    : paymentDifference > 0
+                                        ? `S/ ${paymentDifference.toFixed(2)}`
+                                        : "COMPLETO"}
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            {/* =============================================================
+            {/* =========================================================
             NAVEGACIÓN
-        ============================================================= */}
-            <div className="mt-8 flex flex-col-reverse gap-3 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
-                <button
+        ========================================================== */}
+            <div className="mt-6 flex flex-col-reverse gap-3 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
+                <Button
                     type="button"
-                    className="w-full rounded-md border px-4 py-2 text-sm transition-colors hover:bg-muted sm:w-auto"
-                    onClick={() =>
-                        router.push("/sales/sale/add")
-                    }
+                    variant="outline"
+                    onClick={() => router.push("/sales/sale/add")}
+                    className="w-full sm:w-auto"
                 >
-                    Anterior
-                </button>
+                    ← Anterior
+                </Button>
 
-                <button
+                <Button
                     type="button"
-                    className="w-full rounded-md bg-primary px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90 sm:w-auto"
+                    size="lg"
+                    disabled={isSubmitting}
                     onClick={handleSubmit(
                         onSubmit,
                         (errors) => {
@@ -571,14 +533,15 @@ export default function PagoStep() {
                             );
                         }
                     )}
+                    className="w-full min-w-44 sm:w-auto"
                 >
                     {isSubmitting ? "Guardando..." : "Guardar venta"}
-                </button>
+                </Button>
             </div>
 
-            {/* =============================================================
+            {/* =========================================================
             MODAL TICKET
-        ============================================================= */}
+        ========================================================== */}
             <TicketFormModal
                 open={ticketOpen}
                 onOpenChange={setTicketOpen}
@@ -591,26 +554,40 @@ export default function PagoStep() {
                 }}
             />
 
-            {/* =============================================================
+            {/* =========================================================
             MODAL ÉXITO
-        ============================================================= */}
+        ========================================================== */}
             <Dialog
                 open={successDialogOpen}
                 onOpenChange={setSuccessDialogOpen}
             >
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                        <DialogTitle>
+                        <DialogTitle className="text-xl">
                             Venta creada correctamente
                         </DialogTitle>
                     </DialogHeader>
 
-                    <div className="mt-2 flex flex-col gap-4">
-                        <p className="text-sm text-muted-foreground">
-                            La venta se creó correctamente.
-                        </p>
+                    <div className="flex flex-col gap-4">
+                        <div className="rounded-xl bg-emerald-50 p-4 dark:bg-emerald-950/30">
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-white">
+                                    ✓
+                                </div>
 
-                        <div className="flex flex-col gap-2 sm:flex-row">
+                                <div>
+                                    <p className="font-medium">
+                                        Operación completada
+                                    </p>
+
+                                    <p className="text-sm text-muted-foreground">
+                                        La venta se registró correctamente.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-2">
                             {createdSale?.notaPedidoBase64 && (
                                 <Button
                                     onClick={() =>
@@ -618,6 +595,7 @@ export default function PagoStep() {
                                             createdSale.notaPedidoBase64
                                         )
                                     }
+                                    className="w-full"
                                 >
                                     Imprimir comprobante
                                 </Button>
@@ -629,6 +607,7 @@ export default function PagoStep() {
                                     setTicketOpen(true);
                                     setSuccessDialogOpen(false);
                                 }}
+                                className="w-full"
                             >
                                 Emitir boleta
                             </Button>
@@ -644,6 +623,7 @@ export default function PagoStep() {
 
                                     router.push("/sales/sale");
                                 }}
+                                className="w-full"
                             >
                                 Cerrar
                             </Button>
