@@ -18,10 +18,6 @@ interface CustomerFormProps {
     onSuccess?: (customer: Customer) => void;
     fetchData: () => void;
 }
-const booleanOptions = [
-    { id: "1", name: "Sí", value: true },
-    { id: "2", name: "No", value: false },
-];
 
 export default function CustomerFormModal({ onSuccess, fetchData }: CustomerFormProps) {
     const { isEditing, customer, open, close, customer_id } = useCustomerStore();

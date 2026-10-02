@@ -8,9 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/useToast";
 import SimpleSelector from "@/components/SimpleSelector";
 import { Company } from "@/modules/core/companies/types/company.type";
-import { confirmAction } from "@/lib/swal";
 import Swal from "sweetalert2";
-import { Warehouse } from "@/modules/core/warehouses/types/warehouse.types";
 import { currencyService } from "@/modules/finances/currency/services/currency.service";
 import { Currency } from "@/modules/finances/currency/types/currency.types";
 import { Product, ProductUnit } from "@/modules/inventory/products/types/produc.type";
@@ -21,7 +19,6 @@ import { Supplier } from "@/modules/purchases/suppliers/types/suppliers.types";
 import { PurchaseForm, purchaseSchema } from "@/modules/purchases/purchase/validators/purchaseSchema";
 import { supplierService } from "@/modules/purchases/suppliers/services/supplier.service";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PurchaseItem } from "@/modules/purchases/purchase/types/purchase.types";
 import { purchaseService } from "@/modules/purchases/purchase/services/purchase.service";
 import { useRouter } from "next/navigation";
 import InputSearch from "@/components/InputSearch";
@@ -31,7 +28,6 @@ interface PurchaseFormProps {
 }
 export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
     const { isEditing, purchase, open, close, purchase_id } = usePurchaseStore();
-    const [isSearch, setIsSearch] = useState(false)
     const { notify: showToast } = useToast();
     const [supplier, setSupplier] = useState<Supplier[]>([])
     const [currency, setCurrency] = useState<Currency[]>([])
@@ -130,7 +126,6 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
                     [index]: units,
                 }));
 
-                // Seleccionar automáticamente si solo existe una unidad
                 if (units.length === 1) {
                     setValue(
                         `items.${index}.product_unit_id`,

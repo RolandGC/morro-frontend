@@ -32,11 +32,6 @@ export const getColumns = ({ fetchWarehouses }: ColumnsProps): ColumnDef<Warehou
         id: "Fecha Creación",
         header: "Fecha Creación",
     },
-    // {
-    //     accessorFn: (row) => formatDate(row.created_at),
-    //     id: "created_at",
-    //     header: "Fecha de creación",
-    // },
     {
         id: "opciones",
         header: "Opciones",
@@ -49,7 +44,6 @@ export const getColumns = ({ fetchWarehouses }: ColumnsProps): ColumnDef<Warehou
                 openEdit({
                     name: warehouse.name,
                     type: warehouse.type,
-                    company_id: warehouse.company_id,
                     is_active: warehouse.is_active,
                     address: warehouse.address,
                 }, warehouse.id);
@@ -74,7 +68,6 @@ export const getColumns = ({ fetchWarehouses }: ColumnsProps): ColumnDef<Warehou
                     buttonsStyling: false
                 });
 
-                // Si el usuario cancela
                 if (!result.isConfirmed) {
                     return;
                 }
@@ -104,7 +97,6 @@ export const getColumns = ({ fetchWarehouses }: ColumnsProps): ColumnDef<Warehou
                     console.error(error);
                 }
             };
-
 
             return (
                 <div className="flex gap-2">

@@ -19,6 +19,7 @@ import { accountService } from "@/modules/finances/Account/services/account.serv
 import { Account } from "@/modules/finances/Account/types/account.types";
 import TicketFormModal from "@/modules/sales/sale/components/TicketFormModal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import CardPayment from "@/modules/sales/sale/components/CardPayment";
 
 export default function PagoStep() {
     const router = useRouter();
@@ -28,7 +29,7 @@ export default function PagoStep() {
         control,
         register,
         watch,
-        formState: { errors, isSubmitting}
+        formState: { errors, isSubmitting }
     } = useFormContext<SaleForm>();
 
     const [currencies, setCurrencies] = useState<Currency[]>([]);
@@ -189,8 +190,8 @@ export default function PagoStep() {
     const totalPaid = payments.reduce((total, payment) => {
         return total + Number(payment.amount ?? 0);
     }, 0);
-const pendingAmount = Math.max(0, totalToPay - totalPaid);
-const paymentDifference = totalPaid - totalToPay;
+    const pendingAmount = Math.max(0, totalToPay - totalPaid);
+    const paymentDifference = totalPaid - totalToPay;
 
 
     return (
@@ -376,144 +377,18 @@ const paymentDifference = totalPaid - totalToPay;
 
                         {/* LISTA DE PAGOS */}
                         <div className="space-y-4">
-                            {fields.length === 0 ? (
-                                <div className="rounded-2xl border border-dashed bg-muted/20 px-6 py-10 text-center">
-                                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-xl">
-                                        💳
-                                    </div>
-
-                                    <h4 className="font-medium">
-                                        No hay pagos registrados
-                                    </h4>
-
-                                    <p className="mt-1 text-sm text-muted-foreground">
-                                        Agrega un pago para continuar con la venta.
-                                    </p>
-
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        className="mt-4"
-                                        onClick={addPayment}
-                                    >
-                                        + Agregar primer pago
-                                    </Button>
-                                </div>
-                            ) : (
-                                fields.map((field, index) => (
-                                    <div
-                                        key={field.id}
-                                        className="overflow-hidden rounded-xl border bg-background"
-                                    >
-                                        {/* HEADER */}
-                                        <div className="flex items-center justify-between border-b bg-muted/30 px-4 py-3">
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
-                                                    {index + 1}
-                                                </div>
-
-                                                <div>
-                                                    <h4 className="text-sm font-semibold">
-                                                        Pago #{index + 1}
-                                                    </h4>
-
-                                                    <p className="text-xs text-muted-foreground">
-                                                        Método de pago
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <button
-                                                type="button"
-                                                onClick={() => remove(index)}
-                                                className="rounded-lg px-2 py-1.5 text-xs font-medium text-red-500 transition-colors hover:bg-red-50 hover:text-red-600"
-                                            >
-                                                Eliminar
-                                            </button>
-                                        </div>
-
-                                        {/* FORMULARIO */}
-                                        <div className="p-4">
-                                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                                {/* CUENTA */}
-                                                <Controller
-                                                    name={`payments.${index}.payment_account_id`}
-                                                    control={control}
-                                                    render={({
-                                                        field,
-                                                        fieldState,
-                                                    }) => (
-                                                        <SimpleSelector
-                                                            label="Forma de pago"
-                                                            value={field.value}
-                                                            options={data.map(
-                                                                (account) => ({
-                                                                    id: account.id,
-                                                                    name: account.name,
-                                                                })
-                                                            )}
-                                                            onSelect={field.onChange}
-                                                            error={fieldState.error}
-                                                        />
-                                                    )}
-                                                />
-
-                                                {/* MONEDA */}
-                                                <Controller
-                                                    name={`payments.${index}.currency_id`}
-                                                    control={control}
-                                                    render={({
-                                                        field,
-                                                        fieldState,
-                                                    }) => (
-                                                        <SimpleSelector
-                                                            label="Moneda"
-                                                            value={field.value}
-                                                            options={currencies.map(
-                                                                (currency) => ({
-                                                                    id: currency.id,
-                                                                    name: currency.name,
-                                                                })
-                                                            )}
-                                                            onSelect={field.onChange}
-                                                            error={fieldState.error}
-                                                        />
-                                                    )}
-                                                />
-
-                                                {/* MONTO */}
-                                                <InputText
-                                                    name={`payments.${index}.amount`}
-                                                    label="Monto"
-                                                    register={register}
-                                                    registerOptions={{
-                                                        valueAsNumber: true,
-                                                    }}
-                                                />
-
-                                                {/* TIPO DE CAMBIO */}
-                                                <InputText
-                                                    name={`payments.${index}.exchange_rate`}
-                                                    label="Tipo de cambio"
-                                                    register={register}
-                                                    registerOptions={{
-                                                        valueAsNumber: true,
-                                                    }}
-                                                />
-
-                                                {/* NOTAS */}
-                                                <div className="sm:col-span-2">
-                                                    <InputText
-                                                        name={`payments.${index}.notes`}
-                                                        label="Notas"
-                                                        register={register}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))
-                            )}
+                            {fields.map((field, index) => (
+                                <CardPayment
+                                    key={field.id}
+                                    index={index}
+                                    control={control}
+                                    register={register}
+                                    currencies={currencies}
+                                    accounts={data}
+                                    onRemove={remove}
+                                />
+                            ))
+                            }
                         </div>
 
                         {/* AGREGAR OTRO */}
@@ -582,8 +457,8 @@ const paymentDifference = totalPaid - totalToPay;
                     {/* DIFERENCIA */}
                     <div
                         className={`rounded-xl border p-4 ${paymentDifference > 0
-                                ? "bg-blue-50 dark:bg-blue-950/20"
-                                : "bg-muted/20"
+                            ? "bg-blue-50 dark:bg-blue-950/20"
+                            : "bg-muted/20"
                             }`}
                     >
                         <p className="text-sm text-muted-foreground">
@@ -592,10 +467,10 @@ const paymentDifference = totalPaid - totalToPay;
 
                         <p
                             className={`mt-1 text-2xl font-bold ${paymentDifference > 0
-                                    ? "text-blue-600"
-                                    : paymentDifference < 0
-                                        ? "text-red-600"
-                                        : "text-emerald-600"
+                                ? "text-blue-600"
+                                : paymentDifference < 0
+                                    ? "text-red-600"
+                                    : "text-emerald-600"
                                 }`}
                         >
                             S/ {paymentDifference.toFixed(2)}
@@ -624,16 +499,16 @@ const paymentDifference = totalPaid - totalToPay;
                     <div className="h-2.5 overflow-hidden rounded-full bg-muted">
                         <div
                             className={`h-full rounded-full transition-all ${pendingAmount === 0
-                                    ? "bg-emerald-500"
-                                    : "bg-primary"
+                                ? "bg-emerald-500"
+                                : "bg-primary"
                                 }`}
                             style={{
                                 width: `${totalToPay > 0
-                                        ? Math.min(
-                                            100,
-                                            (totalPaid / totalToPay) * 100
-                                        )
-                                        : 0
+                                    ? Math.min(
+                                        100,
+                                        (totalPaid / totalToPay) * 100
+                                    )
+                                    : 0
                                     }%`,
                             }}
                         />
@@ -659,8 +534,8 @@ const paymentDifference = totalPaid - totalToPay;
 
                     <div
                         className={`rounded-full px-3 py-1 text-xs font-semibold ${pendingAmount === 0
-                                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400"
-                                : "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400"
+                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400"
+                            : "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400"
                             }`}
                     >
                         {pendingAmount === 0
