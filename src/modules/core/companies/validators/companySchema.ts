@@ -39,12 +39,12 @@ export const companySchema = z.object({
     .optional()
     .nullable(),
 
-  settings_json: z
-    .object({
-      igv_rate: z.number().min(0).max(1, "El IGV debe estar entre 0 y 1"),
-    })
-    .optional()
-    .default({ igv_rate: 0.18 }),
+  settings_json: z.object({
+    igv_rate: z
+      .number()
+      .min(0)
+      .max(1, "El IGV debe estar entre 0 y 1"),
+  }),
 });
 
 export type CompanyForm = z.infer<typeof companySchema>;
