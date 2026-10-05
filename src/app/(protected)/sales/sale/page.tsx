@@ -69,7 +69,7 @@ export default function SalePage() {
         }, 350);
 
         return () => clearTimeout(timer);
-    }, [saleFilter?.date_to, saleFilter?.page])
+    }, [saleFilter?.date_to, saleFilter?.page, saleFilter?.customer_id,])
 
     if (loading) {
         return (

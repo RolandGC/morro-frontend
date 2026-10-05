@@ -20,9 +20,12 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from "@/components/ui/table"
-import { useEffect } from "react"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from "@/components/ui/table"
+import { useEffect, useState } from "react"
 import { SaleQueryParams } from "../types/sale.types"
+import InputSearch from "@/components/InputSearch"
+import { Customer } from "../../customers/types/customer.type"
+import { customerService } from "../../customers/services/customer.service"
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
@@ -48,7 +51,7 @@ export function SaleDataTable<TData, TValue>({
     )
     const [columnVisibility, setColumnVisibility] =
         React.useState<VisibilityState>({})
-    
+
     const [rowSelection, setRowSelection] = React.useState({})
     const table = useReactTable({
         data,
@@ -68,16 +71,105 @@ export function SaleDataTable<TData, TValue>({
             rowSelection,
         },
     })
-    
+    const [customerResults, setCustomerResults] = useState<Customer[]>([]);
+    const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+    const [customerSearch, setCustomerSearch] = useState("")
+        useState<Customer | null>(null)
+
+    const fetchCustomers = async () => {
+        try {
+
+            const response = await customerService.getAll({is_active: true});
+
+            if (response.status === 200) {
+                setCustomerResults(response.data.data);
+            } else {
+                console.error(
+                    "Error fetching Customers:",
+                    response.statusText
+                );
+            }
+        } catch (error) {
+            console.error("Error fetching Customers:", error);
+        } finally {
+        }
+    };
+
+    useEffect(() => {
+        fetchCustomers();
+    }, []);
+
+    const handleClearCustomer = () => {
+        setSelectedCustomer(null)
+
+        // Quitamos el customer_id del filtro
+        handleFilter("customer_id", "")
+
+        // Volvemos a la primera página
+        handleFilter("page", 1)
+    }
     return (
         <div>
             <div className="flex items-center py-4">
-                <Input
-                    placeholder="Filtrar fechas..."
-                    value={filter.date_to}
-                    onChange={(event) => handleFilter("date_to", event.target.value)}
+                {/* <Input
+                    placeholder="Filtrar por cliente..."
+                    value={filter.customer_id}
+                    onChange={(event) => handleFilter("customer_id", event.target.value)}
                     className="max-w-sm"
-                />
+                /> */}
+                <div className="flex items-center gap-2">
+                    <InputSearch
+                        placeholder="Buscar cliente..."
+                        value={customerSearch}
+                        results={customerResults
+                            .filter((customer) =>
+                                customer.full_name
+                                    .toLowerCase()
+                                    .includes(customerSearch.toLowerCase())
+                            )
+                            .map((customer) => ({
+                                id: customer.id,
+                                label: customer.full_name,
+                            }))
+                        }
+                        onChange={(value) => {
+                            setCustomerSearch(value)
+                        }}
+                        onSelect={(customer) => {
+                            const selected = customerResults.find(
+                                (result) => result.id === customer.id
+                            )
+
+                            if (!selected) return
+
+                            setSelectedCustomer(selected)
+                            setCustomerSearch(selected.full_name)
+
+                            // AQUÍ recién se filtra
+                            handleFilter("customer_id", selected.id)
+                            handleFilter("page", 1)
+                        }}
+                    />
+
+                    {selectedCustomer && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                                setSelectedCustomer(null)
+                                setCustomerSearch("")
+
+                                // Eliminamos el filtro
+                                handleFilter("customer_id", undefined)
+                                handleFilter("page", 1)
+                            }}
+                        >
+                            Borrar
+                        </Button>
+                    )}
+                </div>
+
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="ml-auto">
