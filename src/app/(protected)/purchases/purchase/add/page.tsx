@@ -1,6 +1,6 @@
 "use client"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { Controller, FieldError, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import InputText from "@/components/InputText";
 import { useEffect, useState } from "react";
@@ -16,7 +16,7 @@ import { productService } from "@/modules/inventory/products/services/product.se
 import { productUnitService } from "@/modules/inventory/products/services/producUnit.service";
 import { usePurchaseStore } from "@/modules/purchases/purchase/store/purchase.store";
 import { Supplier } from "@/modules/purchases/suppliers/types/suppliers.types";
-import { PurchaseForm, purchaseSchema } from "@/modules/purchases/purchase/validators/purchaseSchema";
+import { PurchaseData, PurchaseForm, purchaseSchema } from "@/modules/purchases/purchase/validators/purchaseSchema";
 import { supplierService } from "@/modules/purchases/suppliers/services/supplier.service";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { purchaseService } from "@/modules/purchases/purchase/services/purchase.service";
@@ -68,7 +68,7 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
         getValues,
         watch,
         formState: { errors, isSubmitting },
-    } = useForm<PurchaseForm>({
+    } = useForm<PurchaseForm, undefined, PurchaseData>({
         resolver: zodResolver(purchaseSchema),
         defaultValues: {
             ...defaultValues,
@@ -76,6 +76,7 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
             items: purchase?.items ?? [],
         },
     });
+
 
     const { fields, append, remove, update } = useFieldArray({
         control,
@@ -151,7 +152,7 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
         }
     }, [purchase, isEditing, resetForm]);
 
-    const onSubmit = async (data: PurchaseForm) => {
+    const onSubmit = async (data: PurchaseData) => {
         console.log("FORMULARIO COMPLETO:", data);
         const storedCompany = localStorage.getItem("selected_company");
         if (!storedCompany) {
@@ -378,7 +379,7 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
                         name="exchange_rate"
                         label="Tipo de cambio"
                         register={register}
-                        error={errors.exchange_rate}
+                        error={errors.exchange_rate as FieldError | undefined}
                     />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -464,16 +465,16 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
                                                     : "No disponible"}
                                             </TableCell>
                                             <TableCell>
-                                                {item?.quantity}
+                                                {item?.quantity != null ? String(item.quantity) : ""}
                                             </TableCell>
 
                                             <TableCell>
-                                                {item?.unit_cost}
+                                                {item?.unit_cost != null ? String(item.unit_cost) : ""}
                                             </TableCell>
 
                                             <TableCell>
                                                 {item?.quantity && item?.unit_cost
-                                                    ? (item.quantity * item.unit_cost).toFixed(2)
+                                                    ? (Number(item.quantity) * Number(item.unit_cost)).toFixed(2)
                                                     : "0.00"}
                                             </TableCell>
 

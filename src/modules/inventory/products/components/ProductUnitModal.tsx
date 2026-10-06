@@ -7,14 +7,14 @@ import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/useToast";
 import { useBrandStore } from "@/modules/inventory/brands/store/brand.store";
 import { useCategoryStore } from "@/modules/core/category/store/category.store";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, FieldError } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ProductUnit } from "../types/produc.type";
 import { productUnitService } from "../services/producUnit.service";
 import { useProductUnitStore } from "../store/productUnit.store";
 import { DataTable } from "@/components/DataTable";
-import { ProductUnitForm, productUnitSchema } from "../validators/productUnitSchema";
+import { ProductUnitForm, ProductUnitFormInput, productUnitSchema } from "../validators/productUnitSchema";
 import { getColumns } from "./ColumnsProdUnit";
 
 interface ProductUnitProps {
@@ -26,18 +26,26 @@ export default function ProductUnitModal({ onSuccess }: ProductUnitProps) {
     const { notify: showToast } = useToast();
     const [data, setData] = useState<ProductUnit[]>([]);
 
-    const defaultValues = productUnit
-
+    const defaultValues: ProductUnitFormInput = {
+        name: "",
+        barcode: "",
+        conversion_factor: 1,
+        is_default: false,
+    }
     useEffect(() => {
         console.log("valor", open)
     }, [open, product_id])
 
-    const { register, handleSubmit,
-        control, reset: resetForm,
-        formState: { errors } } = useForm<ProductUnitForm>({
-            resolver: zodResolver(productUnitSchema),
-            defaultValues,
-        });
+    const {
+        register,
+        handleSubmit,
+        control,
+        reset: resetForm,
+        formState: { errors },
+    } = useForm<ProductUnitFormInput, unknown, ProductUnitForm>({
+        resolver: zodResolver(productUnitSchema),
+        defaultValues,
+    });
     const brands = useBrandStore((state) => state.brands);
     const categories = useCategoryStore((state) => state.categories);
 
@@ -146,7 +154,9 @@ export default function ProductUnitModal({ onSuccess }: ProductUnitProps) {
                 </DialogHeader>
                 {mode === "list" && (
                     <>
-                        <Button onClick={openCreate} className="rounded-md bg-primary px-4 py-2 text-primary-foreground">Crear unidad producto</Button>
+                        <div className="flex items-center justify-center">
+                            <Button onClick={openCreate} type="button" className="px-4 py-2 text-primary-foreground ">Crear unidad producto</Button>
+                        </div>
                         <DataTable columns={getColumns({ fetchData })} data={data} />
                     </>
                 )}
@@ -165,7 +175,7 @@ export default function ProductUnitModal({ onSuccess }: ProductUnitProps) {
                                 name="conversion_factor"
                                 label="Factor de conversión"
                                 register={register}
-                                error={errors.conversion_factor}
+                                error={errors?.conversion_factor as FieldError | undefined}
                             />
                         </div>
 
@@ -194,8 +204,8 @@ export default function ProductUnitModal({ onSuccess }: ProductUnitProps) {
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <Button type="button"
+                        <div className="flex items-center justify-center gap-2">
+                            <Button type="button" variant="outline"
                                 onClick={backToList}
                             >
                                 Cancelar

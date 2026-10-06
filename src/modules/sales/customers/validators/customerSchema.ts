@@ -39,4 +39,5 @@ export const customerSchema = z.object({
     .min(0, "El saldo de crédito no puede ser negativo"),
 });
 
-export type CustomerForm = z.infer<typeof customerSchema>;
+export type CustomerForm = z.input<typeof customerSchema>;
+export type CustomerData = z.output<typeof customerSchema>;

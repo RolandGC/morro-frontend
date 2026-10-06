@@ -19,4 +19,5 @@ export const productUnitSchema = z.object({
     is_default: z.boolean(),
   });
   
-  export type ProductUnitForm = z.infer<typeof productUnitSchema>;
+export type ProductUnitFormInput = z.input<typeof productUnitSchema>;
+export type ProductUnitForm = z.output<typeof productUnitSchema>;

@@ -328,7 +328,7 @@ export default function CustomerFormModal({ onSuccess, fetchData }: CustomerForm
                         <div>
                             <InputText
                                 name="full_name"
-                                label="Nombre"
+                                label="Nombres"
                                 register={register}
                                 error={errors.full_name}
                             />
