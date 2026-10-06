@@ -23,6 +23,11 @@ const routeNames: Record<string, string> = {
     companies: "Empresas",
     users: "Usuarios",
     products: "Productos",
+    reports: "Reportes",
+    ventas: "Ventas",
+    inventario: "Inventario",
+    cobranzas: "Cobranzas",
+    pagos: "Pagos",
 };
 
 export function AppBreadcrumb() {

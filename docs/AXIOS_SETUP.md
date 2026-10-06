@@ -62,7 +62,7 @@ const result = await authService.login({
 if (result.ok) {
   console.log(result.data); // LoginResponse
 } else {
-  console.log(result.error); // Error message
+  console.log(result.error); // Error messagee
 }
 ```
 

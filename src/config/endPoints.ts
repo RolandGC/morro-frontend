@@ -188,5 +188,14 @@ export const endpoints = {
     },
     TICKETS:{
         CREATE: `${baseUrl}/boletas`,
+    },
+    REPORTS: {
+        SUMMARY: `${baseUrl}/reports/summary`,
+        SALES_BY_DAY: `${baseUrl}/reports/sales-by-day`,
+        SALES_BY_PAYMENT_METHOD: `${baseUrl}/reports/sales-by-payment-method`,
+        TOP_PRODUCTS: `${baseUrl}/reports/top-products`,
+        LOW_STOCK: `${baseUrl}/reports/inventory/low-stock`,
+        RECEIVABLES_AGING: `${baseUrl}/reports/receivables/aging`,
+        PAYMENTS_EXPORT: `${baseUrl}/reports/payments/export`,
     }
 }

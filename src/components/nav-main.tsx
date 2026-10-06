@@ -32,6 +32,7 @@ export function NavMain({
     items?: {
       title: string
       url: string
+      permission?: string
     }[]
   }[]
 }) {
@@ -50,7 +51,13 @@ export function NavMain({
           </SidebarMenuButton>
         </SidebarMenuItem>
         {items.map((item) => (
-          (canAny(item.items?.map((i) => i?.permission) ?? []) &&
+          (canAny(
+            item.items
+              ?.map((i) => i?.permission)
+              .filter((permission): permission is string =>
+                Boolean(permission),
+              ) ?? [],
+          ) &&
             <Collapsible
               key={item.title}
               asChild
@@ -68,7 +75,8 @@ export function NavMain({
                 <CollapsibleContent>
                   <SidebarMenuSub>
                     {item.items?.map((subItem) => (
-                      (can(subItem?.permission) && (
+                      (subItem.permission &&
+                        can(subItem.permission) && (
                         <SidebarMenuSubItem key={subItem.title}>
                           <SidebarMenuSubButton asChild>
                             <Link href={subItem.url}>

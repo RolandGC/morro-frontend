@@ -170,18 +170,23 @@ const data = {
       items: [
         {
           title: "Ventas",
-          url: "#",
-          permission: "accounts.read",
+          url: "/reports/ventas",
+          permission: "reports.read",
         },
         {
-          title: "Compras",
-          url: "#",
-          permission: "accounts.read",
+          title: "Inventario",
+          url: "/reports/inventario",
+          permission: "reports.read",
         },
         {
-          title: "Caja",
-          url: "#",
-          permission: "accounts.read",
+          title: "Cobranzas",
+          url: "/reports/cobranzas",
+          permission: "reports.read",
+        },
+        {
+          title: "Pagos",
+          url: "/reports/pagos",
+          permission: "reports.export",
         },
       ],
     },
