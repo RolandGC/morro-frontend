@@ -15,9 +15,9 @@ import { Button } from "@/components/ui/button"
 export function AlertDialogSmallWithMedia() {
     return (
         <AlertDialog>
-            <AlertDialogTrigger
-                render={<Button variant="outline">Show Dialog</Button>}
-            />
+            <AlertDialogTrigger asChild>
+                <Button variant="outline">Show Dialog</Button>
+            </AlertDialogTrigger>
             <AlertDialogContent size="sm">
                 <AlertDialogHeader>
                     <AlertDialogMedia>
