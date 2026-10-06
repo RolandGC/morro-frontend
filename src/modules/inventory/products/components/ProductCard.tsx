@@ -100,7 +100,7 @@ export function ProductCard({
                 <button
                     type="button"
                     onClick={onDecrease}
-                    disabled={quantity <= 1}
+                    disabled={(quantity ?? 0) <= 1}
                     className="flex h-9 w-8.75 items-center justify-center rounded-xl border border-gray-200 text-gray-900 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     <Minus size={16} strokeWidth={1.5} />

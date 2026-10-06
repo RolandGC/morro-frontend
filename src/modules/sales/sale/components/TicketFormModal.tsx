@@ -8,6 +8,7 @@ import { saleService } from "../services/sale.service";
 import { TicketForm } from "../validators/saleSchema";
 import { Eye, Download, FileText, Loader2 } from "lucide-react";
 import { SaleDetail } from "../types/sale.types";
+import { regime } from "@/types/types";
 
 interface TicketFormModalProps {
     open: boolean;
@@ -21,11 +22,11 @@ interface TicketFormModalProps {
 interface LocalSaleItem {
     id: string;
     label: string;
-    regime?: string;
+    regime?: regime;
 }
 
 interface ComprobanteResponse {
-    regime: string;
+    regime: regime;
     serie: string;
     numero: number;
     subtotal: number;
@@ -62,11 +63,12 @@ export default function TicketFormModal({
     saleId,
     sale: saleFromProps,
     onClosed,
+    onSuccess,
 }: TicketFormModalProps) {
     const { notify } = useToast();
 
     const [sale, setSale] = useState<SaleDetail | null>(saleFromProps ?? null);
-    const [items, setItems] = useState<SaleItem[]>([]);
+    const [items, setItems] = useState<LocalSaleItem[]>([]);
     const [loadingSale, setLoadingSale] = useState(false);
     const [comprobantes, setComprobantes] = useState<ComprobantePdf[]>([]);
 
@@ -376,7 +378,7 @@ export default function TicketFormModal({
                 {/* ========================================== */}
 
                 {loadingSale ? (
-                    <div className="flex min-h-[200px] items-center justify-center">
+                    <div className="flex min-h-50 items-center justify-center">
                         <div className="flex flex-col items-center gap-3">
                             <Loader2 className="h-8 w-8 animate-spin text-primary" />
 

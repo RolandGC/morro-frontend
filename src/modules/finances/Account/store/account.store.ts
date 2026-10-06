@@ -1,11 +1,12 @@
 import { create } from "zustand";
 import { Account } from "../types/account.types";
 import { AccountForm } from "../validators/accountSchema";
+import { payment_account_type } from "@/types/types";
 
 const initialState: AccountForm = {
     company_id: "",
     name: "",
-    type: "cash",
+    type: payment_account_type.cash,
     account_number: "",
     bank_name: "",
     currency_id: "",
