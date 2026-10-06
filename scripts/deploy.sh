@@ -19,11 +19,9 @@ echo "==> Compilando (Next.js build)"
 npm run build
 
 echo "==> Reiniciando PM2"
-if pm2 describe "$PM2_APP" > /dev/null 2>&1; then
-  pm2 reload "$PM2_APP" --update-env
-else
-  pm2 start ecosystem.config.js
-fi
+# startOrReload vuelve a leer ecosystem.config.js, por lo que aplica cambios
+# de args/env (p. ej. el puerto). 'pm2 reload <name>' NO re-lee el archivo.
+pm2 startOrReload ecosystem.config.js --update-env
 pm2 save
 
 echo "==> Despliegue completado: $(date)"
