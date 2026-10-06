@@ -28,6 +28,7 @@ interface ReportFiltersProps {
   value: ReportFilterValue;
   onChange: (value: ReportFilterValue) => void;
   warehouses?: { id: string; name: string }[];
+  showDates?: boolean;
 }
 
 const PRESETS: { label: string; range: () => DateRange }[] = [
@@ -42,37 +43,50 @@ export default function ReportFilters({
   value,
   onChange,
   warehouses = [],
+  showDates = true,
 }: ReportFiltersProps) {
   return (
     <div className="flex flex-col gap-3 rounded-xl border bg-card p-4">
       <div className="flex flex-wrap items-end gap-3">
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-muted-foreground" htmlFor="report-from">
-            Desde
-          </label>
-          <Input
-            id="report-from"
-            type="date"
-            className="w-40"
-            value={value.from}
-            onChange={(event) =>
-              onChange({ ...value, from: event.target.value })
-            }
-          />
-        </div>
+        {showDates ? (
+          <>
+            <div className="flex flex-col gap-1">
+              <label
+                className="text-xs text-muted-foreground"
+                htmlFor="report-from"
+              >
+                Desde
+              </label>
+              <Input
+                id="report-from"
+                type="date"
+                className="w-40"
+                value={value.from}
+                onChange={(event) =>
+                  onChange({ ...value, from: event.target.value })
+                }
+              />
+            </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-muted-foreground" htmlFor="report-to">
-            Hasta
-          </label>
-          <Input
-            id="report-to"
-            type="date"
-            className="w-40"
-            value={value.to}
-            onChange={(event) => onChange({ ...value, to: event.target.value })}
-          />
-        </div>
+            <div className="flex flex-col gap-1">
+              <label
+                className="text-xs text-muted-foreground"
+                htmlFor="report-to"
+              >
+                Hasta
+              </label>
+              <Input
+                id="report-to"
+                type="date"
+                className="w-40"
+                value={value.to}
+                onChange={(event) =>
+                  onChange({ ...value, to: event.target.value })
+                }
+              />
+            </div>
+          </>
+        ) : null}
 
         {warehouses.length > 0 ? (
           <div className="flex w-56 flex-col gap-1">
@@ -101,19 +115,21 @@ export default function ReportFilters({
           </div>
         ) : null}
 
-        <div className="ml-auto flex flex-wrap gap-2">
-          {PRESETS.map((preset) => (
-            <Button
-              key={preset.label}
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => onChange({ ...value, ...preset.range() })}
-            >
-              {preset.label}
-            </Button>
-          ))}
-        </div>
+        {showDates ? (
+          <div className="ml-auto flex flex-wrap gap-2">
+            {PRESETS.map((preset) => (
+              <Button
+                key={preset.label}
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onChange({ ...value, ...preset.range() })}
+              >
+                {preset.label}
+              </Button>
+            ))}
+          </div>
+        ) : null}
       </div>
     </div>
   );
