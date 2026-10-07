@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from "@/components/ui/button";
-import { SaleDataTable } from "@/modules/sales/sale/components/PurchaseDataTable";
+import { SaleDataTable } from "@/modules/sales/sale/components/SaleDataTable";
 import { useRouter } from "next/navigation";
 import { getColumns } from "./columns";
 import { useEffect, useState } from "react";
@@ -95,13 +95,15 @@ export default function SalePage() {
             <TicketFormModal
                 open={open}
                 onOpenChange={(next) => {
-                    if (!next) close();
+                    if (!next) {
+                        close();
+                    }
                 }}
                 saleId={saleId ?? undefined}
                 onSuccess={() => {
-                    // recargar listado después de emitir boleta
+                    // Solo actualizamos el listado.
+                    // NO cerramos el modal.
                     void fetchData();
-                    close();
                 }}
                 onClosed={() => {
                     close();

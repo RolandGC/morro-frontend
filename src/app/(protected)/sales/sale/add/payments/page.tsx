@@ -553,14 +553,14 @@ export default function PagoStep() {
                 open={ticketOpen}
                 onOpenChange={setTicketOpen}
                 sale={createdSale}
-                onSuccess={async () => {
-                    useSaleStore.getState().startNew();
-                    setTicketOpen(false);
+                onSuccess={() => {
                     setSuccessDialogOpen(false);
+                }}
+                onClosed={() => {
+                    useSaleStore.getState().startNew();
                     router.push("/sales/sale");
                 }}
             />
-
             {/* =========================================================
             MODAL ÉXITO
         ========================================================== */}

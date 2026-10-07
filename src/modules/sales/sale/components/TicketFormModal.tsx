@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/useToast";
 import { saleService } from "../services/sale.service";
 import { TicketForm } from "../validators/saleSchema";
-import { Eye, Download, FileText, Loader2 } from "lucide-react";
+import { Eye, Download, FileText, Loader2, ArrowLeftRight } from "lucide-react";
 import { SaleDetail } from "../types/sale.types";
 import { regime } from "@/types/types";
+import { Customer } from "../../customers/types/customer.type";
+import CustomerSelector from "../../customers/components/CustomerSelector";
 
 interface TicketFormModalProps {
     open: boolean;
@@ -71,6 +73,9 @@ export default function TicketFormModal({
     const [items, setItems] = useState<LocalSaleItem[]>([]);
     const [loadingSale, setLoadingSale] = useState(false);
     const [comprobantes, setComprobantes] = useState<ComprobantePdf[]>([]);
+    const [changingCustomer, setChangingCustomer] = useState(false);
+    const [selectedCustomer, setSelectedCustomer] =
+        useState<Customer | null>(null);
 
     const {
         register,
@@ -114,6 +119,16 @@ export default function TicketFormModal({
     const initializeSale = (saleData: SaleDetail) => {
         setSale(saleData);
         setItems(mapSaleItems(saleData));
+        setChangingCustomer(false);
+
+        setSelectedCustomer(
+            saleData.customers
+                ? {
+                    ...saleData.customers,
+                    id: saleData.customer_id,
+                }
+                : null
+        );
 
         reset({
             sale_id: saleData.id,
@@ -121,7 +136,6 @@ export default function TicketFormModal({
             sale_item_ids: [],
         });
     };
-
     /**
      * Carga la venta.
      *
@@ -361,6 +375,22 @@ export default function TicketFormModal({
         onOpenChange(nextOpen);
     };
 
+    const handleCustomerChange = (customer: Customer) => {
+        setSelectedCustomer(customer);
+
+        setValue("customer_id", customer.id, {
+            shouldValidate: true,
+            shouldDirty: true,
+            shouldTouch: true,
+        });
+
+        setChangingCustomer(false);
+    };
+
+    const handleCancelCustomerChange = () => {
+        setChangingCustomer(false);
+    };
+
     return (
         <Dialog
             open={open}
@@ -413,33 +443,46 @@ export default function TicketFormModal({
                         {/* CLIENTE */}
                         {/* ========================================== */}
 
-                        {sale?.customers && (
-                            <div className="rounded-xl border bg-muted/30 p-4">
-                                <p className="text-xs text-muted-foreground">
-                                    Cliente
-                                </p>
+                            {selectedCustomer && !changingCustomer && (
+                                <div className="rounded-xl border bg-muted/30 p-4">
+                                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                        <div>
+                                            <p className="text-xs text-muted-foreground">
+                                                Cliente
+                                            </p>
 
-                                <p className="font-semibold">
-                                    {
-                                        sale
-                                            .customers
-                                            .full_name
-                                    }
-                                </p>
+                                            <p className="font-semibold">
+                                                {selectedCustomer.full_name}
+                                            </p>
 
-                                {sale.customers
-                                    .doc_number && (
-                                        <p className="text-sm text-muted-foreground">
-                                            {sale.customers.doc_type?.toUpperCase()}{" "}
-                                            {
-                                                sale
-                                                    .customers
-                                                    .doc_number
-                                            }
-                                        </p>
-                                    )}
-                            </div>
-                        )}
+                                            {selectedCustomer.doc_number && (
+                                                <p className="text-sm text-muted-foreground">
+                                                    {selectedCustomer.doc_type?.toUpperCase()}{" "}
+                                                    {selectedCustomer.doc_number}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setChangingCustomer(true)}
+                                        >
+                                            <ArrowLeftRight className="mr-2 h-4 w-4" />
+                                            Cambiar cliente
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {changingCustomer && (
+                                <CustomerSelector
+                                    currentCustomerId={selectedCustomer?.id}
+                                    onSelect={handleCustomerChange}
+                                    onCancel={handleCancelCustomerChange}
+                                />
+                            )}
 
                             {/* ========================================== */}
                             {/* ITEMS */}

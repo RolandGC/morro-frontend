@@ -82,7 +82,7 @@ export const getColumns = ({ fetchData }: ColumnsProps): ColumnDef<Sale>[] => [
                 }
 
                 try {
-                    await saleService.complete(sale.id);
+                    await saleService.complete(sale?.id);
 
                     await Swal.fire({
                         title: "¡Confirmado!",
@@ -307,16 +307,16 @@ export const getColumns = ({ fetchData }: ColumnsProps): ColumnDef<Sale>[] => [
 
                         <DropdownMenuItem
                             onClick={handlePrint}
-                            disabled={sale.status !== "pending"}
+                            //disabled={sale.status !== "pending"}
                             className="cursor-pointer"
                         >
                             <Printer className="mr-2 h-4 w-4 text-gray-600" />
-                            Imprimir
+                            Imprimir NP
                         </DropdownMenuItem>
 
                         <DropdownMenuItem
                             onClick={handleEmit}
-                            disabled={sale.status !== "pending"}
+                            //disabled={sale.status !== "pending"}
                             className="cursor-pointer"
                         >
                             <FileText className="mr-2 h-4 w-4 text-blue-600" />
