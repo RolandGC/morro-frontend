@@ -24,7 +24,7 @@ export default function InputText({
 }: InputProps) {
     return (
         <div className="flex flex-col gap-1">
-            {label && <label htmlFor={name}>{label}</label>}
+            {label && <label htmlFor={name} className="text-sm">{label}</label>}
 
             <Input
                 id={name}

@@ -21,7 +21,7 @@ import { useSaleStore } from "@/modules/sales/sale/store/sale.store";
 
 export default function SaleAddPage() {
     const router = useRouter();
-    const { control, getValues, setValue, watch, trigger } = useFormContext<SaleForm>();
+    const { control, getValues, setValue, watch, trigger, formState: { errors }, } = useFormContext<SaleForm>();
     const { success, error } = useToast();
 
     const { fields, append, remove, insert } = useFieldArray<SaleForm, "items">({
@@ -30,6 +30,9 @@ export default function SaleAddPage() {
     });
 
     const items = watch("items") ?? [];
+    const itemsError =
+        errors.items?.message ??
+        errors.items?.root?.message;
     const [products, setProducts] = useState<Product[]>([]);
     const [searchProduct, setSearchProduct] = useState("");
     const [productResults, setProductResults] = useState<Product[]>([]);
@@ -812,6 +815,11 @@ export default function SaleAddPage() {
                                         Selecciona un producto del catálogo
                                         para agregarlo a la venta.
                                     </p>
+                                    {errors.items?.message && (
+                                        <p className="mb-3 text-sm font-medium text-destructive">
+                                            {errors.items.message}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         ) : (
@@ -1128,7 +1136,7 @@ export default function SaleAddPage() {
                         setIsSubmitting(true);
 
                         try {
-                            const valid = await trigger?.("items");
+                            const valid = await trigger?.(["items", "customer_id"]);
 
                             if (valid) {
                                 router.push("/sales/sale/add/payments");

@@ -34,7 +34,7 @@ export default function SimpleSelector({
     return (
         <div className="flex flex-col gap-1">
             <div className="flex items-center justify-between">
-                <label htmlFor={label}>{label}</label>
+                <label htmlFor={label} className="text-sm">{label}</label>
 
                 {onAdd && (
                     <Button

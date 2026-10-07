@@ -193,9 +193,16 @@ export default function PagoStep() {
     const pendingAmount = Math.max(0, totalToPay - totalPaid);
     const paymentDifference = totalPaid - totalToPay;
 
+    const handleCloseSuccessDialog = () => {
+        useSaleStore.getState().startNew();
+
+        setSuccessDialogOpen(false);
+
+        router.push("/sales/sale");
+    };
 
     return (
-        <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
             {/* =========================================================
             HEADER
         ========================================================== */}
@@ -559,7 +566,11 @@ export default function PagoStep() {
         ========================================================== */}
             <Dialog
                 open={successDialogOpen}
-                onOpenChange={setSuccessDialogOpen}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        handleCloseSuccessDialog();
+                    }
+                }}
             >
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
@@ -614,15 +625,7 @@ export default function PagoStep() {
 
                             <Button
                                 variant="ghost"
-                                onClick={() => {
-                                    useSaleStore
-                                        .getState()
-                                        .startNew();
-
-                                    setSuccessDialogOpen(false);
-
-                                    router.push("/sales/sale");
-                                }}
+                                onClick={handleCloseSuccessDialog}
                                 className="w-full"
                             >
                                 Cerrar
