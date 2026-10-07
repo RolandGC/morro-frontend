@@ -320,7 +320,7 @@ export const getColumns = ({ fetchData }: ColumnsProps): ColumnDef<Sale>[] => [
                             className="cursor-pointer"
                         >
                             <FileText className="mr-2 h-4 w-4 text-blue-600" />
-                            Emitir boleta
+                            Boletas
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

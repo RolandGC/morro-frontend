@@ -551,7 +551,11 @@ export default function PagoStep() {
         ========================================================== */}
             <TicketFormModal
                 open={ticketOpen}
-                onOpenChange={setTicketOpen}
+                onOpenChange={(next) => {
+                    if (!next) {
+                        close();
+                    }
+                }}
                 sale={createdSale}
                 onSuccess={() => {
                     setSuccessDialogOpen(false);

@@ -1,4 +1,4 @@
-import { sale_status, sale_type } from "@/types/types";
+import { regime, sale_status, sale_type } from "@/types/types";
 import { Customer } from "../../customers/types/customer.type";
 import { Company } from "@/modules/core/companies/types/company.type";
 import { Warehouse } from "@/modules/core/warehouses/types/warehouse.types";
@@ -33,7 +33,7 @@ export interface Sale {
   issued_documents: IssuedDocument[];
 }
 
-export interface IssuedDocument {
+/* export interface IssuedDocument {
   id: string;
   sale_id: string;
   document_type: DocumentType;
@@ -46,6 +46,26 @@ export interface IssuedDocument {
   total: number | null;
   pdf_base64: string | null;
   snapshot_json: Record<string, unknown> | null;
+} */
+
+export interface IssuedDocument {
+  id: string;
+  sale_id: string;
+  document_type: string;
+  series: string;
+  number: number;
+  created_at: string;
+  customer_id: string | null;
+  subtotal: string | null;
+  igv: string | null;
+  total: string | null;
+  pdf_base64: string | null;
+  snapshot_json?: {
+    ruc?: string;
+    itemIds?: string[];
+    dateLabel?: string;
+    customerName?: string;
+  } | null;
 }
 
 export interface SaleItem {
@@ -99,7 +119,22 @@ export interface SaleDetail {
   //price_lists: PriceList | null;
 
   sale_items: SaleItem[];
+  issued_documents: IssuedDocument[];
   /* sale_payments: SalePayment[];
   vouchers: Voucher[];
   receivables: Receivable[]; */
+}
+
+
+
+export interface LocalSaleItem {
+  id: string;
+  label: string;
+  regime?: regime;
+  issuedDocument?: {
+    id: string;
+    document_type: string;
+    series: string;
+    number: number;
+  } | null;
 }
