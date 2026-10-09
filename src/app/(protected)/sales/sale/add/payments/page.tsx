@@ -20,6 +20,7 @@ import { Account } from "@/modules/finances/Account/types/account.types";
 import TicketFormModal from "@/modules/sales/sale/components/TicketFormModal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import CardPayment from "@/modules/sales/sale/components/CardPayment";
+import { useCustomerDisplayPublisher } from "@/modules/sales/sale/hooks/useCustomerDisplayPublisher";
 
 export default function PagoStep() {
     const router = useRouter();
@@ -36,6 +37,8 @@ export default function PagoStep() {
     const [data, setData] = useState<Account[]>([]);
     const items = watch("items") ?? [];
     const payments = watch("payments") ?? [];
+
+    const { markThanks } = useCustomerDisplayPublisher();
 
     const saleTypes = [
         { id: sale_type.cash, name: "Al contado" },
@@ -108,6 +111,9 @@ export default function PagoStep() {
                 // store created sale and open success dialog
                 setCreatedSale(response.data);
                 setSuccessDialogOpen(true);
+
+                // Muestra el agradecimiento en la pantalla del cliente.
+                markThanks();
 
                 if (notaPedidoBase64) {
                     // keep behavior to allow immediate print

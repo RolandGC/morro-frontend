@@ -18,6 +18,11 @@ import { useCustomerStore } from "@/modules/sales/customers/store/customer.store
 import { customerService } from "@/modules/sales/customers/services/customer.service";
 import { currencyService } from "@/modules/finances/currency/services/currency.service";
 import { useSaleStore } from "@/modules/sales/sale/store/sale.store";
+import { useCustomerDisplayStore } from "@/modules/sales/sale/store/customerDisplay.store";
+import {
+    openCustomerDisplay,
+    publishClear,
+} from "@/modules/sales/sale/services/customerDisplay.service";
 
 export default function SaleAddPage() {
     const router = useRouter();
@@ -291,6 +296,8 @@ export default function SaleAddPage() {
             return;
         }
 
+        useCustomerDisplayStore.getState().cacheProduct(product);
+
         const currentItems = getValues("items") ?? [];
 
         const existingIndex = currentItems.findIndex(
@@ -509,6 +516,8 @@ export default function SaleAddPage() {
                 );
                 return;
             }
+
+            useCustomerDisplayStore.getState().cacheProduct(product);
 
             setProducts((prev) => {
                 if (prev.some((p) => p.id === product.id)) {
@@ -1119,7 +1128,10 @@ export default function SaleAddPage() {
                     variant="outline"
                     className="w-full sm:w-auto"
                     disabled={isSubmitting}
-                    onClick={() => {useSaleStore.getState().startNew();
+                    onClick={() => {
+                        useSaleStore.getState().startNew();
+                        useCustomerDisplayStore.getState().clear();
+                        publishClear();
                         router.push("/sales/sale")
                     }}
                 >
@@ -1132,6 +1144,9 @@ export default function SaleAddPage() {
                     disabled={isSubmitting}
                     onClick={async () => {
                         if (isSubmitting) return;
+
+                        // Se abre dentro del gesto para evitar el bloqueador de popups.
+                        void openCustomerDisplay();
 
                         setIsSubmitting(true);
 
