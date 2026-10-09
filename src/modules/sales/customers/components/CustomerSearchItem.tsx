@@ -1,5 +1,5 @@
 import React from "react";
-import { Check, Package } from "lucide-react";
+import { Check, Package, User2 } from "lucide-react";
 import { Customer } from "../types/customer.type";
 
 interface CustomerSearchItemProps {
@@ -35,16 +35,16 @@ export function CustomerSearchItem({
                         flex h-10 w-10 shrink-0 items-center justify-center rounded-xl
                         ${selected
                             ? "bg-primary/10"
-                            : "bg-orange-50"
+                            : "bg-emerald-50"
                         }
                     `}
                 >
-                    <Package
+                    <User2
                         size={20}
                         className={
                             selected
                                 ? "text-primary"
-                                : "text-orange-500"
+                                : "text-emerald-500"
                         }
                     />
                 </div>

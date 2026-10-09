@@ -16,7 +16,6 @@ import { CustomerSearchItem } from "@/modules/sales/customers/components/Custome
 import { Customer } from "@/modules/sales/customers/types/customer.type";
 import { useCustomerStore } from "@/modules/sales/customers/store/customer.store";
 import { customerService } from "@/modules/sales/customers/services/customer.service";
-import { currencyService } from "@/modules/finances/currency/services/currency.service";
 import { useSaleStore } from "@/modules/sales/sale/store/sale.store";
 
 export default function SaleAddPage() {
@@ -95,7 +94,6 @@ export default function SaleAddPage() {
         const unit = getProductUnit(product, unitId);
         return Number(unit?.conversion_factor ?? 1);
     };
-
 
     useEffect(() => {
         console.log("changeee", watch("items"));
@@ -584,7 +582,7 @@ export default function SaleAddPage() {
                 full_name,
                 is_active: true,
                 page: 1,
-                limit: 6,
+                limit: 4,
             });
 
             if (response.status === 200) {
@@ -626,7 +624,7 @@ export default function SaleAddPage() {
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.9fr)]">
                 <section className="rounded-2xl border bg-card shadow-sm">
-                    <div className="border-b px-5 py-4">
+                    <div className="border-b rounded-t-2xl px-5 py-4 bg-gray-100">
                         <div className="flex items-center gap-3">
                             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                                 <Package size={18} />
@@ -769,7 +767,7 @@ export default function SaleAddPage() {
                 </section>
 
                 <section className="flex min-h-0 flex-col rounded-2xl border bg-card shadow-sm">
-                    <div className="border-b px-5 py-4">
+                    <div className="border-b px-5 py-4 rounded-t-2xl bg-gray-100">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -996,7 +994,7 @@ export default function SaleAddPage() {
             </div>
 
             <section className="mt-6 rounded-2xl border bg-card shadow-sm">
-                <div className="border-b px-5 py-4">
+                <div className="border-b px-5 py-4 rounded-t-2xl bg-gray-100">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex items-center gap-3">
                             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -1021,7 +1019,7 @@ export default function SaleAddPage() {
                     </div>
                 </div>
 
-                <div className="p-5">
+                <div className="px-5 py-3">
                     <Controller
                         name="customer_id"
                         control={control}
