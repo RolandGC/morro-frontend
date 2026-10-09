@@ -208,16 +208,12 @@ export default function PagoStep() {
     };
 
     return (
-        <div className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-            {/* =========================================================
-            HEADER
-        ========================================================== */}
-            <div className="mb-6 flex flex-col gap-2">
+        <div className="mx-auto w-full max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
+            <div className="mb-4 flex items-center gap-2">
                 <div>
                     <h2 className="text-2xl font-bold tracking-tight">
                         Registrar pago
                     </h2>
-
                     <p className="text-sm text-muted-foreground">
                         Configura la venta y registra los medios de pago.
                     </p>
@@ -228,12 +224,12 @@ export default function PagoStep() {
             INFORMACIÓN GENERAL
         ========================================================== */}
             <section className="mb-6 rounded-2xl border bg-card">
-                <div className="border-b px-5 py-4">
+                <div className="border-b px-5 py-3 rounded-t-2xl bg-gray-100">
                     <h3 className="font-semibold">
                         Información de la venta
                     </h3>
 
-                    <p className="mt-1 text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                         Define las condiciones generales de la operación.
                     </p>
                 </div>
@@ -290,7 +286,7 @@ export default function PagoStep() {
                 DETALLE DE VENTA
             ====================================================== */}
                 <section className="rounded-2xl border bg-card shadow-sm">
-                    <div className="border-b px-5 py-4">
+                    <div className="border-b px-5 py-3 rounded-t-2xl bg-gray-100">
                         <div className="flex items-center justify-between gap-3">
                             <div>
                                 <h3 className="font-semibold">
@@ -302,9 +298,9 @@ export default function PagoStep() {
                                 </p>
                             </div>
 
-                            <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium">
+                            <span className="rounded-full bg-gray-200 px-3 py-1 text-xs font-medium">
                                 {items.length}{" "}
-                                {items.length === 1 ? "producto" : "productos"}
+                                {items.length === 1 ? "prod" : "prods"}
                             </span>
                         </div>
                     </div>
@@ -378,7 +374,7 @@ export default function PagoStep() {
                 PAGOS
             ====================================================== */}
                 <section className="rounded-2xl border bg-card shadow-sm">
-                    <div className="border-b px-5 py-4">
+                    <div className="border-b px-5 py-3 rounded-t-2xl bg-gray-100">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div>
                                 <h3 className="font-semibold">

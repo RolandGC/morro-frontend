@@ -135,7 +135,7 @@ export function ProductCard({
                         type="number"
                         value={unitPrice ?? 0}
                         min={0}
-                        step="0.01"
+                        //step="0.01"
                         onChange={(e) => {
                             const value = e.target.value;
 
