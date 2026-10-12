@@ -1,76 +1,225 @@
-'use client';
+"use client";
 
-import { AppSidebar } from "@/components/app-sidebar"
+import { useEffect, useMemo, useState } from "react";
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
+  Banknote,
+  CreditCard,
+  Package,
+  Receipt,
+  ShoppingCart,
+} from "lucide-react";
+import { RequirePermission } from "@/components/RequirePermission";
+import { Spinner } from "@/components/Spinner";
+import AgingPanel from "@/modules/reports/components/AgingPanel";
+import KpiCard from "@/modules/reports/components/KpiCard";
+import LowStockTable from "@/modules/reports/components/LowStockTable";
+import PaymentMethodChart from "@/modules/reports/components/PaymentMethodChart";
+import ReportFilters, {
+  type ReportFilterValue,
+} from "@/modules/reports/components/ReportFilters";
+import SalesByDayChart from "@/modules/reports/components/SalesByDayChart";
+import TopProductsTable from "@/modules/reports/components/TopProductsTable";
+import { useReportData } from "@/modules/reports/hooks/useReportData";
+import { reportService } from "@/modules/reports/services/report.service";
+import type { ReportQueryParams } from "@/modules/reports/types/report.types";
 import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
-import { useProtectedRoute } from "@/hooks/useProtectedRoute"
-import { Skeleton } from "@/components/ui/skeleton"
+  getSelectedCompany,
+  getSelectedWarehouseId,
+} from "@/modules/reports/utils/company";
+import { currentMonthRange } from "@/modules/reports/utils/date";
+import { formatMoney, formatNumber } from "@/modules/reports/utils/format";
 
-export default function Page() {
-  const { isLoading } = useProtectedRoute();
+interface SelectedCompany {
+  companyId: string;
+  warehouses: { id: string; name: string }[];
+}
 
-  // Mostrar skeleton mientras se verifica autenticación
-  if (isLoading) {
+export default function DashboardPage() {
+  const [selected, setSelected] = useState<SelectedCompany | null>(null);
+  const [filters, setFilters] = useState<ReportFilterValue>(() => {
+    const range = currentMonthRange();
+    return { from: range.from, to: range.to };
+  });
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const company = getSelectedCompany();
+      const warehouse = company?.warehouse;
+
+      setSelected({
+        companyId: company?.id ?? "",
+        warehouses: warehouse
+          ? [{ id: warehouse.id, name: warehouse.name }]
+          : [],
+      });
+
+      const warehouseId = getSelectedWarehouseId();
+      if (warehouseId) {
+        setFilters((prev) =>
+          prev.warehouseId ? prev : { ...prev, warehouseId },
+        );
+      }
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const params = useMemo<ReportQueryParams>(
+    () => ({
+      company_id: selected?.companyId ?? "",
+      date_from: filters.from,
+      date_to: filters.to,
+      ...(filters.warehouseId ? { warehouse_id: filters.warehouseId } : {}),
+    }),
+    [selected?.companyId, filters.from, filters.to, filters.warehouseId],
+  );
+
+  const enabled = Boolean(selected?.companyId);
+
+  const summary = useReportData(
+    (p) => reportService.getSummary(p),
+    params,
+    enabled,
+  );
+  const byDay = useReportData(
+    (p) => reportService.getSalesByDay(p),
+    params,
+    enabled,
+  );
+  const byMethod = useReportData(
+    (p) => reportService.getSalesByPaymentMethod(p),
+    params,
+    enabled,
+  );
+  const topProducts = useReportData(
+    (p) => reportService.getTopProducts({ ...p, limit: 10, sort_by: "amount" }),
+    params,
+    enabled,
+  );
+  const lowStock = useReportData(
+    (p) => reportService.getLowStock(p),
+    params,
+    enabled,
+  );
+  const aging = useReportData(
+    (p) => reportService.getReceivablesAging(p),
+    params,
+    enabled,
+  );
+
+  if (!selected) {
+    return <Spinner />;
+  }
+
+  if (!selected.companyId) {
     return (
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset>
-          <div className="flex flex-col gap-4 p-4">
-            <Skeleton className="h-8 w-48" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-96 w-full" />
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
+      <div className="flex flex-1 items-center justify-center p-8 text-muted-foreground">
+        No hay una empresa seleccionada.
+      </div>
     );
   }
 
+  const error =
+    summary.error ??
+    byDay.error ??
+    byMethod.error ??
+    topProducts.error ??
+    lowStock.error ??
+    aging.error;
+
   return (
-    <SidebarProvider>
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4">
-            {/* <SidebarTrigger className="-ml-1" />
-            <Separator
-              orientation="vertical"
-              className="mr-2 data-vertical:h-4 data-vertical:self-auto"
-            />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">
-                    Build Your Application
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb> */}
-          </div>
-        </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div className="aspect-video rounded-xl bg-muted/50" />
-            <div className="aspect-video rounded-xl bg-muted/50" />
-            <div className="aspect-video rounded-xl bg-muted/50" />
-          </div>
-          <div className="min-h-screen flex-1 rounded-xl bg-muted/50 md:min-h-min" />
+    <RequirePermission
+      permission="reports.read"
+      fallback={
+        <div className="flex flex-1 items-center justify-center p-8 text-muted-foreground">
+          No tienes permiso para ver el panel.
         </div>
-      </SidebarInset>
-    </SidebarProvider>
-  )
+      }
+    >
+      <div className="flex flex-1 flex-col gap-4 p-4">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-xl font-semibold tracking-tight">
+            Panel general
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Resumen de la operación del período seleccionado.
+          </p>
+        </div>
+
+        <ReportFilters
+          value={filters}
+          onChange={setFilters}
+          warehouses={selected.warehouses}
+        />
+
+        {error ? (
+          <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+            {error}
+          </div>
+        ) : null}
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <KpiCard
+            title="Ventas totales"
+            value={formatMoney(summary.data?.sales.total)}
+            hint={`${formatNumber(summary.data?.sales.count)} ventas`}
+            icon={ShoppingCart}
+          />
+          <KpiCard
+            title="Ticket promedio"
+            value={formatMoney(summary.data?.sales.ticket_average)}
+            icon={Receipt}
+          />
+          <KpiCard
+            title="Contado"
+            value={formatMoney(summary.data?.sales.cash)}
+            icon={Banknote}
+          />
+          <KpiCard
+            title="Crédito"
+            value={formatMoney(summary.data?.sales.credit)}
+            icon={CreditCard}
+          />
+          <KpiCard title="IGV" value={formatMoney(summary.data?.sales.igv)} />
+          <KpiCard
+            title="Compras"
+            value={formatMoney(summary.data?.purchases.total)}
+            hint={`${formatNumber(summary.data?.purchases.count)} compras`}
+            icon={Package}
+          />
+          <KpiCard
+            title="Por cobrar"
+            value={formatMoney(summary.data?.receivables_pending)}
+          />
+          <KpiCard
+            title="Ventas anuladas"
+            value={formatNumber(summary.data?.sales.cancelled_count)}
+          />
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <SalesByDayChart
+            data={byDay.data?.data ?? []}
+            loading={byDay.loading && !byDay.data}
+          />
+          <PaymentMethodChart
+            data={byMethod.data?.data ?? []}
+            loading={byMethod.loading && !byMethod.data}
+          />
+        </div>
+
+        <TopProductsTable
+          data={topProducts.data?.data ?? []}
+          loading={topProducts.loading && !topProducts.data}
+        />
+
+        <LowStockTable
+          data={lowStock.data?.items ?? []}
+          loading={lowStock.loading && !lowStock.data}
+        />
+
+        <AgingPanel data={aging.data} loading={aging.loading && !aging.data} />
+      </div>
+    </RequirePermission>
+  );
 }
