@@ -241,12 +241,12 @@ export default function PagoStep() {
             INFORMACIÓN GENERAL
         ========================================================== */}
             <section className="mb-6 rounded-2xl border bg-card">
-                <div className="border-b px-5 py-3 rounded-t-2xl bg-gray-100">
-                    <h3 className="font-semibold">
+                <div className="border-b px-5 py-3 rounded-t-2xl bg-primary">
+                    <h3 className="font-semibold text-white">
                         Información de la venta
                     </h3>
 
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-white/80">
                         Define las condiciones generales de la operación.
                     </p>
                 </div>
@@ -304,14 +304,14 @@ export default function PagoStep() {
                 DETALLE DE VENTA
             ====================================================== */}
                 <section className="rounded-2xl border bg-card shadow-sm">
-                    <div className="border-b px-5 py-3 rounded-t-2xl bg-gray-100">
+                    <div className="border-b px-5 py-3 rounded-t-2xl bg-primary">
                         <div className="flex items-center justify-between gap-3">
                             <div>
-                                <h3 className="font-semibold">
+                                <h3 className="font-semibold text-white">
                                     Detalle de venta
                                 </h3>
 
-                                <p className="mt-1 text-sm text-muted-foreground">
+                                <p className="mt-1 text-sm text-white/80">
                                     Productos incluidos en esta operación.
                                 </p>
                             </div>
@@ -392,14 +392,14 @@ export default function PagoStep() {
                 PAGOS
             ====================================================== */}
                 <section className="rounded-2xl border bg-card shadow-sm">
-                    <div className="border-b px-5 py-3 rounded-t-2xl bg-gray-100">
+                    <div className="border-b px-5 py-3 rounded-t-2xl bg-primary">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                                <h3 className="font-semibold">
+                                <h3 className="font-semibold text-white">
                                     Medios de pago
                                 </h3>
 
-                                <p className="mt-1 text-sm text-muted-foreground">
+                                <p className="mt-1 text-sm text-white/80">
                                     Registra uno o más pagos para completar la venta.
                                 </p>
                             </div>
