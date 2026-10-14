@@ -621,7 +621,7 @@ export default function SaleAddPage() {
         <div className="container mx-auto max-w-7xl px-4 py-3">
             <div className="mb-6">
                 <div>
-                    <h1 className="text-2xl font-semibold tracking-tight">
+                    <h1 className="text-2xl font-semibold text-white tracking-tight">
                         Nueva venta
                     </h1>
 
@@ -633,18 +633,18 @@ export default function SaleAddPage() {
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.9fr)]">
                 <section className="rounded-2xl border bg-card shadow-sm">
-                    <div className="border-b rounded-t-2xl px-5 py-3 bg-gray-100">
+                    <div className="border-b rounded-t-2xl px-5 py-3 bg-primary">
                         <div className="flex items-center gap-3">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-white">
                                 <Package size={18} />
                             </div>
 
                             <div>
-                                <h2 className="font-semibold">
+                                <h2 className="font-semibold text-white">
                                     Productos
                                 </h2>
 
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-sm text-white/80">
                                     Busca o escanea un producto.
                                 </p>
                             </div>
@@ -731,7 +731,7 @@ export default function SaleAddPage() {
                                         <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
                                             <Search
                                                 size={20}
-                                                className="text-primary"
+                                                className="text-white"
                                             />
                                         </div>
 
@@ -748,7 +748,7 @@ export default function SaleAddPage() {
                                         <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
                                             <Package
                                                 size={20}
-                                                className="text-primary"
+                                                className="text-white"
                                             />
                                         </div>
 
@@ -776,17 +776,17 @@ export default function SaleAddPage() {
                 </section>
 
                 <section className="flex min-h-0 flex-col rounded-2xl border bg-card shadow-sm">
-                    <div className="border-b px-5 py-3 rounded-t-2xl bg-gray-100">
+                    <div className="border-b px-5 py-3 rounded-t-2xl bg-primary">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-white">
                                     <ShoppingCart size={18} />
                                 </div>
                                 <div>
-                                    <h2 className="font-semibold">
+                                    <h2 className="font-semibold text-white">
                                         Carrito
                                     </h2>
-                                    <p className="text-sm text-muted-foreground">
+                                    <p className="text-sm text-white/80">
                                         Productos de esta venta.
                                     </p>
                                 </div>
@@ -1003,17 +1003,17 @@ export default function SaleAddPage() {
             </div>
 
             <section className="mt-6 rounded-2xl border bg-card shadow-sm">
-                <div className="border-b px-5 py-3 rounded-t-2xl bg-gray-100">
+                <div className="border-b px-5 py-3 rounded-t-2xl bg-primary">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-white">
                                 <UserRound size={18} />
                             </div>
-                            <h2 className="font-semibold">
+                            <h2 className="font-semibold text-white">
                                 Cliente
                             </h2>
 
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-white/80">
                                 Selecciona el cliente asociado a la venta.
                             </p>
                         </div>

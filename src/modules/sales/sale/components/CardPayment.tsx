@@ -99,6 +99,7 @@ export default function CardPayment({
                         name={`payments.${index}.amount`}
                         label="Monto"
                         register={register}
+                        type="number"
                         registerOptions={{
                             valueAsNumber: true,
                         }}
@@ -109,6 +110,7 @@ export default function CardPayment({
                         name={`payments.${index}.exchange_rate`}
                         label="Tipo de cambio"
                         register={register}
+                        type="number"
                         registerOptions={{
                             valueAsNumber: true,
                         }}

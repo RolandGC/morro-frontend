@@ -30,6 +30,7 @@ export default function PagoStep() {
         control,
         register,
         watch,
+        setValue,
         formState: { errors, isSubmitting }
     } = useFormContext<SaleForm>();
 
@@ -58,7 +59,23 @@ export default function PagoStep() {
                 });
 
                 if (response.status === 200) {
-                    setCurrencies(response.data.data);
+                    const currenciesData: Currency[] = response.data.data;
+
+                    setCurrencies(currenciesData);
+
+                    const currentCurrencyId = watch("currency_id");
+
+                    if (!currentCurrencyId) {
+                        const pen = currenciesData.find(
+                            (currency) => currency.code === "PEN"
+                        );
+
+                        if (pen) {
+                            setValue("currency_id", pen.id, {
+                                shouldValidate: true,
+                            });
+                        }
+                    }
                 }
             } catch (error) {
                 console.error("Error cargando monedas:", error);
@@ -66,7 +83,7 @@ export default function PagoStep() {
         };
 
         fetchCurrencies();
-    }, []);
+    }, [setValue, watch]);
 
     useEffect(() => {
         const fetchAccounts = async () => {
@@ -269,6 +286,7 @@ export default function PagoStep() {
                     <InputText
                         name="exchange_rate"
                         label="Tipo de cambio"
+                        type="number"
                         register={register}
                         registerOptions={{
                             valueAsNumber: true,

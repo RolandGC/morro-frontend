@@ -75,8 +75,8 @@ export default function TicketFormModal({
     const [sale, setSale] = useState<SaleDetail | null>(saleFromProps ?? null);
     const [items, setItems] = useState<LocalSaleItem[]>([]);
     const [loadingSale, setLoadingSale] = useState(false);
-    const [issuedComprobante, setIssuedComprobante] =
-        useState<ComprobantePdf | null>(null);
+    const [issuedComprobantes, setIssuedComprobantes] =
+        useState<ComprobantePdf[]>([]);
     const [changingCustomer, setChangingCustomer] = useState(false);
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
     const [view, setView] = useState<ModalView>("form");
@@ -168,7 +168,7 @@ export default function TicketFormModal({
         if (!open) return;
 
         setView("form");
-        setIssuedComprobante(null);
+        setIssuedComprobantes([]);
 
         if (saleFromProps) initializeSale(saleFromProps);
         else if (saleId) loadSale();
@@ -181,7 +181,7 @@ export default function TicketFormModal({
         setItems([]);
         setLoadingSale(false);
         setView("form");
-        setIssuedComprobante(null);
+        setIssuedComprobantes([]);
         setChangingCustomer(false);
         setSelectedCustomer(null);
 
@@ -194,10 +194,9 @@ export default function TicketFormModal({
 
     useEffect(
         () => () => {
-            if (issuedComprobante?.url)
-                URL.revokeObjectURL(issuedComprobante.url);
+            issuedComprobantes.forEach((c) => URL.revokeObjectURL(c.url));
         },
-        [issuedComprobante]
+        [issuedComprobantes]
     );
 
     const issuedBoletas: IssuedDocument[] = (
@@ -252,15 +251,20 @@ export default function TicketFormModal({
             if (!data.length)
                 throw new Error("El backend no devolvió el comprobante");
 
-            const comprobante = data[data.length - 1];
-
-            setIssuedComprobante({
-                ...comprobante,
-                url: base64ToPdfUrl(comprobante.base64),
-            });
+            setIssuedComprobantes(
+                data.map((comprobante) => ({
+                    ...comprobante,
+                    url: base64ToPdfUrl(comprobante.base64),
+                }))
+            );
 
             setView("issued");
-            notify("Boleta emitida correctamente", "success");
+            notify(
+                data.length > 1
+                    ? "Boletas emitidas correctamente"
+                    : "Boleta emitida correctamente",
+                "success"
+            );
             onSuccess?.();
         } catch (error) {
             console.error("Error al emitir la boleta:", error);
@@ -270,16 +274,15 @@ export default function TicketFormModal({
 
     const handleBackToList = async () => {
         setView("form");
-        setIssuedComprobante(null);
+        setIssuedComprobantes([]);
         await loadSale();
     };
 
     const handleClose = (nextOpen: boolean) => {
         if (!nextOpen) {
-            if (issuedComprobante?.url)
-                URL.revokeObjectURL(issuedComprobante.url);
+            issuedComprobantes.forEach((c) => URL.revokeObjectURL(c.url));
 
-            setIssuedComprobante(null);
+            setIssuedComprobantes([]);
             setView("form");
             onClosed?.();
         }
@@ -335,72 +338,67 @@ export default function TicketFormModal({
                             </div>
                         </div>
 
-                        {issuedComprobante && (
-                            <div className="rounded-xl border bg-background p-5">
-                                <div className="flex flex-col gap-5">
-                                    <div className="flex items-center gap-3">
-                                        <div className="rounded-lg bg-primary/10 p-2">
-                                            <FileText className="h-5 w-5 text-primary" />
+                            {issuedComprobantes.map((comprobante) => (
+                                <div
+                                    key={`${comprobante.serie}-${comprobante.numero}`}
+                                    className="rounded-xl border bg-background p-5"
+                                >
+                                    <div className="flex flex-col gap-5">
+                                        <div className="flex items-center gap-3">
+                                            <div className="rounded-lg bg-primary/10 p-2">
+                                                <FileText className="h-5 w-5 text-primary" />
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold">
+                                                    <span className="uppercase">{comprobante.regime}</span> —{" "}
+                                                    {comprobante.serie}-{comprobante.numero}
+                                                </p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    Comprobante recién emitido
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="font-semibold">
-                                                {issuedComprobante.regime} —{" "}
-                                                {issuedComprobante.serie}-{issuedComprobante.numero}
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">
-                                                Comprobante recién emitido
-                                            </p>
-                                        </div>
-                                    </div>
 
-                                    <div className="rounded-lg bg-muted/40 p-4">
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-muted-foreground">Subtotal</span>
-                                            <span className="font-medium">
-                                                {issuedComprobante.subtotal}
-                                            </span>
+                                        <div className="rounded-lg bg-muted/40 p-4">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-muted-foreground">Subtotal</span>
+                                                <span className="font-medium">{comprobante.subtotal}</span>
+                                            </div>
+                                            <div className="mt-2 flex justify-between text-sm">
+                                                <span className="text-muted-foreground">IGV</span>
+                                                <span className="font-medium">{comprobante.igv}</span>
+                                            </div>
+                                            <div className="mt-3 flex justify-between border-t pt-3">
+                                                <span className="font-semibold">Total</span>
+                                                <span className="text-lg font-bold">{comprobante.total}</span>
+                                            </div>
                                         </div>
-                                        <div className="mt-2 flex justify-between text-sm">
-                                            <span className="text-muted-foreground">IGV</span>
-                                            <span className="font-medium">
-                                                {issuedComprobante.igv}
-                                            </span>
-                                        </div>
-                                        <div className="mt-3 flex justify-between border-t pt-3">
-                                            <span className="font-semibold">Total</span>
-                                            <span className="text-lg font-bold">
-                                                {issuedComprobante.total}
-                                            </span>
-                                        </div>
-                                    </div>
 
-                                    <div className="flex flex-col gap-2 sm:flex-row">
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            className="flex-1"
-                                            onClick={() =>
-                                                window.open(issuedComprobante.url, "_blank")
-                                            }
-                                        >
-                                            <Eye className="mr-2 h-4 w-4" />
-                                            Visualizar
-                                        </Button>
-
-                                        <a
-                                            href={issuedComprobante.url}
-                                            download={`${issuedComprobante.serie}-${issuedComprobante.numero}.pdf`}
-                                            className="flex-1"
-                                        >
-                                            <Button type="button" className="w-full">
-                                                <Download className="mr-2 h-4 w-4" />
-                                                Descargar
+                                        <div className="flex flex-col gap-2 sm:flex-row">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                className="flex-1"
+                                                onClick={() => window.open(comprobante.url, "_blank")}
+                                            >
+                                                <Eye className="mr-2 h-4 w-4" />
+                                                Visualizar
                                             </Button>
-                                        </a>
+
+                                            <a
+                                                href={comprobante.url}
+                                                download={`${comprobante.serie}-${comprobante.numero}.pdf`}
+                                                className="flex-1"
+                                            >
+                                                <Button type="button" className="w-full">
+                                                    <Download className="mr-2 h-4 w-4" />
+                                                    Descargar
+                                                </Button>
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        )}
+                            ))}
 
                         <DialogFooter>
                             <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-between">
