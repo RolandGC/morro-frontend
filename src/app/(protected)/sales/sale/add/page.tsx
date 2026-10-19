@@ -61,6 +61,44 @@ export default function SaleAddPage() {
     const [justAddedKey, setJustAddedKey] = useState<string | null>(null);
     const flashTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+
+    useEffect(() => {
+        const focusBarcode = () => {
+            barcodeInputRef.current?.focus();
+        };
+
+        // Enfocar al entrar a la pantalla
+        focusBarcode();
+
+        // Reintentar cuando el navegador termine de renderizar
+        const frame = requestAnimationFrame(focusBarcode);
+
+        return () => cancelAnimationFrame(frame);
+    }, []);
+
+    useEffect(() => {
+        const handleGlobalClick = (event: MouseEvent) => {
+            const target = event.target as HTMLElement;
+
+            // No quitar el foco de campos editables ni botones
+            if (
+                target.closest(
+                    "input, textarea, select, button, [contenteditable='true'], [role='dialog']"
+                )
+            ) {
+                return;
+            }
+
+            barcodeInputRef.current?.focus();
+        };
+
+        document.addEventListener("click", handleGlobalClick);
+
+        return () => {
+            document.removeEventListener("click", handleGlobalClick);
+        };
+    }, []);
+
     const flashItem = (key: string) => {
         setJustAddedKey(key);
         if (flashTimeoutRef.current) clearTimeout(flashTimeoutRef.current);
