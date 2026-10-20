@@ -22,20 +22,25 @@ import {
 } from "@/components/ui/sidebar"
 import { useAuthStore, User } from "@/modules/auth/store/authStore"
 import { ChevronsUpDownIcon, SparklesIcon, BadgeCheckIcon, CreditCardIcon, BellIcon, LogOutIcon } from "lucide-react"
+import { useRouter } from "next/navigation";
+
 
 type NavUserProps = {
   user?: User | null
 }
 
 export function NavUser({ user }: NavUserProps) {
-
+  const router = useRouter();
   const { logout, isLoading } = useAuthStore();
 
   const handleLogout = async () => {
     try {
-      logout();
-    } catch (err) {
-      console.error(err);
+      await logout();
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    } finally {
+      router.replace("/auth/login");
+      router.refresh();
     }
   };
 
@@ -93,11 +98,13 @@ export function NavUser({ user }: NavUserProps) {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem >
-              <button onClick={handleLogout} className="flex">
-                <LogOutIcon className="mr-1.5 h-4 w-4" />
-                Cerrar sesión
-              </button>
+            <DropdownMenuItem
+              onClick={handleLogout}
+              disabled={isLoading}
+              className="cursor-pointer"
+            >
+              <LogOutIcon className="mr-2 h-4 w-4" />
+              {isLoading ? "Cerrando sesión..." : "Cerrar sesión"}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

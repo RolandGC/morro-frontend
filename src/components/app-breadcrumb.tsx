@@ -35,36 +35,45 @@ export function AppBreadcrumb() {
 
     const segments = pathname.split("/").filter(Boolean);
 
+    // Evitar duplicar Dashboard si ya forma parte de la ruta
+    const remainingSegments =
+        segments[0] === "dashboard" ? segments.slice(1) : segments;
+
     return (
         <Breadcrumb>
             <BreadcrumbList>
-                {segments.map((segment, index) => {
-                    const href =
-                        "/" + segments.slice(0, index + 1).join("/");
+                {/* Dashboard siempre al inicio */}
+                <BreadcrumbItem>
+                    {remainingSegments.length === 0 ? (
+                        <BreadcrumbPage>Dashboard</BreadcrumbPage>
+                    ) : (
+                        <BreadcrumbLink asChild>
+                            <Link href="/dashboard">Dashboard</Link>
+                        </BreadcrumbLink>
+                    )}
+                </BreadcrumbItem>
 
-                    const isLast = index === segments.length - 1;
+                {remainingSegments.map((segment, index) => {
+                    const href = "/" + segments
+                        .slice(0, segments.indexOf(segment) + 1)
+                        .join("/");
+
+                    const isLast = index === remainingSegments.length - 1;
 
                     const name =
                         routeNames[segment] ??
                         segment.charAt(0).toUpperCase() + segment.slice(1);
 
                     return (
-                        <div
-                            key={href}
-                            className="flex items-center gap-2"
-                        >
-                            {index > 0 && <BreadcrumbSeparator />}
+                        <div key={`${href}-${index}`} className="flex items-center gap-2">
+                            <BreadcrumbSeparator />
 
                             <BreadcrumbItem>
                                 {isLast ? (
-                                    <BreadcrumbPage>
-                                        {name}
-                                    </BreadcrumbPage>
+                                    <BreadcrumbPage>{name}</BreadcrumbPage>
                                 ) : (
                                     <BreadcrumbLink asChild>
-                                        <Link href={href}>
-                                            {name}
-                                        </Link>
+                                        <Link href={href}>{name}</Link>
                                     </BreadcrumbLink>
                                 )}
                             </BreadcrumbItem>

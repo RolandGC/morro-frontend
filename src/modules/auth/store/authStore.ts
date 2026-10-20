@@ -1,7 +1,11 @@
 import { create } from "zustand";
 import { authService } from "../services/auth.service";
 import { LoginResponse } from "../types/auth.types";
-import { removeAuthToken, saveAuthToken, getAuthToken } from "../helpers";
+import {
+  removeAuthToken,
+  saveAuthToken,
+  getAuthToken,
+} from "../helpers";
 import { usePermissionStore } from "./permission.store";
 import { AxiosResponse } from "axios";
 
@@ -16,13 +20,15 @@ interface AuthStore {
   token: string | null;
   isLoading: boolean;
   error: string | null;
-  login: (email: string, password: string) => Promise<AxiosResponse<LoginResponse>>;
-  logout: () => void;
+  login: (
+    email: string,
+    password: string
+  ) => Promise<AxiosResponse<LoginResponse>>;
+  logout: () => Promise<void>;
   setUser: (user: User | null) => void;
   setToken: (token: string | null) => void;
   clearError: () => void;
 }
-
 
 export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
@@ -30,14 +36,13 @@ export const useAuthStore = create<AuthStore>((set) => ({
   isLoading: false,
   error: null,
 
-  login: async (email: string, password: string) => {
+  login: async (email, password) => {
     set({ isLoading: true, error: null });
+
     try {
       const result = await authService.login({ email, password });
-
       const { access_token, user } = result.data;
 
-      // Guardar token en cookies
       saveAuthToken(access_token);
 
       set({
@@ -52,18 +57,29 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
       return result;
     } catch (error) {
+      set({ isLoading: false });
       throw error;
     }
   },
 
-  logout: () => {
-    removeAuthToken();
-    usePermissionStore.getState().clearPermissions();
-    set({
-      user: null,
-      token: null,
-      error: null,
-    });
+  logout: async () => {
+    set({ isLoading: true, error: null });
+
+    try {
+      // Intentar cerrar la sesión en el backend
+      await authService.logout();
+    } finally {
+      // Limpiar la sesión local incluso si falla el backend
+      removeAuthToken();
+      usePermissionStore.getState().clearPermissions();
+
+      set({
+        user: null,
+        token: null,
+        error: null,
+        isLoading: false,
+      });
+    }
   },
 
   setUser: (user) => set({ user }),
@@ -74,6 +90,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
 // Restaurar token de cookies al inicializar
 if (typeof window !== "undefined") {
   const token = getAuthToken();
+
   if (token) {
     useAuthStore.setState({ token });
   }

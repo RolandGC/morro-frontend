@@ -1,7 +1,8 @@
+
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import {companyService} from '@/modules/core/companies/services/company.service';
+import { companyService } from '@/modules/core/companies/services/company.service';
 import { saveAuthToken } from '@/modules/auth/helpers';
 import { useRouter } from 'next/navigation';
 import { Company } from '@/modules/core/companies/types/company.type';
@@ -11,17 +12,31 @@ export default function CompaniesPage() {
 
     const [companies, setCompanies] = useState<Company[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selecting, setSelecting] = useState(false);
     const [error, setError] = useState('');
 
     useEffect(() => {
         const fetchCompanies = async () => {
             try {
                 const response = await companyService.getAllCompanies();
+                const data: Company[] = response.data.data;
 
-                console.log(response.data);
+                // Solo considerar empresas activas
+                const activeCompanies = data.filter(
+                    (company) => company.is_active
+                );
 
-                // 👇 Aquí está la corrección
-                setCompanies(response.data.data);
+                setCompanies(activeCompanies);
+
+                if (activeCompanies.length === 0) {
+                    setError('No tienes empresas activas disponibles.');
+                    return;
+                }
+
+                // Si solo tiene una empresa, seleccionarla automáticamente
+                if (activeCompanies.length === 1) {
+                    await handleSelectCompany(activeCompanies[0]);
+                }
             } catch (err) {
                 console.error(err);
                 setError('No se pudieron cargar las empresas');
@@ -33,34 +48,41 @@ export default function CompaniesPage() {
         fetchCompanies();
     }, []);
 
-    const handleSelectCompany = (company: Company) => {
-        localStorage.setItem(
-            'selected_company',
-            JSON.stringify(company)
-        );
+    const handleSelectCompany = async (company: Company) => {
+        setSelecting(true);
+        setError('');
 
-        const selectedCompany = async () => {
-            try {
-                const response = await companyService.selectCompany(company.id);
-                if(response.status === 201) {
-                    saveAuthToken(response.data.access_token);
-                    router.push('/dashboard');
-                }
-                console.log('ressss', response);
-            } catch (err) {
-                console.error('errror', err);
-                console.log('errror response', err);
-                setError('No se pudo seleccionar la empresa');
+        try {
+            const response = await companyService.selectCompany(company.id);
+
+            if (response.status === 200 || response.status === 201) {
+                localStorage.setItem(
+                    'selected_company',
+                    JSON.stringify(company)
+                );
+
+                saveAuthToken(response.data.access_token);
+
+                router.replace('/dashboard');
+                return;
             }
-        };
-        selectedCompany();
+
+            setError('No se pudo seleccionar la empresa');
+        } catch (err) {
+            console.error('Error al seleccionar empresa:', err);
+            setError('No se pudo seleccionar la empresa');
+        } finally {
+            setSelecting(false);
+        }
     };
 
-    if (loading) {
+    if (loading || selecting) {
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <p className="text-gray-500 text-lg">
-                    Cargando empresas...
+                    {selecting
+                        ? 'Ingresando a la empresa...'
+                        : 'Cargando empresas...'}
                 </p>
             </div>
         );
@@ -79,11 +101,11 @@ export default function CompaniesPage() {
             <div className="max-w-6xl mx-auto">
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-gray-800">
-                        Seleccionar Empresa
+                        Seleccionar empresa
                     </h1>
 
                     <p className="text-gray-500 mt-2">
-                        Selecciona una empresa para continuar
+                        Tienes varias empresas. Selecciona una para continuar.
                     </p>
                 </div>
 
@@ -92,47 +114,32 @@ export default function CompaniesPage() {
                         <button
                             key={company.id}
                             onClick={() => handleSelectCompany(company)}
+                            disabled={selecting}
                             className="
-                                bg-white
-                                rounded-2xl
-                                border border-gray-200
-                                p-6
-                                text-left
-                                shadow-sm
-                                transition-all
-                                hover:shadow-xl
-                                hover:-translate-y-1
-                                hover:border-blue-500
-                                group
+                                bg-white rounded-2xl border border-gray-200
+                                p-6 text-left shadow-sm transition-all
+                                hover:shadow-xl hover:-translate-y-1
+                                hover:border-blue-500 group
+                                disabled:opacity-50 disabled:cursor-not-allowed
                             "
                         >
                             <div className="flex items-center justify-between mb-5">
                                 <div className="
-                                    w-14 h-14
-                                    rounded-xl
-                                    bg-blue-100
+                                    w-14 h-14 rounded-xl bg-blue-100
                                     flex items-center justify-center
-                                    text-blue-600
-                                    text-xl
-                                    font-bold
+                                    text-blue-600 text-xl font-bold
                                 ">
                                     {company.name.charAt(0).toUpperCase()}
                                 </div>
 
-                                <span className={`
-                                    text-xs px-2 py-1 rounded-full
-                                    ${company.is_active
-                                        ? 'bg-green-100 text-green-700'
-                                        : 'bg-red-100 text-red-700'}
-                                `}>
-                                    {company.is_active ? 'Activo' : 'Inactivo'}
+                                <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700">
+                                    Activo
                                 </span>
                             </div>
 
                             <h2 className="
                                 text-xl font-semibold text-gray-800
-                                group-hover:text-blue-600
-                                transition-colors
+                                group-hover:text-blue-600 transition-colors
                             ">
                                 {company.name}
                             </h2>
@@ -153,25 +160,14 @@ export default function CompaniesPage() {
                                 </p>
 
                                 <p className="line-clamp-2">
-                                    <span className="font-medium">
-                                        Dirección:
-                                    </span>{' '}
+                                    <span className="font-medium">Dirección:</span>{' '}
                                     {company.address}
                                 </p>
                             </div>
 
-                            <div className="
-                                mt-6
-                                flex items-center
-                                text-blue-600
-                                font-medium
-                            ">
+                            <div className="mt-6 flex items-center text-blue-600 font-medium">
                                 Seleccionar
-                                <span className="
-                                    ml-2
-                                    transition-transform
-                                    group-hover:translate-x-1
-                                ">
+                                <span className="ml-2 transition-transform group-hover:translate-x-1">
                                     →
                                 </span>
                             </div>
