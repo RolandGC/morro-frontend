@@ -37,7 +37,7 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
     const [productLoading, setProductLoading] = useState(false);
     const [productResults, setProductResults] = useState<Product[]>([]);
     const [selectedProducts, setSelectedProducts] = useState<Record<number, Product>>({});
-
+    const [searchBarcode, setSearchBarcode] = useState("");
     const [productFilter, setProductFilter] = useState({
         name: "",
         track_stock: undefined,
@@ -365,6 +365,66 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
         return () => clearTimeout(timeout);
     }, [searchProduct, editingIndex]);
 
+    useEffect(() => {
+        if (editingIndex === null) return;
+
+        const barcode = searchBarcode.trim();
+
+        if (!barcode) return;
+
+        const timeout = setTimeout(() => {
+            setProductFilter((prev) => ({
+                ...prev,
+                name: "",
+                barcode,
+                page: 1,
+            }));
+        }, 300);
+
+        return () => clearTimeout(timeout);
+    }, [searchBarcode, editingIndex]);
+
+    useEffect(() => {
+        if (editingIndex === null) return;
+
+        const search = searchProduct[editingIndex] ?? "";
+
+        const timeout = setTimeout(() => {
+            setProductFilter((prev) => ({
+                ...prev,
+                name: search,
+                barcode: "",
+                page: 1,
+            }));
+        }, 300);
+
+        return () => clearTimeout(timeout);
+    }, [searchProduct, editingIndex]);
+
+    const selectProduct = (product: Product, index: number) => {
+        setSelectedProducts((prev) => ({
+            ...prev,
+            [index]: product,
+        }));
+
+        setSearchProduct((prev) => ({
+            ...prev,
+            [index]: `${product.name} ${product.model ?? ""}`.trim(),
+        }));
+
+        setValue(`items.${index}.product_id`, product.id, {
+            shouldValidate: true,
+            shouldDirty: true,
+        });
+
+        setValue(`items.${index}.product_unit_id`, "", {
+            shouldValidate: true,
+            shouldDirty: true,
+        });
+
+        loadProductUnits(product.id, index);
+    };
+
     return (
         <div className="container mx-auto py-4 px-4">
             <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 w-full">
@@ -512,10 +572,31 @@ export default function PurchaseAddPage({ onSuccess }: PurchaseFormProps) {
                         {editingIndex !== null && (
                             <div className="border rounded-lg p-4 bg-white space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <InputSearch
+                                        label="Código de barras"
+                                        placeholder="Escanear y seleccionar producto..."
+                                        value={searchBarcode}
+                                        onChange={(value) => {
+                                            setSearchBarcode(value);
+                                        }}
+                                        onSelect={(result) => {
+                                            const product = productResults.find(
+                                                (p) => p.id === result.id
+                                            );
 
+                                            if (product && editingIndex !== null) {
+                                                selectProduct(product, editingIndex);
+                                                setSearchBarcode("");
+                                            }
+                                        }}
+                                        results={productResults.map((product) => ({
+                                            id: product.id,
+                                            label: `${product.name} - ${product.model ?? ""}`,
+                                        }))}
+                                    />
                                     <InputSearch
                                         label="Producto"
-                                        placeholder="Buscar producto..."
+                                        placeholder="Buscar producto por nombre..."
                                         value={
                                             editingIndex !== null
                                                 ? searchProduct[editingIndex] ?? ""

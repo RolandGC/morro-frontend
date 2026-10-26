@@ -17,6 +17,7 @@ interface InputSearchProps {
     onChange?: (value: string) => void
     onSelect?: (item: SearchResult) => void
     onClear?: () => void
+    onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 export default function InputSearch({
@@ -28,6 +29,7 @@ export default function InputSearch({
     onChange,
     onSelect,
     onClear,
+    onKeyDown,
 }: InputSearchProps) {
     const [open, setOpen] = useState(false)
     const [search, setSearch] = useState(value)
@@ -69,6 +71,7 @@ export default function InputSearch({
                 onChange={(e) => handleChange(e.target.value)}
                 placeholder={placeholder}
                 className="h-8 bg-white"
+                onKeyDown={onKeyDown}
             />
 
             {open && (
