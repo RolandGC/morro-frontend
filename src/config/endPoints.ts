@@ -189,6 +189,10 @@ export const endpoints = {
     TICKETS:{
         CREATE: `${baseUrl}/boletas`,
     },
+    BILLDING:{
+        UPDATE: `${baseUrl}/billing/account`,
+        POST: `${baseUrl}/billing/account/test`, 
+    },
     REPORTS: {
         SUMMARY: `${baseUrl}/reports/summary`,
         SALES_BY_DAY: `${baseUrl}/reports/sales-by-day`,

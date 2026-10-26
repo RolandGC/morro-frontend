@@ -239,7 +239,17 @@ export default function TicketFormModal({
 
     const onSubmit = async (payload: TicketForm) => {
         try {
-            const response = await saleService.createTicket(payload);
+
+            const hardcodedPayload = {
+                ...payload,
+                send_to_sunat: true,
+                document_type: "boleta" as const,
+            };
+
+            console.log("Payload enviado:", hardcodedPayload);
+
+            const response = await saleService.createTicket(hardcodedPayload)
+            //const response = await saleService.createTicket(payload);
 
             if (response.status !== 200 && response.status !== 201)
                 throw new Error("No se pudo emitir la boleta");

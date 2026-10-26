@@ -38,3 +38,10 @@ export interface CompanyQueryParams {
     created_at?: string | undefined;
     updated_at?: string | undefined;
   }
+
+  export interface CompanyApis {
+    username: string;
+    password: string;
+    base_url: string;
+    is_active: boolean;
+  }

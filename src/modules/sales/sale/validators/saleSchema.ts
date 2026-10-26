@@ -123,6 +123,8 @@ const ticketSchema = z.object({
   sale_id: z.string(),
   customer_id: z.string(),
   sale_item_ids: z.array(z.string()).min(1, "Selecciona al menos un ítem"),
+  send_to_sunat: z.boolean().optional(),
+  document_type: z.string().optional(),
 });
 
 export type TicketForm = z.infer<typeof ticketSchema>;

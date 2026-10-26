@@ -53,24 +53,42 @@ export default function CompaniesPage() {
         setError('');
 
         try {
+            // 1. Seleccionar empresa
             const response = await companyService.selectCompany(company.id);
 
-            if (response.status === 200 || response.status === 201) {
-                localStorage.setItem(
-                    'selected_company',
-                    JSON.stringify(company)
-                );
-
-                saveAuthToken(response.data.access_token);
-
-                router.replace('/dashboard');
+            if (response.status !== 200 && response.status !== 201) {
+                setError('No se pudo seleccionar la empresa');
                 return;
             }
 
-            setError('No se pudo seleccionar la empresa');
+            // 2. Enviar configuración hardcodeada al endpoint PUT
+            const resp = await companyService.loginAsCompany( {
+                username: 'ti.elmorro@gmail.com',
+                password: '147852369',
+                base_url: 'https://facturacion.apisperu.com/api/v1',
+                is_active: true,
+            });
+            if (resp.status == 200 || resp.status == 201) {
+                await companyService.postCompanyApis();
+            } else {
+                setError('No se pudo configurar la empresa');
+                return;
+            }
+
+            // 3. Guardar empresa seleccionada
+            localStorage.setItem(
+                'selected_company',
+                JSON.stringify(company)
+            );
+
+            // 4. Guardar token
+            saveAuthToken(response.data.access_token);
+
+            // 5. Redirigir al dashboard
+            router.replace('/dashboard');
         } catch (err) {
-            console.error('Error al seleccionar empresa:', err);
-            setError('No se pudo seleccionar la empresa');
+            console.error('Error al seleccionar/configurar empresa:', err);
+            setError('No se pudo seleccionar o configurar la empresa');
         } finally {
             setSelecting(false);
         }
