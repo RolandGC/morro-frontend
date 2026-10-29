@@ -3,6 +3,8 @@ import { endpoints } from "@/config/endPoints";
 import { AxiosResponse } from "axios";
 import { PaginationResponse } from "@/types/types";
 import { StockAdjustmentQueryParams } from "../types/stockAdjustment.type";
+import { ProductForm } from "../../products/validators/productSchema";
+import { Product } from "../../products/types/produc.type";
 
 class StockAdjustmentService {
     async getAll(params?: StockAdjustmentQueryParams): Promise<AxiosResponse<PaginationResponse<Product>>> {

@@ -659,7 +659,7 @@ export default function SaleAddPage() {
         <div className="container mx-auto max-w-7xl px-4 py-3">
             <div className="mb-6">
                 <div>
-                    <h1 className="text-2xl font-semibold text-white tracking-tight">
+                    <h1 className="text-2xl font-semibold tracking-tight">
                         Nueva venta
                     </h1>
 

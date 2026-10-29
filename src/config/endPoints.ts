@@ -144,6 +144,8 @@ export const endpoints = {
     SOTK_ADJUSTMENTS:{
         GET_ALL: `${baseUrl}/stock-adjustments`,
         CREATE: `${baseUrl}/stock-adjustments`,
+        CREATE_COMPARE: `${baseUrl}/stock-adjustments/compare`,
+        CREATE_APPLY_COUNT: `${baseUrl}/stock-adjustments/apply-count`,
         GET_BY_ID: `${baseUrl}/stock-adjustments`,
     },
     CASH_SESSIONS: {
