@@ -39,6 +39,7 @@ export function ProductCard({
     const productLabel = [
         product.name,
         product.model,
+        product.brands?.name,
         /* selectedUnitId
             ? units?.find((unit) => unit.id === selectedUnitId)?.name
             : product.product_units?.find((unit) => unit.is_default)?.name, */
