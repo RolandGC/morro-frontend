@@ -135,7 +135,7 @@ export default function ProductsPage() {
                 </RequirePermission>
             </div>
 
-            <DataTable columns={getColumns({ fetchData })} data={data} productFilter={productFilter} handleProductFilter={handleProductFilter} totalPages={pages?.totalPages ?? 1} />
+            <DataTable columns={getColumns({ fetchData })} data={data} productFilter={productFilter} handleProductFilter={handleProductFilter} totalPages={pages?.totalPages ?? 1} totalRecords={pages?.total ?? 0} />
             <ProductForm onSuccess={() => close()} fetchData={fetchData} />
             <ProductUnitModal onSuccess={() => close()} />
             {/* <RequirePermission permission="products.read">
