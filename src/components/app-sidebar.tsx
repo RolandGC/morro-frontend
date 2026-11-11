@@ -126,6 +126,11 @@ const data = {
           permission: "categories.read",
         },
         {
+          title: "Inventario físico",
+          url: "/inventory/physical_inventory",
+          permission: "brands.read",
+        },
+        {
           title: "Unidad de productos",
           url: "/inventory/product_unit",
           permission: "product-units.read",
