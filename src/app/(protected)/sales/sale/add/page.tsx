@@ -3,7 +3,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useFormContext, useFieldArray, Controller } from "react-hook-form";
-import { Package, ScanBarcode, Search, ShoppingCart, Undo2, UserRound } from "lucide-react";
+import { Package, ScanBarcode, Search, ShoppingCart, Undo2, UserRound, ArrowRight, CircleCheck, Plus, X } from "lucide-react";
+import { PageHeader } from "@/components/page-header";
+import { SectionCard } from "@/components/section-card";
+import { EmptyState } from "@/components/empty-state";
+import { SearchField } from "@/components/search-field";
+import { formatCurrency } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { productService } from "@/modules/inventory/products/services/product.service";
 import { Product } from "@/modules/inventory/products/types/produc.type";
 import { ProductCard } from "@/modules/inventory/products/components/ProductCard";
@@ -46,6 +52,7 @@ export default function SaleAddPage() {
     const [searchCustomer, setSearchCustomer] = useState("");
     const [customerLoading, setCustomerLoading] = useState(false);
     const [customerResults, setCustomerResults] = useState<Customer[]>([]);
+    const [customerPickerOpen, setCustomerPickerOpen] = useState(false);
 
     const [productFilter, setProductFilter] = useState({
         name: "",
@@ -66,13 +73,8 @@ export default function SaleAddPage() {
         const focusBarcode = () => {
             barcodeInputRef.current?.focus();
         };
-
-        // Enfocar al entrar a la pantalla
         focusBarcode();
-
-        // Reintentar cuando el navegador termine de renderizar
         const frame = requestAnimationFrame(focusBarcode);
-
         return () => cancelAnimationFrame(frame);
     }, []);
 
@@ -80,7 +82,6 @@ export default function SaleAddPage() {
         const handleGlobalClick = (event: MouseEvent) => {
             const target = event.target as HTMLElement;
 
-            // No quitar el foco de campos editables ni botones
             if (
                 target.closest(
                     "input, textarea, select, button, [contenteditable='true'], [role='dialog']"
@@ -111,7 +112,7 @@ export default function SaleAddPage() {
         };
     }, []);
 
-    const [lastRemoved, setLastRemoved] = useState<{ item: any; index: number } | null>(null);
+    const [lastRemoved, setLastRemoved] = useState<{ item: SaleForm["items"][number]; index: number } | null>(null);
     const undoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
@@ -137,11 +138,6 @@ export default function SaleAddPage() {
         const unit = getProductUnit(product, unitId);
         return Number(unit?.conversion_factor ?? 1);
     };
-
-    useEffect(() => {
-        console.log("changeee", watch("items"));
-
-    }, [items]);
 
     useEffect(() => {
         const missingProductIds = items
@@ -400,10 +396,6 @@ export default function SaleAddPage() {
         if (!product) return;
 
         const currentQuantity = Number(item.quantity ?? 0);
-        const conversionFactor = getUnitConversionFactor(
-            product,
-            item.product_unit_id
-        );
 
         if (!canIncreaseIndex(index)) {
             error(`No hay más stock disponible de ${product.name}`);
@@ -621,19 +613,24 @@ export default function SaleAddPage() {
         }
     };
 
-    const fetchCustomers = async (full_name = "") => {
+    const fetchCustomers = async (search = "") => {
         try {
             setCustomerLoading(true);
 
+            const value = search.trim();
+
+            const isDocument = /^\d+$/.test(value);
+
             const response = await customerService.getAll({
-                full_name,
+                full_name: isDocument ? "" : value,
+                doc_number: isDocument ? value : "",
                 is_active: true,
                 page: 1,
-                limit: 4,
+                limit: 10,
             });
 
             if (response.status === 200) {
-                setCustomerResults(response.data.data);
+                setCustomerResults(response.data?.data ?? []);
             } else {
                 setCustomerResults([]);
             }
@@ -655,552 +652,563 @@ export default function SaleAddPage() {
         return () => clearTimeout(timeout);
     }, [searchCustomer]);
 
+    const handleCancel = () => {
+        useSaleStore.getState().startNew();
+        useCustomerDisplayStore.getState().clear();
+        publishClear();
+        router.push("/sales/sale");
+    };
+
+    const handleContinue = async () => {
+        if (isSubmitting) return;
+
+        // Se abre dentro del gesto para evitar el bloqueador de popups.
+        void openCustomerDisplay();
+
+        setIsSubmitting(true);
+
+        try {
+            const valid = await trigger?.(["items", "customer_id"]);
+
+            if (valid) {
+                router.push("/sales/sale/add/payments");
+            }
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     return (
-        <div className="container mx-auto max-w-7xl px-4 py-3">
-            <div className="mb-6">
-                <div>
-                    <h1 className="text-2xl font-semibold tracking-tight">
-                        Nueva venta
-                    </h1>
-
-                    <p className="mt-1 text-sm text-muted-foreground">
-                        Agrega productos, selecciona el cliente y continúa con el pago.
-                    </p>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.9fr)]">
-                <section className="rounded-2xl border bg-card shadow-sm">
-                    <div className="border-b rounded-t-2xl px-5 py-3 bg-primary">
-                        <div className="flex items-center gap-3">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-white">
-                                <Package size={18} />
-                            </div>
-
-                            <div>
-                                <h2 className="font-semibold text-white">
-                                    Productos
-                                </h2>
-
-                                <p className="text-sm text-white/80">
-                                    Busca o escanea un producto.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="p-5">
-                        <div className="space-y-3">
-                            <div>
-                                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                                    Código de barras
-                                </label>
-
-                                <div className="relative">
-                                    <ScanBarcode
-                                        size={18}
-                                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                                    />
-
-                                    <input
-                                        ref={barcodeInputRef}
-                                        type="text"
-                                        placeholder="Escanear código..."
-                                        className="h-11 w-full rounded-lg border bg-background pl-10 pr-3 text-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/10"
-                                        value={productFilter.barcode}
-                                        onChange={(e) =>
-                                            setProductFilter((prev) => ({
-                                                ...prev,
-                                                barcode: e.target.value,
-                                            }))
-                                        }
-                                        onKeyDown={(e) => {
-                                            if (e.key === "Enter") {
-                                                e.preventDefault();
-                                                handleBarcodeSearch();
-                                            }
-                                        }}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-3">
-                                <div className="h-px flex-1 bg-border" />
-                                <span className="text-xs text-muted-foreground">
-                                    o busca por nombre
-                                </span>
-                                <div className="h-px flex-1 bg-border" />
-                            </div>
-
-                            <div className="relative">
-                                <Search
-                                    size={18}
-                                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                                />
-
-                                <input
-                                    type="text"
-                                    value={searchProduct}
-                                    onChange={(e) =>
-                                        setSearchProduct(e.target.value)
+        <div className="mx-auto w-full max-w-400 px-4 pb-24 pt-2 lg:px-6 lg:pb-8">
+            <PageHeader
+                icon={ShoppingCart}
+                title="Nueva venta"
+                description="Escanea productos, asigna el cliente y continúa al cobro."
+                actions={
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={handleCancel}
+                        disabled={isSubmitting}
+                    >
+                        <X className="size-4" />
+                        Cancelar
+                    </Button>
+                }
+            />
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(360px,420px)] lg:items-start xl:gap-5">
+                <SectionCard
+                    icon={Package}
+                    title="Catálogo"
+                    description="Escanea un código de barras o busca por nombre"
+                    badge={
+                        productResults.length > 0 ? (
+                            <span className="rounded-md bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
+                                {productResults.length}{" "}
+                                {productResults.length === 1
+                                    ? "resultado"
+                                    : "resultados"}
+                            </span>
+                        ) : null
+                    }
+                    bodyClassName="gap-3"
+                >
+                    <div className="grid gap-2 sm:grid-cols-2">
+                        <div>
+                            <label
+                                htmlFor="sale-barcode"
+                                className="mb-1 block text-xs font-medium text-muted-foreground"
+                            >
+                                Código de barras
+                            </label>
+                            <SearchField
+                                ref={barcodeInputRef}
+                                id="sale-barcode"
+                                icon={ScanBarcode}
+                                placeholder="Escanear código..."
+                                hint="Enter"
+                                autoComplete="off"
+                                value={productFilter.barcode}
+                                onChange={(e) =>
+                                    setProductFilter((prev) => ({
+                                        ...prev,
+                                        barcode: e.target.value,
+                                    }))
+                                }
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                        e.preventDefault();
+                                        handleBarcodeSearch();
                                     }
-                                    placeholder="Buscar producto..."
-                                    className="h-11 w-full rounded-lg border bg-background pl-10 pr-3 text-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/10"
-                                />
-                            </div>
+                                }}
+                            />
                         </div>
-
-                        <div className="mt-5">
-                            <div className="mb-2 flex items-center justify-between">
-                                <p className="text-sm font-medium">
-                                    Resultados
-                                </p>
-
-                                {productResults.length > 0 && (
-                                    <span className="text-xs text-muted-foreground">
-                                        {productResults.length} encontrados
-                                    </span>
-                                )}
-                            </div>
-
-                            <div className="max-h-150 space-y-2 overflow-y-auto pr-1">
-                                {productLoading ? (
-                                    <div className="rounded-xl border border-dashed bg-muted/20 px-6 py-10 text-center">
-                                        <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                                            <Search
-                                                size={20}
-                                                className="text-white"
-                                            />
-                                        </div>
-
-                                        <p className="font-medium">
-                                            Buscando productos
-                                        </p>
-
-                                        <p className="mt-1 text-sm text-muted-foreground">
-                                            Espera un momento...
-                                        </p>
-                                    </div>
-                                ) : productResults.length === 0 ? (
-                                    <div className="rounded-xl border border-dashed bg-muted/20 px-6 py-10 text-center">
-                                        <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                                            <Package
-                                                size={20}
-                                                className="text-white"
-                                            />
-                                        </div>
-
-                                        <p className="font-medium">
-                                            No hay productos
-                                        </p>
-
-                                        <p className="mt-1 text-sm text-muted-foreground">
-                                            Intenta con otro término de búsqueda.
-                                        </p>
-                                    </div>
-                                ) : (
-                                    productResults.map((product) => (
-                                        <ProductSearchItem
-                                            key={product.id}
-                                            product={product}
-                                            onSelect={handleSelectProduct}
-                                            availableStock={getAvailableStock(product)}
-                                        />
-                                    ))
-                                )}
-                            </div>
+                        <div>
+                            <label
+                                htmlFor="sale-product-search"
+                                className="mb-1 block text-xs font-medium text-muted-foreground"
+                            >
+                                Buscar por nombre
+                            </label>
+                            <SearchField
+                                id="sale-product-search"
+                                icon={Search}
+                                placeholder="Nombre o modelo..."
+                                autoComplete="off"
+                                value={searchProduct}
+                                onChange={(e) =>
+                                    setSearchProduct(e.target.value)
+                                }
+                            />
                         </div>
                     </div>
-                </section>
-
-                <section className="flex min-h-0 flex-col rounded-2xl border bg-card shadow-sm">
-                    <div className="border-b px-5 py-3 rounded-t-2xl bg-primary">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-white">
-                                    <ShoppingCart size={18} />
-                                </div>
-                                <div>
-                                    <h2 className="font-semibold text-white">
-                                        Carrito
-                                    </h2>
-                                    <p className="text-sm text-white/80">
-                                        Productos de esta venta.
-                                    </p>
-                                </div>
+                    <div className="max-h-[calc(100vh-23rem)] min-h-64 space-y-2 overflow-y-auto pr-1 scrollbar-slim">
+                        {productLoading ? (
+                            <div className="space-y-2">
+                                {[0, 1, 2, 3, 4].map((row) => (
+                                    <div
+                                        key={row}
+                                        className="h-15.5 animate-pulse rounded-lg bg-muted/60"
+                                    />
+                                ))}
                             </div>
-
-                            {items.length > 0 && (
-                                <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium">
-                                    {items.length}{" "}
-                                    {items.length === 1
-                                        ? "producto"
-                                        : "productos"}
-                                </span>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="flex flex-1 flex-col p-5">
-                        {items.length === 0 ? (
-                            <div className="flex min-h-105 flex-1 items-center justify-center">
-                                <div className="max-w-sm text-center">
-                                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
-                                        <ShoppingCart
-                                            size={26}
-                                            className="text-muted-foreground"
-                                        />
-                                    </div>
-
-                                    <h3 className="font-medium">
-                                        Tu carrito está vacío
-                                    </h3>
-
-                                    <p className="mt-1 text-sm text-muted-foreground">
-                                        Selecciona un producto del catálogo
-                                        para agregarlo a la venta.
-                                    </p>
-                                    {errors.items?.message && (
-                                        <p className="mb-3 text-sm font-medium text-destructive">
-                                            {errors.items.message}
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
+                        ) : productResults.length === 0 ? (
+                            <EmptyState
+                                icon={Package}
+                                title="Sin resultados"
+                                description="Prueba con otro término o verifica el código escaneado."
+                            />
                         ) : (
-                            <>
-                                <div className="space-y-3">
-                                    {items.map((item, index) => {
-                                        const product = products.find((p) => p.id === item.product_id);
-                                        if (!product) return null;
-
-                                        const isJustAdded =
-                                            `${item.product_id}-${item.product_unit_id}` === justAddedKey;
-
-                                        return (
-                                            <div
-                                                key={fields[index]?.id}
-                                                className={`overflow-hidden rounded-xl border bg-background transition-all duration-300 ${isJustAdded
-                                                    ? "border-primary ring-2 ring-primary/20"
-                                                    : ""
-                                                    }`}
-                                            >
-                                                <ProductCard
-                                                    product={product}
-                                                    quantity={Number(item.quantity ?? 0)}
-                                                    units={product.product_units}
-                                                    selectedUnitId={item.product_unit_id}
-                                                    unitPrice={Number(
-                                                        item.unit_price ?? product.unit_price
+                            productResults.map((product) => (
+                                <ProductSearchItem
+                                    key={product.id}
+                                    product={product}
+                                    onSelect={handleSelectProduct}
+                                    availableStock={getAvailableStock(product)}
+                                />
+                            ))
+                        )}
+                    </div>
+                </SectionCard>
+                <div className="flex min-h-0 flex-col gap-4 lg:sticky lg:top-20">
+                    {/* CLIENTE */}
+                    <SectionCard
+                        icon={UserRound}
+                        title="Cliente"
+                        description="Requerido para registrar la venta"
+                        bodyClassName="gap-2"
+                        actions={
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openCreate()}
+                            >
+                                <Plus className="size-3.5" />
+                                Nuevo
+                            </Button>
+                        }
+                    >
+                        <Controller
+                            name="customer_id"
+                            control={control}
+                            render={({ field, fieldState }) => {
+                                const selectedCustomer = customerResults.find(
+                                    (customer) => customer.id === field.value
+                                );
+                                const showPicker =
+                                    customerPickerOpen || !field.value;
+                                return (
+                                    <div className="space-y-2">
+                                        {field.value && !customerPickerOpen && (
+                                            <div className="flex items-center justify-between gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2">
+                                                <div className="flex min-w-0 items-center gap-2">
+                                                    <CircleCheck className="size-4 shrink-0 text-primary" />
+                                                    <div className="min-w-0">
+                                                        <p className="truncate text-sm font-medium text-foreground">
+                                                            {selectedCustomer?.full_name ??
+                                                                (searchCustomer ||
+                                                                    "Cliente seleccionado")}
+                                                        </p>
+                                                        <p className="truncate text-xs text-muted-foreground">
+                                                            {selectedCustomer?.doc_number ??
+                                                                "Asignado a esta venta"}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="shrink-0"
+                                                    onClick={() =>
+                                                        setCustomerPickerOpen(
+                                                            true
+                                                        )
+                                                    }
+                                                >
+                                                    Cambiar
+                                                </Button>
+                                            </div>
+                                        )}
+                                        {showPicker && (
+                                            <>
+                                                <SearchField
+                                                    icon={Search}
+                                                    placeholder="Buscar por documento o nombre..."
+                                                    autoComplete="off"
+                                                    value={searchCustomer}
+                                                    onFocus={() =>
+                                                        setCustomerPickerOpen(
+                                                            true
+                                                        )
+                                                    }
+                                                    onChange={(e) => {
+                                                        setSearchCustomer(
+                                                            e.target.value
+                                                        );
+                                                        setCustomerPickerOpen(
+                                                            true
+                                                        );
+                                                    }}
+                                                />
+                                                <div className="max-h-40 space-y-1.5 overflow-y-auto pr-1 scrollbar-slim">
+                                                    {customerLoading ? (
+                                                        <>
+                                                            <div className="h-12 animate-pulse rounded-lg bg-muted/60" />
+                                                            <div className="h-12 animate-pulse rounded-lg bg-muted/60" />
+                                                        </>
+                                                    ) : customerResults.length ===
+                                                      0 ? (
+                                                        <p className="rounded-lg border border-dashed px-3 py-4 text-center text-xs text-muted-foreground">
+                                                            No se encontraron
+                                                            clientes.
+                                                        </p>
+                                                    ) : (
+                                                        customerResults.map(
+                                                            (customer) => (
+                                                                <CustomerSearchItem
+                                                                    key={ customer.id}
+                                                                    customer={customer}
+                                                                    selected={
+                                                                        field.value ===
+                                                                        customer.id
+                                                                    }
+                                                                    onSelect={(
+                                                                        customer
+                                                                    ) => {
+                                                                        field.onChange(
+                                                                            customer.id
+                                                                        );
+                                                                        setSearchCustomer(
+                                                                            customer.full_name
+                                                                        );
+                                                                        setCustomerPickerOpen(
+                                                                            false
+                                                                        );
+                                                                    }}
+                                                                />
+                                                            )
+                                                        )
                                                     )}
-                                                    availableStock={getAvailableStock(product)}
-                                                    onIncrease={() => handleIncrease(index)}
-                                                    onDecrease={() => handleDecrease(index)}
-                                                    onRemove={() => handleRemoveItem(index)}
-                                                    onChangeQuantity={(q) =>
-                                                        setValue(`items.${index}.quantity`, q, {
+                                                </div>
+                                            </>
+                                        )}
+                                        {fieldState.error && (
+                                            <p className="text-xs font-medium text-destructive">
+                                                {fieldState.error.message}
+                                            </p>
+                                        )}
+                                    </div>
+                                );
+                            }}
+                        />
+                        <CustomerFormModal
+                            fetchData={fetchCustomers}
+                            onSuccess={(customer) => {
+                                setValue("customer_id", customer.id, {
+                                    shouldValidate: true,
+                                    shouldDirty: true,
+                                });
+                                setSearchCustomer(customer.full_name ?? "");
+                                setCustomerPickerOpen(false);
+                            }}
+                        />
+                    </SectionCard>
+                    <SectionCard
+                        icon={ShoppingCart}
+                        title="Carrito"
+                        badge={
+                            items.length > 0 ? (
+                                <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
+                                    {items.length}
+                                </span>
+                            ) : null
+                        }
+                        bodyClassName="p-0 gap-0"
+                    >
+                        <div className="max-h-[46vh] min-h-44 space-y-2 overflow-y-auto p-4 scrollbar-slim">
+                            {items.length === 0 ? (
+                                <EmptyState
+                                    icon={ShoppingCart}
+                                    title="Carrito vacío"
+                                    description="Selecciona un producto del catálogo para comenzar la venta."
+                                    compact
+                                />
+                            ) : (
+                                items.map((item, index) => {
+                                    const product = products.find(
+                                        (p) => p.id === item.product_id
+                                    );
+                                    if (!product) return null;
+                                    const isJustAdded =
+                                        `${item.product_id}-${item.product_unit_id}` ===
+                                        justAddedKey;
+                                    return (
+                                        <div
+                                            key={fields[index]?.id}
+                                            className={cn(
+                                                "rounded-lg transition-all duration-300",
+                                                isJustAdded &&
+                                                    "ring-2 ring-primary/30 ring-offset-1 ring-offset-card"
+                                            )}
+                                        >
+                                            <ProductCard
+                                                product={product}
+                                                quantity={Number(
+                                                    item.quantity ?? 0
+                                                )}
+                                                units={product.product_units}
+                                                selectedUnitId={
+                                                    item.product_unit_id
+                                                }
+                                                unitPrice={Number(
+                                                    item.unit_price ??
+                                                        product.unit_price
+                                                )}
+                                                availableStock={getAvailableStock(
+                                                    product
+                                                )}
+                                                onIncrease={() =>
+                                                    handleIncrease(index)
+                                                }
+                                                onDecrease={() =>
+                                                    handleDecrease(index)
+                                                }
+                                                onRemove={() =>
+                                                    handleRemoveItem(index)
+                                                }
+                                                onChangeQuantity={(q) =>
+                                                    setValue(
+                                                        `items.${index}.quantity`,
+                                                        q,
+                                                        {
                                                             shouldValidate: true,
                                                             shouldDirty: true,
-                                                        })
-                                                    }
-                                                    onSelectUnit={(unitId) => {
-                                                        const unit = product.product_units?.find(
-                                                            (unit) => unit.id === unitId
+                                                        }
+                                                    )
+                                                }
+                                                onSelectUnit={(unitId) => {
+                                                    const unit =
+                                                        product.product_units?.find(
+                                                            (unit) =>
+                                                                unit.id ===
+                                                                unitId
                                                         );
-
-                                                        if (!unit) return;
-
-                                                        const conversionFactor = Number(
-                                                            unit.conversion_factor ?? 1
+                                                    if (!unit) return;
+                                                    const conversionFactor =
+                                                        Number(
+                                                            unit.conversion_factor ??
+                                                                1
                                                         );
-                                                        const currentQuantity = Number(item.quantity ?? 0);
-                                                        const stock = Number(
-                                                            product.warehouse_stock?.[0]?.quantity ?? 0
+                                                    const currentQuantity =
+                                                        Number(
+                                                            item.quantity ?? 0
                                                         );
-
-                                                        const quantityInOtherItems = items.reduce(
-                                                            (total, currentItem, currentIndex) => {
+                                                    const stock = Number(
+                                                        product
+                                                            .warehouse_stock?.[0]
+                                                            ?.quantity ?? 0
+                                                    );
+                                                    const quantityInOtherItems =
+                                                        items.reduce(
+                                                            (
+                                                                total,
+                                                                currentItem,
+                                                                currentIndex
+                                                            ) => {
                                                                 if (
-                                                                    currentIndex === index ||
-                                                                    currentItem.product_id !== product.id
+                                                                    currentIndex ===
+                                                                        index ||
+                                                                    currentItem.product_id !==
+                                                                        product.id
                                                                 ) {
                                                                     return total;
                                                                 }
-
                                                                 const factor =
                                                                     getUnitConversionFactor(
                                                                         product,
                                                                         currentItem.product_unit_id
                                                                     );
-
                                                                 return (
                                                                     total +
-                                                                    Number(currentItem.quantity ?? 0) *
-                                                                    factor
+                                                                    Number(
+                                                                        currentItem.quantity ??
+                                                                            0
+                                                                    ) *
+                                                                        factor
                                                                 );
                                                             },
                                                             0
                                                         );
-
-                                                        const newQuantityInBase =
-                                                            currentQuantity * conversionFactor;
-
-                                                        if (
-                                                            quantityInOtherItems +
+                                                    const newQuantityInBase =
+                                                        currentQuantity *
+                                                        conversionFactor;
+                                                    if (
+                                                        quantityInOtherItems +
                                                             newQuantityInBase >
-                                                            stock
-                                                        ) {
-                                                            error(
-                                                                `No hay stock suficiente para cambiar a ${unit.name}`
-                                                            );
-                                                            return;
-                                                        }
-
-                                                        setValue(
-                                                            `items.${index}.product_unit_id`,
-                                                            unitId,
-                                                            {
-                                                                shouldValidate: true,
-                                                                shouldDirty: true,
-                                                            }
+                                                        stock
+                                                    ) {
+                                                        error(
+                                                            `No hay stock suficiente para cambiar a ${unit.name}`
                                                         );
-
-                                                        setValue(
-                                                            `items.${index}.unit_quantity`,
-                                                            conversionFactor,
-                                                            {
-                                                                shouldValidate: true,
-                                                                shouldDirty: true,
-                                                            }
-                                                        );
-                                                    }}
-                                                    onChangeUnitPrice={(price) =>
-                                                        setValue(`items.${index}.unit_price`, price, {
+                                                        return;
+                                                    }
+                                                    setValue(
+                                                        `items.${index}.product_unit_id`,
+                                                        unitId,
+                                                        {
                                                             shouldValidate: true,
                                                             shouldDirty: true,
-                                                        })
-                                                    }
-                                                />
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-
-                                <div className="mt-5 rounded-xl border bg-muted/30 p-4">
-                                    <div className="mb-3 flex items-center justify-between">
-                                        <span className="text-sm font-medium">Resumen</span>
-                                        <span className="text-xs text-muted-foreground">
-                                            {items.length} productos
-                                        </span>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        {regimeCounts.zofra > 0 && (
-                                            <div className="flex items-center justify-between text-sm">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                                                    <span>Régimen ZOFRA</span>
-                                                </div>
-                                                <span className="text-muted-foreground">
-                                                    {regimeCounts.zofra}
-                                                </span>
-                                            </div>
-                                        )}
-
-                                        {regimeCounts.general > 0 && (
-                                            <div className="flex items-center justify-between text-sm">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="h-2 w-2 rounded-full bg-blue-500" />
-                                                    <span>Régimen General</span>
-                                                </div>
-                                                <span className="text-muted-foreground">
-                                                    {regimeCounts.general}
-                                                </span>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="my-3 h-px bg-border" />
-
-                                    <div className="flex items-center justify-between text-sm">
-                                        <span className="text-muted-foreground">Subtotal</span>
-                                        <span>S/ {subTotal.toFixed(2)}</span>
-                                    </div>
-
-                                    <div className="mt-2 flex items-center justify-between">
-                                        <span className="font-semibold">Total</span>
-                                        <span className="text-xl font-bold">
-                                            S/ {subTotal.toFixed(2)}
-                                        </span>
-                                    </div>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                </section>
-            </div>
-
-            <section className="mt-6 rounded-2xl border bg-card shadow-sm">
-                <div className="border-b px-5 py-3 rounded-t-2xl bg-primary">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-white">
-                                <UserRound size={18} />
-                            </div>
-                            <h2 className="font-semibold text-white">
-                                Cliente
-                            </h2>
-
-                            <p className="text-sm text-white/80">
-                                Selecciona el cliente asociado a la venta.
-                            </p>
-                        </div>
-
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => openCreate()}
-                        >
-                            + Nuevo cliente
-                        </Button>
-                    </div>
-                </div>
-
-                <div className="px-5 py-3">
-                    <Controller
-                        name="customer_id"
-                        control={control}
-                        render={({ field, fieldState }) => (
-                            <div>
-                                <label className="mb-2 block text-sm font-medium">
-                                    Buscar cliente
-                                </label>
-
-                                <div className="relative">
-                                    <Search
-                                        size={18}
-                                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                                    />
-
-                                    <input
-                                        type="text"
-                                        value={searchCustomer}
-                                        onChange={(e) =>
-                                            setSearchCustomer(e.target.value)
-                                        }
-                                        placeholder="Nombre del cliente..."
-                                        className="h-11 w-full rounded-lg border bg-background pl-10 pr-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
-                                    />
-                                </div>
-
-                                <div className="mt-3 max-h-60 space-y-2 overflow-y-auto">
-                                    {customerLoading ? (
-                                        <div className="rounded-lg border border-dashed py-6 text-center text-sm text-muted-foreground">
-                                            Buscando clientes...
-                                        </div>
-                                    ) : customerResults.length === 0 ? (
-                                        <div className="rounded-lg border border-dashed py-6 text-center text-sm text-muted-foreground">
-                                            No se encontraron clientes.
-                                        </div>
-                                    ) : (
-                                        customerResults.map((customer) => (
-                                            <CustomerSearchItem
-                                                key={customer.id}
-                                                customer={customer}
-                                                selected={
-                                                    field.value === customer.id
-                                                }
-                                                onSelect={(customer) =>
-                                                    field.onChange(customer.id)
+                                                        }
+                                                    );
+                                                    setValue(
+                                                        `items.${index}.unit_quantity`,
+                                                        conversionFactor,
+                                                        {
+                                                            shouldValidate: true,
+                                                            shouldDirty: true,
+                                                        }
+                                                    );
+                                                }}
+                                                onChangeUnitPrice={(price) =>
+                                                    setValue(
+                                                        `items.${index}.unit_price`,
+                                                        price,
+                                                        {
+                                                            shouldValidate: true,
+                                                            shouldDirty: true,
+                                                        }
+                                                    )
                                                 }
                                             />
-                                        ))
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
+                        <div className="border-t bg-muted/20 p-4">
+                            <div className="flex items-center justify-between text-sm">
+                                <span className="text-muted-foreground">
+                                    Subtotal
+                                </span>
+                                <span className="money font-medium">
+                                    {formatCurrency(subTotal)}
+                                </span>
+                            </div>
+                            <div className="mt-1 flex items-end justify-between gap-3">
+                                <div>
+                                    <p className="text-sm font-semibold text-foreground">
+                                        Total
+                                    </p>
+                                    <p className="text-[11px] text-muted-foreground">
+                                        {items.length}{" "}
+                                        {items.length === 1
+                                            ? "producto"
+                                            : "productos"}
+                                    </p>
+                                </div>
+                                <p className="money text-2xl font-semibold tracking-tight text-foreground">
+                                    {formatCurrency(subTotal)}
+                                </p>
+                            </div>
+                            {(regimeCounts.zofra > 0 ||
+                                regimeCounts.general > 0) && (
+                                <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] font-medium">
+                                    {regimeCounts.zofra > 0 && (
+                                        <span className="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2 py-1 text-success">
+                                            <span className="size-1.5 rounded-full bg-success" />
+                                            ZOFRA {regimeCounts.zofra}
+                                        </span>
+                                    )}
+                                    {regimeCounts.general > 0 && (
+                                        <span className="inline-flex items-center gap-1.5 rounded-full bg-info/10 px-2 py-1 text-info">
+                                            <span className="size-1.5 rounded-full bg-info" />
+                                            General {regimeCounts.general}
+                                        </span>
                                     )}
                                 </div>
-
-                                {fieldState.error && (
-                                    <p className="mt-2 text-sm text-destructive">
-                                        {fieldState.error.message}
-                                    </p>
+                            )}
+                            <Button
+                                type="button"
+                                className="mt-3 h-11 w-full text-sm"
+                                disabled={isSubmitting || items.length === 0}
+                                onClick={handleContinue}
+                            >
+                                {isSubmitting ? "Validando..." : "Continuar al pago"}
+                                {!isSubmitting && (
+                                    <ArrowRight className="size-4" />
                                 )}
-                            </div>
-                        )}
-                    />
-
-                    <CustomerFormModal
-                        fetchData={fetchCustomers}
-                        onSuccess={(customer) => {
-                            setValue("customer_id", customer.id, {
-                                shouldValidate: true,
-                                shouldDirty: true,
-                            });
-
-                            setSearchCustomer(customer.full_name ?? "");
-                        }}
-                    />
+                            </Button>
+                            {itemsError && (
+                                <p className="mt-2 text-xs font-medium text-destructive">
+                                    {itemsError}
+                                </p>
+                            )}
+                        </div>
+                    </SectionCard>
                 </div>
-            </section>
-
+            </div>
             {lastRemoved && (
-                <div className="fixed bottom-20 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-full border bg-foreground px-4 py-2 text-background shadow-lg sm:bottom-6">
-                    <span className="text-sm">
-                        Producto eliminado del carrito
-                    </span>
-
+                <div className="fixed bottom-24 right-4 z-50 flex items-center gap-3 rounded-lg border bg-foreground px-4 py-2.5 text-background shadow-lg lg:bottom-6">
+                    <span className="text-sm">Producto eliminado del carrito</span>
                     <button
                         type="button"
                         onClick={handleUndoRemove}
-                        className="flex items-center gap-1 rounded-full bg-background/10 px-3 py-1 text-sm font-medium hover:bg-background/20"
+                        className="flex items-center gap-1 rounded-md bg-background/15 px-3 py-1 text-sm font-medium transition-colors hover:bg-background/25"
                     >
-                        <Undo2 size={14} />
+                        <Undo2 className="size-3.5" />
                         Deshacer
                     </button>
                 </div>
             )}
-
-            <div className="mt-6 flex flex-col-reverse gap-3 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
-                <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full sm:w-auto"
-                    disabled={isSubmitting}
-                    onClick={() => {
-                        useSaleStore.getState().startNew();
-                        useCustomerDisplayStore.getState().clear();
-                        publishClear();
-                        router.push("/sales/sale")
-                    }}
-                >
-                    Cancelar
-                </Button>
-
-                <Button
-                    type="button"
-                    className="w-full sm:w-auto"
-                    disabled={isSubmitting}
-                    onClick={async () => {
-                        if (isSubmitting) return;
-
-                        // Se abre dentro del gesto para evitar el bloqueador de popups.
-                        void openCustomerDisplay();
-
-                        setIsSubmitting(true);
-
-                        try {
-                            const valid = await trigger?.(["items", "customer_id"]);
-
-                            if (valid) {
-                                router.push("/sales/sale/add/payments");
-                            }
-                        } finally {
-                            setIsSubmitting(false);
-                        }
-                    }}
-                >
-                    {isSubmitting ? "Validando..." : "Siguiente →"}
-                </Button>
-            </div>
+            {/* Barra de acción fija en móvil: el total y el cobro no se pierden */}
+            {items.length > 0 && (
+                <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 p-3 backdrop-blur lg:hidden">
+                    <div className="mx-auto flex max-w-400 items-center justify-between gap-3">
+                        <div>
+                            <p className="text-[11px] text-muted-foreground">
+                                {items.length}{" "}
+                                {items.length === 1 ? "producto" : "productos"}
+                            </p>
+                            <p className="money text-lg font-semibold">
+                                {formatCurrency(subTotal)}
+                            </p>
+                        </div>
+                        <Button
+                            type="button"
+                            className="h-10 px-4"
+                            disabled={isSubmitting}
+                            onClick={handleContinue}
+                        >
+                            {isSubmitting ? "Validando..." : "Continuar"}
+                            {!isSubmitting && (
+                                <ArrowRight className="size-4" />
+                            )}
+                        </Button>
+                    </div>
+                </div>
+            )}
         </div>
     );
-
 }

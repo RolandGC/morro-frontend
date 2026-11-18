@@ -1,6 +1,14 @@
+import { ChevronDown, Minus, Plus, Trash2 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Minus, Plus, X } from "lucide-react";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/format";
 import { Product, ProductUnit } from "../types/produc.type";
 
 interface ProductCardProps {
@@ -18,12 +26,18 @@ interface ProductCardProps {
     availableStock: number;
 }
 
+/**
+ * Línea del carrito.
+ * Se reorganizó en dos niveles: identificación + total arriba, controles
+ * de cantidad y precio abajo. Mantiene exactamente los mismos callbacks
+ * que la versión anterior.
+ */
 export function ProductCard({
     product,
     onIncrease,
     onDecrease,
     onRemove,
-    quantity,
+    quantity = 0,
     onChangeQuantity,
     units,
     selectedUnitId,
@@ -32,121 +46,187 @@ export function ProductCard({
     onChangeUnitPrice,
     availableStock,
 }: ProductCardProps) {
-
-    const selectedUnit = (units ?? product.product_units ?? []).find(
-        (unit) => unit.id === selectedUnitId
-    );
-    const productLabel = [
-        product.name,
-        product.model,
-        product.brands?.name,
-        /* selectedUnitId
-            ? units?.find((unit) => unit.id === selectedUnitId)?.name
-            : product.product_units?.find((unit) => unit.is_default)?.name, */
-        product?.regime
-    ]
+    const unitList = units ?? product.product_units ?? [];
+    const selectedUnit = unitList.find((unit) => unit.id === selectedUnitId);
+    const lineTotal = Number(quantity ?? 0) * Number(unitPrice ?? 0);
+    const meta = [product.brands?.name, product.model]
         .filter(Boolean)
-        .join(" - ");
+        .join(" · ");
 
     return (
-        <div className="relative rounded-xl border border-gray-200 bg-white px-3 py-2.5">
-            <div className="flex items-start justify-between">
-                <div>
-                    <h3 className="text-[15px] font-normal leading-5 text-gray-900">
-                        {productLabel}
-                    </h3>
+        <div className="rounded-lg border bg-card p-3 transition-colors hover:border-primary/30">
+            <div className="flex items-start gap-3">
+                <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                        <h3 className="truncate text-sm font-medium text-foreground">
+                            {product.name}
+                        </h3>
 
-                    <div
-                        className={`mt-0.5 text-xs ${availableStock <= 0
-                            ? "text-red-500"
-                            : "text-gray-400"
-                            }`}
-                    >
-                        Stock: {availableStock} unid
+                        {product.regime && (
+                            <span
+                                className={cn(
+                                    "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
+                                    product.regime === "zofra"
+                                        ? "bg-success/10 text-success"
+                                        : "bg-info/10 text-info"
+                                )}
+                            >
+                                {product.regime}
+                            </span>
+                        )}
+                    </div>
+
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                        {meta || "Sin marca ni modelo"}
+                    </p>
+                </div>
+
+                <div className="shrink-0 text-right">
+                    <p className="money text-sm font-semibold text-foreground">
+                        {formatCurrency(lineTotal)}
+                    </p>
+
+                    {/* <p className="money mt-0.5 text-[11px] text-muted-foreground">
+                        {quantity} × {formatCurrency(unitPrice ?? 0)}
+                    </p> */}
+                    {/* Stock disponible */}
+                    <div className="ml-auto text-right">
+                        <span
+                            className={cn(
+                                "inline-flex h-6 items-center rounded-sm px-2.5 text-xs font-semibold tabular-nums",
+                                availableStock <= 0
+                                    ? "bg-destructive/10 text-destructive"
+                                    : "bg-muted text-muted-foreground"
+                            )}
+                        >
+                            Stock: {availableStock} unid
+                        </span>
                     </div>
                 </div>
 
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="ml-auto">
-                            {units?.find((unit) => unit.id === selectedUnitId)?.name ?? "Seleccionar unidad"}
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        {(units ?? product.product_units ?? []).map((unit) => {
-                            return (
-                                <button
-                                    key={unit.id}
-                                    type="button"
-                                    className={`block w-full text-left px-3 py-1 text-sm hover:bg-gray-100 ${selectedUnitId === unit.id ? 'font-medium' : ''}`}
-                                    onClick={() => onSelectUnit?.(unit.id)}
-                                >
-                                    {unit.name}
-                                </button>
-                            );
-                        })}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-
-                <button
+                <Button
                     type="button"
+                    variant="ghost"
+                    size="icon-sm"
                     onClick={onRemove}
-                    className="mt-1 ml-2 bg-red-600 text-white hover:bg-red-400 rounded-sm"
+                    aria-label={`Quitar ${product.name} del carrito`}
+                    className="shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                 >
-                    <X size={18} strokeWidth={1.8} />
-                </button>
+                    <Trash2 className="size-4" />
+                </Button>
             </div>
 
-            <div className="mt-3 grid grid-cols-[35px_1fr_35px_1fr] items-center gap-3">
-                <button
-                    type="button"
-                    onClick={onDecrease}
-                    disabled={(quantity ?? 0) <= 1}
-                    className="flex h-9 w-8.75 items-center justify-center rounded-xl border border-gray-200 text-gray-900 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                    <Minus size={16} strokeWidth={1.5} />
-                </button>
+            <div className="mt-3 flex flex-wrap items-end gap-3 border-t pt-3">
+                {/* Cantidad */}
+                <div>
+                    <span className="mb-1 block text-[11px] font-medium text-muted-foreground">
+                        Cantidad
+                    </span>
 
-                <div className="text-center">
-                    {/*  <div className="text-[18px] leading-5 text-gray-900">
-                        {quantity}
-                    </div> */}
+                    <div className="flex h-9 items-center rounded-lg border bg-background">
+                        <button
+                            type="button"
+                            onClick={onDecrease}
+                            disabled={quantity <= 1}
+                            aria-label="Disminuir cantidad"
+                            className="flex h-full w-9 items-center justify-center rounded-l-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                            <Minus className="size-4" aria-hidden="true" />
+                        </button>
 
-                    <input
-                        type="number"
-                        value={quantity ?? 0}
-                        min={1}
-                        onChange={(e) => onChangeQuantity?.(Number(e.target.value))}
-                        className="mx-auto w-20 rounded-md border px-2 py-1 text-center text-[18px] text-gray-900 outline-none"
-                    />
+                        <input
+                            type="number"
+                            inputMode="numeric"
+                            value={quantity}
+                            min={1}
+                            aria-label={`Cantidad de ${product.name}`}
+                            onChange={(e) =>
+                                onChangeQuantity?.(Number(e.target.value))
+                            }
+                            className="h-full w-12 border-x bg-transparent text-center text-sm font-semibold tabular-nums outline-none focus-visible:bg-accent"
+                        />
 
-                    <div className="mt-1 text-[13px] text-gray-500">{selectedUnit?.name}</div>
+                        <button
+                            type="button"
+                            onClick={onIncrease}
+                            aria-label="Aumentar cantidad"
+                            className="flex h-full w-9 items-center justify-center rounded-r-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                        >
+                            <Plus className="size-4" aria-hidden="true" />
+                        </button>
+                    </div>
                 </div>
 
-                <button
-                    type="button"
-                    onClick={onIncrease}
-                    //disabled={quantity >= stock || stock === undefined}
-                    className="flex h-9 w-8.75 items-center justify-center rounded-xl border border-gray-200 text-gray-900 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                    <Plus size={16} strokeWidth={1.5} />
-                </button>
-                <div className="ml-2">
-                    <input
-                        type="number"
-                        value={unitPrice ?? 0}
-                        min={0}
-                        //step="0.01"
-                        onChange={(e) => {
-                            const value = e.target.value;
+                {/* Unidad */}
+                <div>
+                    <span className="mb-1 block text-[11px] font-medium text-muted-foreground">
+                        Unidad
+                    </span>
 
-                            onChangeUnitPrice?.(
-                                value === "" ? 0 : Number(value)
-                            );
-                        }}
-                        className="h-9 w-full rounded-md border border-gray-200 bg-white px-3 text-right text-[18px] text-gray-900 outline-none"
-                    />
-                    <div className="mt-1 text-[13px] text-gray-500">Precio por {selectedUnit?.name}</div>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="h-9 min-w-20 justify-between gap-1.5 px-2.5 font-medium"
+                            >
+                                <span className="truncate">
+                                    {selectedUnit?.name ?? "Unidad"}
+                                </span>
+                                <ChevronDown className="size-3.5 text-muted-foreground" />
+                            </Button>
+                        </DropdownMenuTrigger>
+
+                        <DropdownMenuContent align="start" className="min-w-36">
+                            {unitList.map((unit) => (
+                                <DropdownMenuItem
+                                    key={unit.id}
+                                    onSelect={() => onSelectUnit?.(unit.id)}
+                                    className={cn(
+                                        "cursor-pointer justify-between",
+                                        selectedUnitId === unit.id &&
+                                        "font-semibold text-primary"
+                                    )}
+                                >
+                                    <span>{unit.name}</span>
+                                    <span className="text-[11px] text-muted-foreground">
+                                        ×{unit.conversion_factor}
+                                    </span>
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+
+                {/* Precio unitario */}
+                <div className="min-w-28 flex-1">
+                    <label className="mb-1 block text-[11px] font-medium text-muted-foreground">
+                        Precio unitario
+                    </label>
+
+                    <div className="relative">
+                        <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                            S/
+                        </span>
+
+                        <input
+                            type="number"
+                            inputMode="decimal"
+                            min={0}
+                            step="any"
+                            value={unitPrice || ""}
+                            placeholder="0"
+                            aria-label={`Precio unitario de ${product.name}`}
+                            onChange={(e) => {
+                                const value = e.target.value;
+
+                                onChangeUnitPrice?.(
+                                    value === "" ? 0 : Number(value)
+                                );
+                            }}
+                            className="money h-9 w-full rounded-lg border bg-background pl-7 pr-2 text-right text-sm font-medium outline-none transition focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-primary/15"
+                        />
+                    </div>
                 </div>
             </div>
         </div>

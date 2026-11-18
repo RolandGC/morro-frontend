@@ -3,43 +3,13 @@
 import * as React from "react"
 
 import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
+import { CompanySwitcher } from "@/components/company-switcher"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar"
-import { GalleryVerticalEndIcon, Banknote, Truck, AudioLinesIcon, TerminalIcon, BriefcaseIcon, Store, Package, Shield, FrameIcon, PieChartIcon, MapIcon, ChartColumn, ShoppingCart } from "lucide-react"
-import { Button } from "./ui/button"
-import Link from "next/link"
+import { Banknote, Truck, BriefcaseIcon, Store, Package, Shield, ChartColumn } from "lucide-react"
 import { useAuthStore } from "@/modules/auth/store/authStore"
 
-// This is sample data.
 const data = {
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: (
-        <GalleryVerticalEndIcon
-        />
-      ),
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: (
-        <AudioLinesIcon
-        />
-      ),
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: (
-        <TerminalIcon
-        />
-      ),
-      plan: "Free",
-    },
-  ],
   navMain: [
     {
       title: "Administración",
@@ -208,48 +178,25 @@ const data = {
       ],
     },
   ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: (
-        <FrameIcon
-        />
-      ),
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: (
-        <PieChartIcon
-        />
-      ),
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: (
-        <MapIcon
-        />
-      ),
-    },
-  ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useAuthStore()
+
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
-        <NavUser user={user} />
+      <SidebarHeader className="border-b border-sidebar-border">
+        <CompanySwitcher />
       </SidebarHeader>
+
       <SidebarContent>
         <NavMain items={data.navMain} />
-        {/* <NavProjects projects={data.projects} /> */}
       </SidebarContent>
-      <SidebarFooter>
-        <TeamSwitcher teams={data.teams} />
+
+      <SidebarFooter className="border-t border-sidebar-border">
+        <NavUser user={user} />
       </SidebarFooter>
+
       <SidebarRail />
     </Sidebar>
   )

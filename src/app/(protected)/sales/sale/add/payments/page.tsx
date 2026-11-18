@@ -10,9 +10,12 @@ import InputText from "@/components/InputText";
 import SimpleSelector from "@/components/SimpleSelector";
 import { sale_type } from "@/types/types";
 import { SaleForm } from "@/modules/sales/sale/validators/saleSchema";
+import { SaleDetail } from "@/modules/sales/sale/types/sale.types";
 import { Company } from "@/modules/core/companies/types/company.type";
 import Swal from "sweetalert2";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/page-header";
+import { formatCurrency } from "@/lib/format";
 import { Currency } from "@/modules/finances/currency/types/currency.types";
 import { currencyService } from "@/modules/finances/currency/services/currency.service";
 import { accountService } from "@/modules/finances/Account/services/account.service";
@@ -21,6 +24,9 @@ import TicketFormModal from "@/modules/sales/sale/components/TicketFormModal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import CardPayment from "@/modules/sales/sale/components/CardPayment";
 import { useCustomerDisplayPublisher } from "@/modules/sales/sale/hooks/useCustomerDisplayPublisher";
+import { CheckCircle2, CreditCard, Plus, ReceiptText, ArrowLeft } from "lucide-react";
+
+type CreatedSale = SaleDetail & { notaPedidoBase64: string };
 
 export default function PagoStep() {
     const router = useRouter();
@@ -31,7 +37,7 @@ export default function PagoStep() {
         register,
         watch,
         setValue,
-        formState: { errors, isSubmitting }
+        formState: { isSubmitting }
     } = useFormContext<SaleForm>();
 
     const [currencies, setCurrencies] = useState<Currency[]>([]);
@@ -67,7 +73,7 @@ export default function PagoStep() {
 
                     if (!currentCurrencyId) {
                         const pen = currenciesData.find(
-                            (currency) => currency.code === "PEN"
+                            (currency) => currency.code?.toUpperCase() === "PEN"
                         );
 
                         if (pen) {
@@ -104,8 +110,6 @@ export default function PagoStep() {
     }, []);
 
     const onSubmit = async (data: SaleForm) => {
-        const { isEditing } = useSaleStore.getState();
-
         const storedCompany = localStorage.getItem("selected_company");
 
         if (!storedCompany) {
@@ -126,7 +130,7 @@ export default function PagoStep() {
                 const notaPedidoBase64 = response.data.notaPedidoBase64;
 
                 // store created sale and open success dialog
-                setCreatedSale(response.data);
+                setCreatedSale(response.data as unknown as CreatedSale);
                 setSuccessDialogOpen(true);
 
                 // Muestra el agradecimiento en la pantalla del cliente.
@@ -190,10 +194,14 @@ export default function PagoStep() {
     };
 
     const addPayment = () => {
+        const pen = currencies.find(
+            (currency) => currency.code?.toUpperCase() === "PEN"
+        );
+
         append({
             payment_account_id: "",
-            currency_id: "",
-            amount: 0,
+            currency_id: pen?.id ?? "",
+            amount: undefined,
             exchange_rate: 1,
             notes: "",
         });
@@ -201,7 +209,7 @@ export default function PagoStep() {
 
     const [successDialogOpen, setSuccessDialogOpen] = useState(false);
     const [ticketOpen, setTicketOpen] = useState(false);
-    const [createdSale, setCreatedSale] = useState<any | null>(null);
+    const [createdSale, setCreatedSale] = useState<CreatedSale | null>(null);
 
     const totalToPay = items.reduce((total, item) => {
         const quantity = Number(item.quantity ?? 0);
@@ -226,27 +234,34 @@ export default function PagoStep() {
 
     return (
         <div className="mx-auto w-full max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
-            <div className="mb-4 flex items-center gap-2">
-                <div>
-                    <h2 className="text-2xl font-bold tracking-tight">
-                        Registrar pago
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                        Configura la venta y registra los medios de pago.
-                    </p>
-                </div>
-            </div>
+            <PageHeader
+                icon={ReceiptText}
+                title="Registrar pago"
+                description="Configura la venta y registra los medios de pago."
+                backHref="/sales/sale/add"
+                backLabel="Volver a productos"
+                actions={
+                    <div className="flex items-center gap-2 rounded-lg border bg-card px-3 py-1.5">
+                        <span className="text-xs text-muted-foreground">
+                            Total a cobrar
+                        </span>
+                        <span className="money text-sm font-semibold">
+                            {formatCurrency(totalToPay)}
+                        </span>
+                    </div>
+                }
+            />
 
             {/* =========================================================
             INFORMACIÓN GENERAL
         ========================================================== */}
             <section className="mb-6 rounded-2xl border bg-card">
-                <div className="border-b px-5 py-3 rounded-t-2xl bg-primary">
-                    <h3 className="font-semibold text-white">
+                <div className="rounded-t-2xl border-b px-5 py-3">
+                    <h3 className="text-sm font-semibold">
                         Información de la venta
                     </h3>
 
-                    <p className="text-sm text-white/80">
+                    <p className="text-xs text-muted-foreground">
                         Define las condiciones generales de la operación.
                     </p>
                 </div>
@@ -304,19 +319,19 @@ export default function PagoStep() {
                 DETALLE DE VENTA
             ====================================================== */}
                 <section className="rounded-2xl border bg-card shadow-sm">
-                    <div className="border-b px-5 py-3 rounded-t-2xl bg-primary">
+                    <div className="rounded-t-2xl border-b px-5 py-3">
                         <div className="flex items-center justify-between gap-3">
                             <div>
-                                <h3 className="font-semibold text-white">
+                                <h3 className="text-sm font-semibold">
                                     Detalle de venta
                                 </h3>
 
-                                <p className="mt-1 text-sm text-white/80">
+                                <p className="mt-0.5 text-xs text-muted-foreground">
                                     Productos incluidos en esta operación.
                                 </p>
                             </div>
 
-                            <span className="rounded-full bg-gray-200 px-3 py-1 text-xs font-medium">
+                            <span className="rounded-md bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
                                 {items.length}{" "}
                                 {items.length === 1 ? "prod" : "prods"}
                             </span>
@@ -388,18 +403,16 @@ export default function PagoStep() {
                     </div>
                 </section>
 
-                {/* =====================================================
-                PAGOS
-            ====================================================== */}
+                {/* ==== PAGOS======= */}
                 <section className="rounded-2xl border bg-card shadow-sm">
-                    <div className="border-b px-5 py-3 rounded-t-2xl bg-primary">
+                    <div className="rounded-t-2xl border-b px-5 py-3">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                                <h3 className="font-semibold text-white">
+                                <h3 className="text-sm font-semibold">
                                     Medios de pago
                                 </h3>
 
-                                <p className="mt-1 text-sm text-white/80">
+                                <p className="mt-0.5 text-xs text-muted-foreground">
                                     Registra uno o más pagos para completar la venta.
                                 </p>
                             </div>
@@ -409,7 +422,8 @@ export default function PagoStep() {
                                 onClick={addPayment}
                                 className="w-full sm:w-auto"
                             >
-                                + Agregar pago
+                                <Plus className="size-4" />
+                                Agregar pago
                             </Button>
                         </div>
                     </div>
@@ -417,8 +431,8 @@ export default function PagoStep() {
                     <div className="p-5">
                         {fields.length === 0 ? (
                             <div className="flex min-h-48 flex-col items-center justify-center rounded-xl border border-dashed bg-muted/20 px-6 text-center">
-                                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-lg text-primary">
-                                    💳
+                                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                                    <CreditCard className="size-5" />
                                 </div>
 
                                 <p className="font-medium">
@@ -436,7 +450,8 @@ export default function PagoStep() {
                                     onClick={addPayment}
                                     className="mt-4"
                                 >
-                                    + Agregar primer pago
+                                    <Plus className="size-4" />
+                                    Agregar primer pago
                                 </Button>
                             </div>
                         ) : (
@@ -461,7 +476,8 @@ export default function PagoStep() {
                                     onClick={addPayment}
                                     className="mt-4 w-full border-dashed"
                                 >
-                                    + Agregar otro pago
+                                    <Plus className="size-4" />
+                                    Agregar otro pago
                                 </Button>
                             </>
                         )}
@@ -472,10 +488,10 @@ export default function PagoStep() {
             {/* =========================================================
             RESUMEN FINAL
         ========================================================== */}
-            <section className="mt-6 rounded-2xl border bg-card shadow-sm">
+            <section className="mt-6 rounded-2xl border bg-card shadow-sm lg:sticky lg:bottom-4">
                 <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <p className="text-sm font-medium">
+                        <p className="text-sm font-semibold">
                             Resumen de pago
                         </p>
 
@@ -491,8 +507,8 @@ export default function PagoStep() {
                                 Total
                             </p>
 
-                            <p className="font-semibold">
-                                S/ {totalToPay.toFixed(2)}
+                            <p className="money font-semibold">
+                                {formatCurrency(totalToPay)}
                             </p>
                         </div>
 
@@ -501,17 +517,17 @@ export default function PagoStep() {
                                 Pagado
                             </p>
 
-                            <p className="font-semibold text-emerald-600">
-                                S/ {totalPaid.toFixed(2)}
+                            <p className="money font-semibold text-success">
+                                {formatCurrency(totalPaid)}
                             </p>
                         </div>
 
                         <div
                             className={`rounded-xl px-4 py-2 ${pendingAmount > 0
-                                    ? "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400"
+                                    ? "bg-warning/15 text-warning-foreground dark:text-warning"
                                     : paymentDifference > 0
-                                        ? "bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400"
-                                        : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400"
+                                        ? "bg-info/10 text-info"
+                                        : "bg-success/10 text-success"
                                 }`}
                         >
                             <p className="text-xs font-medium">
@@ -522,11 +538,11 @@ export default function PagoStep() {
                                         : "Estado"}
                             </p>
 
-                            <p className="font-bold">
+                            <p className="money font-bold">
                                 {pendingAmount > 0
-                                    ? `S/ ${pendingAmount.toFixed(2)}`
+                                    ? formatCurrency(pendingAmount)
                                     : paymentDifference > 0
-                                        ? `S/ ${paymentDifference.toFixed(2)}`
+                                        ? formatCurrency(paymentDifference)
                                         : "COMPLETO"}
                             </p>
                         </div>
@@ -544,7 +560,8 @@ export default function PagoStep() {
                     onClick={() => router.push("/sales/sale/add")}
                     className="w-full sm:w-auto"
                 >
-                    ← Anterior
+                    <ArrowLeft className="size-4" />
+                    Anterior
                 </Button>
 
                 <Button
@@ -607,7 +624,7 @@ export default function PagoStep() {
                         <div className="rounded-xl bg-emerald-50 p-4 dark:bg-emerald-950/30">
                             <div className="flex items-center gap-3">
                                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-white">
-                                    ✓
+                                    <CheckCircle2 className="size-5" />
                                 </div>
 
                                 <div>

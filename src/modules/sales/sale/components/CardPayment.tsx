@@ -1,6 +1,7 @@
 "use client";
 
 import { Controller, Control, UseFormRegister } from "react-hook-form";
+import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import InputText from "@/components/InputText";
 import SimpleSelector from "@/components/SimpleSelector";
@@ -40,7 +41,7 @@ export default function CardPayment({
                         </h4>
 
                         <p className="text-xs text-muted-foreground">
-                            Método de pago
+                            Complete los datos del pago
                         </p>
                     </div>
                 </div>
@@ -48,9 +49,12 @@ export default function CardPayment({
                 <Button
                     type="button"
                     variant="ghost"
+                    size="sm"
                     onClick={() => onRemove(index)}
-                    className="text-xs font-medium text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/20"
+                    aria-label={`Eliminar pago ${index + 1}`}
+                    className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                 >
+                    <Trash2 className="size-4" />
                     Eliminar
                 </Button>
             </div>
@@ -100,8 +104,11 @@ export default function CardPayment({
                         label="Monto"
                         register={register}
                         type="number"
+                        step="any"
+                        placeholder="0"
                         registerOptions={{
-                            valueAsNumber: true,
+                            setValueAs: (value) =>
+                                value === "" ? undefined : Number(value),
                         }}
                     />
 

@@ -16,6 +16,10 @@ const routeNames: Record<string, string> = {
     dashboard: "Dashboard",
     core: "Administración",
     sales: "Ventas",
+    sale: "Ventas",
+    add: "Nueva venta",
+    payments: "Pago",
+    customers: "Clientes",
     finance: "Finanzas",
     security: "Seguridad",
     inventory: "Inventario",
@@ -23,28 +27,57 @@ const routeNames: Record<string, string> = {
     companies: "Empresas",
     users: "Usuarios",
     products: "Productos",
+    brands: "Marcas",
+    category: "Categorías",
+    product_unit: "Unidades",
     reports: "Reportes",
     ventas: "Ventas",
     inventario: "Inventario",
     cobranzas: "Cobranzas",
     pagos: "Pagos",
+    warehouses: "Almacenes",
+    series: "Series",
+    suppliers: "Proveedores",
+    purchase: "Compras",
+    currencies: "Monedas",
+    cashbox: "Caja",
+    account: "Cuentas",
+    roles: "Roles y permisos",
 };
+
+function humanize(segment: string) {
+    if (routeNames[segment]) return routeNames[segment];
+
+    // Evita mostrar ids (uuid, números) en la ruta
+    if (/^[0-9a-f-]{8,}$/i.test(segment) || /^\d+$/.test(segment)) {
+        return "Detalle";
+    }
+
+    return segment.charAt(0).toUpperCase() + segment.slice(1);
+}
 
 export function AppBreadcrumb() {
     const pathname = usePathname();
 
     const segments = pathname.split("/").filter(Boolean);
 
-    // Evitar duplicar Dashboard si ya forma parte de la ruta
-    const remainingSegments =
-        segments[0] === "dashboard" ? segments.slice(1) : segments;
+    const items = segments
+        .map((segment, index) => ({
+            segment,
+            name: humanize(segment),
+            href: "/" + segments.slice(0, index + 1).join("/"),
+        }))
+        // "sales/sale" y similares producen dos veces el mismo nombre
+        .filter(
+            (item, index, list) =>
+                index === 0 || item.name !== list[index - 1].name
+        );
 
     return (
         <Breadcrumb>
             <BreadcrumbList>
-                {/* Dashboard siempre al inicio */}
                 <BreadcrumbItem>
-                    {remainingSegments.length === 0 ? (
+                    {items.length === 0 ? (
                         <BreadcrumbPage>Dashboard</BreadcrumbPage>
                     ) : (
                         <BreadcrumbLink asChild>
@@ -53,27 +86,22 @@ export function AppBreadcrumb() {
                     )}
                 </BreadcrumbItem>
 
-                {remainingSegments.map((segment, index) => {
-                    const href = "/" + segments
-                        .slice(0, segments.indexOf(segment) + 1)
-                        .join("/");
-
-                    const isLast = index === remainingSegments.length - 1;
-
-                    const name =
-                        routeNames[segment] ??
-                        segment.charAt(0).toUpperCase() + segment.slice(1);
+                {items.map((item, index) => {
+                    const isLast = index === items.length - 1;
 
                     return (
-                        <div key={`${href}-${index}`} className="flex items-center gap-2">
+                        <div
+                            key={`${item.href}-${index}`}
+                            className="flex items-center gap-2"
+                        >
                             <BreadcrumbSeparator />
 
                             <BreadcrumbItem>
                                 {isLast ? (
-                                    <BreadcrumbPage>{name}</BreadcrumbPage>
+                                    <BreadcrumbPage>{item.name}</BreadcrumbPage>
                                 ) : (
                                     <BreadcrumbLink asChild>
-                                        <Link href={href}>{name}</Link>
+                                        <Link href={item.href}>{item.name}</Link>
                                     </BreadcrumbLink>
                                 )}
                             </BreadcrumbItem>

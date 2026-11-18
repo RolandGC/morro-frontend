@@ -33,7 +33,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" className={inter.className}>
+    <html lang="es" className={`${inter.variable} font-sans`}>
       <body>
         <AuthProvider>
           <TooltipProvider>

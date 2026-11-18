@@ -1,5 +1,8 @@
 import React from "react";
-import { Check, Package, User2 } from "lucide-react";
+import { Check, UserRound } from "lucide-react";
+
+import { cn } from "@/lib/utils";
+import { getInitials } from "@/lib/format";
 import { Customer } from "../types/customer.type";
 
 interface CustomerSearchItemProps {
@@ -13,68 +16,57 @@ export function CustomerSearchItem({
     selected = false,
     onSelect,
 }: CustomerSearchItemProps) {
+    const subtitle =
+        customer.doc_number || customer.phone || customer.email || "Sin documento";
+
     return (
         <button
             type="button"
             onClick={() => onSelect(customer)}
-            className="w-full text-left"
+            aria-pressed={selected}
+            className={cn(
+                "flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors",
+                "focus-visible:border-primary focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-primary/15",
+                selected
+                    ? "border-primary/50 bg-primary/5"
+                    : "border-border bg-card hover:border-primary/30 hover:bg-accent/50"
+            )}
         >
-            <div
-                className={`
-                    flex items-center gap-3 rounded-xl border px-3 py-2.5
-                    transition
-                    ${selected
-                        ? "border-primary bg-primary/5"
-                        : "border-gray-200 hover:bg-gray-50"
-                    }
-                `}
-            >
-                {/* Icono */}
-                <div
-                    className={`
-                        flex h-10 w-10 shrink-0 items-center justify-center rounded-xl
-                        ${selected
-                            ? "bg-primary/10"
-                            : "bg-emerald-50"
-                        }
-                    `}
-                >
-                    <User2
-                        size={20}
-                        className={
-                            selected
-                                ? "text-primary"
-                                : "text-emerald-500"
-                        }
-                    />
-                </div>
-
-                {/* Información */}
-                <div className="min-w-0 flex-1">
-                    <div
-                        className={`
-                            truncate text-sm font-semibold
-                            ${selected
-                                ? "text-primary"
-                                : "text-gray-800"
-                            }
-                        `}
-                    >
-                        {customer.full_name}
-                    </div>
-
-                    <div className="mt-0.5 truncate text-xs text-gray-400">
-                        {customer.email ?? "Sin correo"}
-                    </div>
-                </div>
-
-                {/* Check */}
-                {selected && (
-                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-white">
-                        <Check size={16} strokeWidth={3} />
-                    </div>
+            <span
+                className={cn(
+                    "flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
+                    selected
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground"
                 )}
-            </div>
+            >
+                {selected ? (
+                    <UserRound className="size-4" aria-hidden="true" />
+                ) : (
+                    getInitials(customer.full_name)
+                )}
+            </span>
+
+            <span className="min-w-0 flex-1">
+                <span
+                    className={cn(
+                        "block truncate text-sm font-medium",
+                        selected ? "text-primary" : "text-foreground"
+                    )}
+                >
+                    {customer.full_name}
+                </span>
+
+                <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+                    {subtitle}
+                </span>
+            </span>
+
+            {selected && (
+                <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                    <Check className="size-3.5" strokeWidth={3} />
+                </span>
+            )}
         </button>
     );
 }

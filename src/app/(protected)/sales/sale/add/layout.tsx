@@ -34,7 +34,7 @@ export default function SaleNewLayout({
 
     return (
         <FormProvider {...form}>
-            <div className="container mx-auto px-4 py-3">
+            <div className="mx-auto w-full max-w-[1600px] px-4 py-2 lg:px-6">
                 <div className="flex items-center justify-between gap-4">
                     <div className="min-w-0 flex-1">
                         <StepIndicator steps={steps} />
@@ -50,7 +50,12 @@ export default function SaleNewLayout({
                         }}
                     >
                         <Monitor />
-                        Abrir pantalla cliente
+                        <span className="hidden sm:inline">
+                            Abrir pantalla cliente
+                        </span>
+                        <span className="sr-only sm:hidden">
+                            Abrir pantalla cliente
+                        </span>
                     </Button>
                 </div>
 

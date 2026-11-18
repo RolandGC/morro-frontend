@@ -38,7 +38,10 @@ export const salePaymentSchema = z.object({
 
   currency_id: z.uuid("Debe seleccionar una moneda"),
 
-  amount: z.number().min(0, "El monto debe ser mayor o igual a 0"),
+  amount: z
+    .number()
+    .min(0, "El monto debe ser mayor o igual a 0")
+    .optional(),
 
   exchange_rate: z.number().positive("El tipo de cambio debe ser mayor que 0"),
 

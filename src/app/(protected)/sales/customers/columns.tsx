@@ -30,6 +30,11 @@ export const getColumns = ({ fetchData }: ColumnsProps): ColumnDef<Customer>[] =
         header: "Nombres",
     },
     {
+        accessorFn: (row) => row.doc_number,
+        id: "Ducumento",
+        header: "Ducumento",
+    },
+    {
         accessorFn: (row) => row.email,
         id: "email",
         header: "Email",

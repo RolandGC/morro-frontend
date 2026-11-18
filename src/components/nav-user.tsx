@@ -3,12 +3,10 @@
 import {
   Avatar,
   AvatarFallback,
-  AvatarImage,
 } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -21,8 +19,9 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { useAuthStore, User } from "@/modules/auth/store/authStore"
-import { ChevronsUpDownIcon, SparklesIcon, BadgeCheckIcon, CreditCardIcon, BellIcon, LogOutIcon } from "lucide-react"
+import { ChevronsUpDownIcon, LogOutIcon } from "lucide-react"
 import { useRouter } from "next/navigation";
+import { getInitials } from "@/lib/format";
 
 
 type NavUserProps = {
@@ -46,6 +45,8 @@ export function NavUser({ user }: NavUserProps) {
 
   const { isMobile } = useSidebar()
 
+  const initials = getInitials(user?.name);
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -56,12 +57,13 @@ export function NavUser({ user }: NavUserProps) {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user?.id} alt={user?.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarFallback className="rounded-lg bg-primary/10 text-xs font-semibold text-primary">
+                  {initials}
+                </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user?.name}</span>
-                <span className="truncate text-xs">{user?.email}</span>
+                <span className="truncate font-medium">{user?.name ?? "Usuario"}</span>
+                <span className="truncate text-xs text-muted-foreground">{user?.email}</span>
               </div>
               <ChevronsUpDownIcon className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -75,33 +77,21 @@ export function NavUser({ user }: NavUserProps) {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user?.id} alt={user?.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarFallback className="rounded-lg bg-primary/10 text-xs font-semibold text-primary">
+                    {initials}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user?.name}</span>
-                  <span className="truncate text-xs">{user?.email}</span>
+                  <span className="truncate text-xs text-muted-foreground">{user?.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheckIcon
-                />
-                Mi cuenta
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <BellIcon
-                />
-                Notifications
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={handleLogout}
               disabled={isLoading}
-              className="cursor-pointer"
+              className="cursor-pointer text-destructive focus:text-destructive"
             >
               <LogOutIcon className="mr-2 h-4 w-4" />
               {isLoading ? "Cerrando sesión..." : "Cerrar sesión"}

@@ -1,6 +1,9 @@
 import React from "react";
 import { Package } from "lucide-react";
+
 import { Product } from "@/modules/inventory/products/types/produc.type";
+import { cn } from "@/lib/utils";
+import { formatCurrency, formatNumber } from "@/lib/format";
 
 interface ProductSearchItemProps {
     product: Product;
@@ -8,58 +11,83 @@ interface ProductSearchItemProps {
     availableStock: number;
 }
 
+const regimeLabel: Record<string, string> = {
+    zofra: "ZOFRA",
+    general: "General",
+};
+
 export function ProductSearchItem({
     product,
     onSelect,
     availableStock,
 }: ProductSearchItemProps) {
-    const disabled = availableStock <= 0;
+    const outOfStock = availableStock <= 0;
+    const price = Number(product.unit_price ?? product.price ?? 0);
+    const meta = [product.brands?.name, product.model]
+        .filter(Boolean)
+        .join(" · ");
+
     return (
         <button
             type="button"
-            disabled={disabled}
+            disabled={outOfStock}
             onClick={() => onSelect(product)}
-            //className="w-full text-left"
-            className={`w-full text-left ${disabled ? "cursor-not-allowed opacity-50" : "" }`}
+            aria-label={`Agregar ${product.name}${outOfStock ? " (sin stock)" : ""}`}
+            className={cn(
+                "group flex w-full items-center gap-3 rounded-lg border bg-card px-3 py-2.5 text-left transition-colors",
+                "hover:border-primary/40 hover:bg-accent/50 focus-visible:border-primary focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-primary/15",
+                outOfStock && "cursor-not-allowed opacity-55 hover:border-border hover:bg-card"
+            )}
         >
-            <div className="flex items-center gap-3 rounded-xl border border-gray-200 px-3 py-2.5 transition hover:bg-gray-50">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
+                <Package className="size-5" aria-hidden="true" />
+            </span>
 
-                {/* Icono */}
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-50">
-                    <Package
-                        size={20}
-                        className="text-orange-500"
-                    />
-                </div>
+            <span className="min-w-0 flex-1">
+                <span className="flex items-center gap-2">
+                    <span className="truncate text-sm font-medium text-foreground">
+                        {product.name}
+                    </span>
 
-                {/* Información */}
-                <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-semibold text-gray-800">
-                        {product.name} {product?.model} {product?.brands?.name}
-                    </div>
+                    {product.regime && (
+                        <span
+                            className={cn(
+                                "hidden shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide sm:inline",
+                                product.regime === "zofra"
+                                    ? "bg-success/10 text-success"
+                                    : "bg-info/10 text-info"
+                            )}
+                        >
+                            {regimeLabel[product.regime] ?? product.regime}
+                        </span>
+                    )}
+                </span>
 
-                    <div
-                        className={`mt-0.5 text-xs ${availableStock <= 0
-                                ? "text-red-500"
-                                : "text-gray-400"
-                            }`}
-                    >
-                        Stock: {availableStock} unid
-                    </div>
-                </div>
+                <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+                    {meta || "Sin marca ni modelo"}
+                </span>
+            </span>
 
-                {/* Precio */}
-                <div className="shrink-0 text-right">
-                    <div className="text-sm font-semibold text-gray-800">
-                        PEN {Number(product.price ?? 0).toFixed(2)}
-                    </div>
+            <span className="flex shrink-0 flex-col items-end gap-1">
+                <span className="money text-sm font-semibold text-foreground">
+                    {formatCurrency(price)}
+                </span>
 
-                    <div className="text-xs text-gray-400">
-                        {product?.regime}
-                    </div>
-                </div>
-
-            </div>
+                <span
+                    className={cn(
+                        "rounded px-1.5 py-0.5 text-[11px] font-medium tabular-nums",
+                        outOfStock
+                            ? "bg-destructive/10 text-destructive"
+                            : availableStock <= 5
+                                ? "bg-warning/15 text-warning-foreground dark:text-warning"
+                                : "bg-muted text-muted-foreground"
+                    )}
+                >
+                    {outOfStock
+                        ? "Agotado"
+                        : `${formatNumber(availableStock)} disp.`}
+                </span>
+            </span>
         </button>
     );
 }

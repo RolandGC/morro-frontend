@@ -10,6 +10,7 @@ type InputProps = {
     registerOptions?: RegisterOptions<any, string>;
     support?: string;
     step?: string;
+    placeholder?: string;
 };
 
 export default function InputText({
@@ -20,7 +21,8 @@ export default function InputText({
     error,
     registerOptions,
     support,
-    step
+    step,
+    placeholder
 }: InputProps) {
     return (
         <div className="flex flex-col gap-1">
@@ -29,6 +31,7 @@ export default function InputText({
             <Input
                 id={name}
                 type={type}
+                placeholder={placeholder}
                 {...register(name, registerOptions)}
                 step={step}
             />
