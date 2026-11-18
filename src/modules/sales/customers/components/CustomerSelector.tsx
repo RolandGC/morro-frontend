@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import InputSearch from "@/components/InputSearch";
 import { Customer } from "../../customers/types/customer.type";
 import { customerService } from "../../customers/services/customer.service";
-import { Check, Loader2, X } from "lucide-react";
+import { X } from "lucide-react";
 
 interface CustomerSelectorProps {
     currentCustomerId?: string;
@@ -22,49 +22,78 @@ export default function CustomerSelector({
     const [customerSearch, setCustomerSearch] = useState("");
     const [loading, setLoading] = useState(false);
 
-    const fetchCustomers = async () => {
+    const fetchCustomers = async (search = "") => {
         try {
             setLoading(true);
 
+            const value = search.trim();
+            const isDocument = /^\d+$/.test(value);
+
             const response = await customerService.getAll({
+                full_name: isDocument ? "" : value,
+                doc_number: isDocument ? value : "",
                 is_active: true,
+                page: 1,
+                limit: 10,
             });
 
             if (response.status === 200) {
-                setCustomerResults(response.data.data);
+                setCustomerResults(
+                    (response.data?.data ?? []).filter(
+                        (customer: Customer) =>
+                            customer.id !== currentCustomerId
+                    )
+                );
+            } else {
+                setCustomerResults([]);
             }
         } catch (error) {
-            console.error("Error fetching Customers:", error);
+            console.error("Error obteniendo clientes:", error);
+            setCustomerResults([]);
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchCustomers();
-    }, []);
+        const value = customerSearch.trim();
 
-    const results = customerResults
-        .filter((customer) =>
-            customer.full_name
-                .toLowerCase()
-                .includes(customerSearch.toLowerCase())
-        )
-        .map((customer) => ({
-            id: customer.id,
-            label: customer.full_name,
-        }));
+        if (!value) {
+            setCustomerResults([]);
+            return;
+        }
+
+        const timeout = setTimeout(() => {
+            fetchCustomers(value);
+        }, 300);
+
+        return () => clearTimeout(timeout);
+    }, [customerSearch]);
+
+    const results = customerResults.map((customer) => ({
+        id: customer.id,
+        label: `${customer.full_name} - ${customer.doc_number ?? "Sin documento"}`,
+    }));
+
+    const handleSelect = (customer: { id: string }) => {
+        const selected = customerResults.find(
+            (result) => result.id === customer.id
+        );
+
+        if (!selected) return;
+
+        onSelect(selected);
+        setCustomerSearch("");
+        setCustomerResults([]);
+    };
 
     return (
         <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
             <div className="mb-3">
-                <p className="font-semibold">
-                    Cambiar cliente
-                </p>
+                <p className="font-semibold">Cambiar cliente</p>
 
                 <p className="text-sm text-muted-foreground">
-                    Busca y selecciona el cliente que deseas asociar
-                    a esta boleta.
+                    Busca al cliente por nombre o número de documento.
                 </p>
             </div>
 
@@ -73,23 +102,13 @@ export default function CustomerSelector({
                     <InputSearch
                         placeholder={
                             loading
-                                ? "Cargando clientes..."
-                                : "Buscar cliente..."
+                                ? "Buscando clientes..."
+                                : "Buscar por nombre o documento..."
                         }
                         value={customerSearch}
                         results={results}
-                        onChange={(value) => {
-                            setCustomerSearch(value);
-                        }}
-                        onSelect={(customer) => {
-                            const selected = customerResults.find(
-                                (result) => result.id === customer.id
-                            );
-
-                            if (!selected) return;
-
-                            onSelect(selected);
-                        }}
+                        onChange={setCustomerSearch}
+                        onSelect={handleSelect}
                     />
                 </div>
 

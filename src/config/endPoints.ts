@@ -75,6 +75,13 @@ export const endpoints = {
         DELETE: (productId: string, id: string) => `${baseUrl}/products/${productId}/units/${id}`,
         GET_BY_ID: (productId: string, id: string) => `${baseUrl}/products/${productId}/units/${id}`,
     },
+    PRICE_LIST: {
+        GET_ALL: `${baseUrl}/price-lists`,
+        CREATE: `${baseUrl}/price-lists`,
+        GET_BY_ID: `${baseUrl}/price-lists`,
+        UPDATE: `${baseUrl}/price-lists`,
+        DELETE: `${baseUrl}/price-lists`,
+    },
     CUSTOMERS: {
         GET_ALL: `${baseUrl}/customers`,
         CREATE: `${baseUrl}/customers`,
@@ -141,12 +148,20 @@ export const endpoints = {
         DELETE: `${baseUrl}/currencies`,
         GET_BY_ID: `${baseUrl}/currencies`,
     },
-    SOTK_ADJUSTMENTS:{
+    STOCK_ADJUSTMENTS:{
         GET_ALL: `${baseUrl}/stock-adjustments`,
         CREATE: `${baseUrl}/stock-adjustments`,
         CREATE_COMPARE: `${baseUrl}/stock-adjustments/compare`,
         CREATE_APPLY_COUNT: `${baseUrl}/stock-adjustments/apply-count`,
         GET_BY_ID: `${baseUrl}/stock-adjustments`,
+    },
+    STOCK_COMPARISONS: {
+        CREATE: `${baseUrl}/stock-comparisons`,
+        GET_ALL: `${baseUrl}/stock-comparisons`,
+        GET_BY_ID: `${baseUrl}/stock-comparisons`,
+    },
+    CUSTOMER_RANKINGS:{
+        GET_ALL: `${baseUrl}/customer-rankings`,
     },
     CASH_SESSIONS: {
         GET_ALL: `${baseUrl}/cash-sessions`,
