@@ -97,7 +97,7 @@ const data = {
         },
         {
           title: "Inventario físico",
-          url: "/inventory/physical_inventory",
+          url: "/inventory/stock_comparisons",
           permission: "brands.read",
         },
         {
