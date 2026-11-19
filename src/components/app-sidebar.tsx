@@ -98,7 +98,7 @@ const data = {
         {
           title: "Inventario físico",
           url: "/inventory/stock_comparisons",
-          permission: "brands.read",
+          permission: "stock-comparisons.read",
         },
         {
           title: "Unidad de productos",
@@ -107,7 +107,7 @@ const data = {
         },
         {
           title: "Ajuste Stock",
-          url: "#",
+          url: "/inventory/stock_adjustments",
           permission: "stock-adjustments.read",
         },
       ],

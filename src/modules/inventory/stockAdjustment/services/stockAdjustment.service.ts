@@ -1,29 +1,43 @@
 import apiClient from "@/hooks/useAxios";
 import { endpoints } from "@/config/endPoints";
-import { AxiosResponse } from "axios";
-import { PaginationResponse } from "@/types/types";
-import { StockAdjustmentQueryParams } from "../types/stockAdjustment.type";
-import { ProductForm } from "../../products/validators/productSchema";
-import { Product } from "../../products/types/produc.type";
+import type { AxiosResponse } from "axios";
+import type { PaginationResponse } from "@/types/types";
+import type {
+    StockAdjustment,
+    StockAdjustmentQueryParams,
+} from "../types/stockAdjustment.type";
+import type { StockAdjustmentForm } from "../validators/stockAdjustment";
 
 class StockAdjustmentService {
-    async getAll(params?: StockAdjustmentQueryParams): Promise<AxiosResponse<PaginationResponse<Product>>> {
-        const response = await apiClient.get(endpoints.SOTK_ADJUSTMENTS.GET_ALL, {
-            params,
-        });
+    async getAll(
+        params?: StockAdjustmentQueryParams
+    ): Promise<AxiosResponse<PaginationResponse<StockAdjustment>>> {
+        const response = await apiClient.get(
+            endpoints.STOCK_ADJUSTMENTS.GET_ALL,
+            { params }
+        );
+
         return response;
     }
 
-    async create(product: ProductForm): Promise<AxiosResponse<Product>> {
-        const response = await apiClient.post(endpoints.SOTK_ADJUSTMENTS.CREATE, product);
+    async create(
+        stockAdjustment: StockAdjustmentForm
+    ): Promise<AxiosResponse<StockAdjustment>> {
+        const response = await apiClient.post(
+            endpoints.STOCK_ADJUSTMENTS.CREATE,
+            stockAdjustment
+        );
+
         return response;
     }
 
-    async getById(id: string, product: ProductForm): Promise<AxiosResponse<Product>> {
-        const response = await apiClient.patch(`${endpoints.SOTK_ADJUSTMENTS.GET_BY_ID}/${id}`, product);
+    async getById(id: string): Promise<AxiosResponse<StockAdjustment>> {
+        const response = await apiClient.get(
+            `${endpoints.STOCK_ADJUSTMENTS.GET_BY_ID}/${id}`
+        );
+
         return response;
     }
-
 }
 
 export const stockAdjustmentService = new StockAdjustmentService();
