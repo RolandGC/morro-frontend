@@ -31,6 +31,8 @@ const routeNames: Record<string, string> = {
     category: "Categorías",
     product_unit: "Unidades",
     reports: "Reportes",
+    billing: "Facturación",
+    sunat: "Facturación SUNAT",
     ventas: "Ventas",
     inventario: "Inventario",
     cobranzas: "Cobranzas",

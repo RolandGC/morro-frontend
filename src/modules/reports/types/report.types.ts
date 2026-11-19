@@ -127,3 +127,24 @@ export interface PaymentsReportFile {
   mime_type: string;
   base64: string;
 }
+
+export interface SalesImportReportQueryParams {
+  company_id: string;
+  date_from: string;
+  date_to: string;
+}
+
+export interface SalesImportReportFile {
+  filename: string;
+  mime_type: string;
+  base64: string;
+}
+
+export interface SalesImportReportPreview {
+  company_id: string;
+  date_from: string;
+  date_to: string;
+  count: number;
+  boletas: number;
+  facturas: number;
+}
