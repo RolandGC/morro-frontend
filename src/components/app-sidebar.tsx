@@ -6,7 +6,7 @@ import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
 import { CompanySwitcher } from "@/components/company-switcher"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar"
-import { Banknote, Truck, BriefcaseIcon, Store, Package, Shield, ChartColumn } from "lucide-react"
+import { Banknote, Truck, BriefcaseIcon, Store, Package, Shield, ChartColumn, Receipt } from "lucide-react"
 import { useAuthStore } from "@/modules/auth/store/authStore"
 
 const data = {
@@ -132,6 +132,23 @@ const data = {
           title: "Cuentas",
           url: "/finance/account",
           permission: "payment-accounts.read",
+        },
+      ],
+    },
+    {
+      title: "Facturación",
+      url: "#",
+      icon: <Receipt />,
+      items: [
+        {
+          title: "Reportes",
+          url: "/billing/reports",
+          permission: "reports.export",
+        },
+        {
+          title: "Facturación SUNAT",
+          url: "/billing/sunat",
+          permission: "electronic-invoicing.read",
         },
       ],
     },

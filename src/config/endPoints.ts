@@ -218,5 +218,7 @@ export const endpoints = {
         LOW_STOCK: `${baseUrl}/reports/inventory/low-stock`,
         RECEIVABLES_AGING: `${baseUrl}/reports/receivables/aging`,
         PAYMENTS_EXPORT: `${baseUrl}/reports/payments/export`,
+        SALES_IMPORT_PREVIEW: `${baseUrl}/reports/sales-import/preview`,
+        SALES_IMPORT_EXPORT: `${baseUrl}/reports/sales-import/export`,
     }
 }

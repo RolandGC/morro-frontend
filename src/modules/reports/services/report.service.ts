@@ -5,6 +5,9 @@ import {
   LowStockReport,
   PaymentsReportFile,
   PaymentsReportQueryParams,
+  SalesImportReportFile,
+  SalesImportReportPreview,
+  SalesImportReportQueryParams,
   ReceivablesAgingReport,
   ReportQueryParams,
   ReportSummary,
@@ -78,6 +81,29 @@ class ReportService {
       params,
       timeout: EXPORT_TIMEOUT_MS,
     });
+    return response;
+  }
+
+  async previewSalesImport(
+    params: SalesImportReportQueryParams,
+  ): Promise<AxiosResponse<SalesImportReportPreview>> {
+    const response = await apiClient.get(
+      endpoints.REPORTS.SALES_IMPORT_PREVIEW,
+      { params },
+    );
+    return response;
+  }
+
+  async exportSalesImport(
+    params: SalesImportReportQueryParams,
+  ): Promise<AxiosResponse<SalesImportReportFile>> {
+    const response = await apiClient.get(
+      endpoints.REPORTS.SALES_IMPORT_EXPORT,
+      {
+        params,
+        timeout: EXPORT_TIMEOUT_MS,
+      },
+    );
     return response;
   }
 }
