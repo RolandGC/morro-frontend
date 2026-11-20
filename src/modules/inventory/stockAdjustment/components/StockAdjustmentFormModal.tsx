@@ -39,6 +39,7 @@ import {
     stockAdjustmentSchema,
     type StockAdjustmentForm,
 } from "../validators/stockAdjustment";
+import ProductSelector from "../../products/components/ProductSelector";
 
 interface StockAdjustmentFormModalProps {
     fetchData: () => Promise<void>;
@@ -216,50 +217,64 @@ export default function StockAdjustmentFormModal({
         name: warehouse.name,
     }));
 
-    const handleProductSelect = async (index: number, product: Product) => {
+    const handleProductSelect = async (
+        index: number,
+        product: Product
+    ) => {
         const initialUnits = product.product_units ?? [];
+
         const initialDefault =
-            initialUnits.find((unit) => unit.is_default) ?? initialUnits[0];
+            initialUnits.find((unit) => unit.is_default) ??
+            initialUnits[0];
 
         setUnitsByProduct((previous) => ({
             ...previous,
             [product.id]: initialUnits,
         }));
 
-        const currentItems = getValues("items");
-        replace(
-            currentItems.map((item, itemIndex) =>
-                itemIndex === index
-                    ? {
-                          product_id: product.id,
-                          product_unit_id: initialDefault?.id ?? "",
-                          quantity: 0,
-                          unit_cost: undefined,
-                      }
-                    : item
-            )
+        // IMPORTANTE: actualizar únicamente los campos necesarios.
+        // No utilizar replace() porque puede desmontar los componentes.
+        setValue(`items.${index}.product_id`, product.id, {
+            shouldDirty: true,
+            shouldTouch: true,
+            shouldValidate: true,
+        });
+
+        setValue(
+            `items.${index}.product_unit_id`,
+            initialDefault?.id ?? "",
+            {
+                shouldDirty: true,
+                shouldTouch: true,
+                shouldValidate: true,
+            }
         );
 
-        const request = (unitRequestRef.current[product.id] ?? 0) + 1;
+        setValue(`items.${index}.quantity`, 0);
+
+        setValue(`items.${index}.unit_cost`, undefined);
+
+        // Cargar unidades.
+        const request =
+            (unitRequestRef.current[product.id] ?? 0) + 1;
+
         unitRequestRef.current[product.id] = request;
 
         try {
             const response = await productUnitService.getAll(product.id);
 
             if (response.status !== 200) {
-                throw new Error("Respuesta inesperada al cargar las unidades");
+                throw new Error("No se pudieron cargar las unidades");
             }
 
             if (unitRequestRef.current[product.id] !== request) return;
 
-            const units = response.data;
-
             setUnitsByProduct((previous) => ({
                 ...previous,
-                [product.id]: units,
+                [product.id]: response.data,
             }));
         } catch (error) {
-            console.error("Error cargando unidades de producto:", error);
+            console.error("Error cargando unidades:", error);
             notify("No se pudieron cargar las unidades del producto", "error");
         }
     };
@@ -410,23 +425,14 @@ export default function StockAdjustmentFormModal({
                                                             `items.${index}.product_id`
                                                         )}
                                                     />
-                                                    <AdjustmentProductSearch
-                                                        index={index}
-                                                        error={
-                                                            errors.items?.[index]
-                                                                ?.product_id
-                                                        }
-                                                        onSelect={(product) =>
-                                                            void handleProductSelect(
-                                                                index,
-                                                                product
-                                                            )
-                                                        }
-                                                        onClear={() =>
-                                                            handleClearProduct(
-                                                                index
-                                                            )
-                                                        }
+                                                    <ProductSelector
+                                                        label={`Producto ${index + 1}`}
+                                                        value={productId}
+                                                        error={errors.items?.[index]?.product_id}
+                                                        onSelect={(product) => {
+                                                            void handleProductSelect(index, product);
+                                                        }}
+                                                        onClear={() => handleClearProduct(index)}
                                                     />
                                                 </div>
 

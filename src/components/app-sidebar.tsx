@@ -146,7 +146,7 @@ const data = {
           permission: "reports.export",
         },
         {
-          title: "Facturación SUNAT",
+          title: "Facturación electrónica",
           url: "/billing/sunat",
           permission: "electronic-invoicing.read",
         },
