@@ -21,7 +21,9 @@ import {
 import { useAuthStore, User } from "@/modules/auth/store/authStore"
 import { ChevronsUpDownIcon, LogOutIcon } from "lucide-react"
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { getInitials } from "@/lib/format";
+import { useCashSessionStore } from "@/modules/finances/cashbox/store/cashSession.store";
 
 
 type NavUserProps = {
@@ -30,16 +32,25 @@ type NavUserProps = {
 
 export function NavUser({ user }: NavUserProps) {
   const router = useRouter();
-  const { logout, isLoading } = useAuthStore();
+  const { isLoading } = useAuthStore();
+  const requestLogout = useCashSessionStore((state) => state.requestLogout);
+  const [isCheckingCash, setIsCheckingCash] = useState(false);
 
   const handleLogout = async () => {
-    try {
-      await logout();
-    } catch (error) {
-      console.error("Error al cerrar sesión:", error);
-    } finally {
+    setIsCheckingCash(true);
+
+    // Solo se redirige cuando no hay caja que cerrar o cuando el cierre terminó.
+    const redirect = () => {
       router.replace("/auth/login");
       router.refresh();
+    };
+
+    try {
+      await requestLogout(redirect);
+    } catch (error) {
+      console.error("Error al verificar la caja antes de cerrar sesión:", error);
+    } finally {
+      setIsCheckingCash(false);
     }
   };
 
@@ -90,11 +101,15 @@ export function NavUser({ user }: NavUserProps) {
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={handleLogout}
-              disabled={isLoading}
+              disabled={isLoading || isCheckingCash}
               className="cursor-pointer text-destructive focus:text-destructive"
             >
               <LogOutIcon className="mr-2 h-4 w-4" />
-              {isLoading ? "Cerrando sesión..." : "Cerrar sesión"}
+              {isCheckingCash
+                ? "Verificando caja..."
+                : isLoading
+                  ? "Cerrando sesión..."
+                  : "Cerrar sesión"}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

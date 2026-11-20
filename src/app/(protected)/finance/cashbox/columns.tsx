@@ -17,13 +17,13 @@ interface ColumnsProps {
 }
 
 export const getColumns = ({ fetchData }: ColumnsProps): ColumnDef<Cashbox>[] => [
-    {
+   /*  {
         accessorFn: (row) => row.id,
         id: "id",
         header: "id",
-    },
+    }, */
     {
-        accessorFn: (row) => row.company_id,
+        accessorFn: (row) => row.companies?.name,
         id: "empresa",
         header: "Empresa",
     },

@@ -9,7 +9,7 @@ const initialState: CashboxForm = {
     details: [
         {
             payment_account_id: "",
-            expected_amount: 0,
+            opening_amount: 0,
         },
     ],
 };
@@ -105,7 +105,7 @@ export const useCashboxStore = create<CashboxStore>((set) => ({
                     ...state.cashbox.details,
                     {
                         payment_account_id: "",
-                        expected_amount: 0,
+                        opening_amount: 0,
                     },
                 ],
             },

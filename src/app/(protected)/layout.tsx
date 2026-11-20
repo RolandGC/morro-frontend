@@ -6,6 +6,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { AuthProvider } from "@/components/auth-provider";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
+import { CashSessionGuard } from "@/modules/finances/cashbox/components/CashSessionGuard";
 import {
     SidebarInset,
     SidebarProvider,
@@ -19,6 +20,7 @@ export default function ProtectedLayout({
 }) {
     return (
         <AuthProvider>
+            <CashSessionGuard />
             <SidebarProvider>
                 <AppSidebar />
 

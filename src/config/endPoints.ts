@@ -205,10 +205,8 @@ export const endpoints = {
     },
     TICKETS:{
         CREATE: `${baseUrl}/boletas`,
-    },
-    BILLDING:{
-        UPDATE: `${baseUrl}/billing/account`,
-        POST: `${baseUrl}/billing/account/test`, 
+        GET_SELL: `${baseUrl}/boletas/sale`,
+        GET_BY_ID: `${baseUrl}/boletas`,
     },
     REPORTS: {
         SUMMARY: `${baseUrl}/reports/summary`,
@@ -220,5 +218,16 @@ export const endpoints = {
         PAYMENTS_EXPORT: `${baseUrl}/reports/payments/export`,
         SALES_IMPORT_PREVIEW: `${baseUrl}/reports/sales-import/preview`,
         SALES_IMPORT_EXPORT: `${baseUrl}/reports/sales-import/export`,
+    },
+    BILLDING:{
+        UPDATE: `${baseUrl}/billing/account`,
+        POST: `${baseUrl}/billing/account/test`, 
+    },
+    ELECTRONIC_INVOICING:{
+        GET_ALL: `${baseUrl}/electronic-invoicing/documents`,
+        GET_BY_ID: `${baseUrl}/electronic-invoicing/documents`,
+        POST: (id: string) => `${baseUrl}/electronic-invoicing/documents/${id}/send`,
+        SEND_ALL: `${baseUrl}/electronic-invoicing/send-batch`,
+        GET_STATUS: `${baseUrl}/electronic-invoicing/summary`,
     }
 }
