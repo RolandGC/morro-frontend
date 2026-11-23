@@ -32,9 +32,9 @@ export const saleItemSchema = z.object({
 export const salePaymentSchema = z.object({
   payment_account_id: z.uuid("Debe seleccionar una cuenta de pago"),
 
-  /* cash_session_id: z
+  cash_session_id: z
     .uuid("Debe seleccionar una sesión de caja")
-    .optional(), */
+    .optional(),
 
   currency_id: z.uuid("Debe seleccionar una moneda"),
 

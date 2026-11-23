@@ -25,6 +25,62 @@ export interface CashSessionDetail {
     payment_accounts?: CashSessionPaymentAccount | null;
 }
 
+/** Venta mínima necesaria para decidir si un pago cuenta como movimiento de caja. */
+export interface CashSessionRelatedSale {
+    id?: string;
+    status?: string;
+    sale_type?: string;
+    total?: number | string | null;
+}
+
+export interface CashSessionSalePayment {
+    id: string;
+    payment_account_id: string | null;
+    cash_session_id?: string | null;
+    payment_date: string | null;
+    amount: number | string | null;
+    amount_base: number | string | null;
+    payment_method?: string | null;
+    payment_accounts?: CashSessionPaymentAccount | null;
+    sales?: CashSessionRelatedSale | null;
+}
+
+export interface CashSessionReceivablePayment {
+    id: string;
+    payment_account_id: string | null;
+    cash_session_id?: string | null;
+    payment_date: string | null;
+    amount: number | string | null;
+    amount_base: number | string | null;
+    reversed_at?: string | null;
+    payment_accounts?: CashSessionPaymentAccount | null;
+    receivables?: { sales?: CashSessionRelatedSale | null } | null;
+}
+
+export type CashSessionMovementType = "sale_payment" | "receivable_payment";
+
+/** Movimiento conciliable de la sesión, normalizado para la UI. */
+export interface CashSessionMovement {
+    id: string;
+    type: CashSessionMovementType;
+    payment_account_id: string;
+    payment_account_name: string;
+    payment_date: string | null;
+    amount: number;
+    description: string;
+}
+
+/** Saldo calculado por cuenta: apertura + movimientos = esperado. */
+export interface CashSessionAccountSummary {
+    payment_account_id: string;
+    payment_account_name: string;
+    opening_amount: number;
+    collected_amount: number;
+    expected_amount: number;
+    declared_amount: number | null;
+    difference: number | null;
+}
+
 export interface Cashbox {
     id: string;
     user_id: string | null;
@@ -40,8 +96,8 @@ export interface Cashbox {
     warehouses?: { id: string; name?: string } | null;
     companies?: { id: string; name?: string } | null;
     cash_session_details: CashSessionDetail[];
-    sale_payments?: unknown[];
-    receivable_payments?: unknown[];
+    sale_payments?: CashSessionSalePayment[];
+    receivable_payments?: CashSessionReceivablePayment[];
 }
 
 export interface CashboxQueryParams {

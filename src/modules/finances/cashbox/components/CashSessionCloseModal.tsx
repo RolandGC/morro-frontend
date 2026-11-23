@@ -26,7 +26,7 @@ import { formatCurrency } from "@/lib/format";
 
 import { CASH_SESSION_PERMISSIONS } from "../constants/cashSession.constants";
 import { useCashSessionStore } from "../store/cashSession.store";
-import type { Cashbox } from "../types/cashbox.types";
+import { getCashSessionAccountSummary } from "../utils/cashSessionMovements";
 import {
     cashSessionCloseSchema,
     type CashSessionCloseForm,
@@ -37,17 +37,13 @@ const emptyForm: CashSessionCloseForm = {
     notes: "",
 };
 
-function toNumber(value: number | string | null | undefined): number | null {
-    if (value === null || value === undefined || value === "") return null;
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : null;
-}
-
 export function CashSessionCloseModal() {
     const {
         closeModalOpen,
+        closePurpose,
         session,
         sessionDetail,
+        accounts,
         detailLoading,
         detailError,
         checking,
@@ -73,26 +69,25 @@ export function CashSessionCloseModal() {
 
     const watchedDetails = useWatch({ control, name: "details" }) ?? [];
 
-    const source: Cashbox | null =
+    const source =
         sessionDetail && session && sessionDetail.id === session.id
             ? sessionDetail
             : session;
-    const rows = (source?.cash_session_details ?? []).filter(
-        (item) => item.payment_account_id
-    );
+    const rows = getCashSessionAccountSummary(source, accounts);
 
     useEffect(() => {
         if (!closeModalOpen || !source) return;
 
         reset({
-            details: (source.cash_session_details ?? [])
-                .filter((item) => item.payment_account_id)
-                .map((item) => ({
-                    payment_account_id: item.payment_account_id as string,
-                    declared_amount: 0,
-                })),
+            details: rows.map((row) => ({
+                payment_account_id: row.payment_account_id,
+                declared_amount: row.declared_amount ?? 0,
+            })),
             notes: "",
         });
+        // `rows` se recalcula en cada render; reiniciar sólo cuando cambia el
+        // detalle cargado evita sobrescribir lo que el usuario está digitando.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [closeModalOpen, source, reset]);
 
     const onSubmit = async (form: CashSessionCloseForm) => {
@@ -101,6 +96,7 @@ export function CashSessionCloseModal() {
 
     const canClose = can(CASH_SESSION_PERMISSIONS.close);
     const sessionLabel = session?.id.slice(0, 8) ?? "";
+    const isLogoutClose = closePurpose === "logout";
 
     return (
         <Dialog
@@ -120,8 +116,10 @@ export function CashSessionCloseModal() {
                 </DialogHeader>
 
                 <p className="text-sm text-muted-foreground">
-                    Debes cerrar la sesión de caja antes de finalizar la sesión del
-                    sistema. {sessionLabel ? `Sesión ${sessionLabel}.` : ""}
+                    {isLogoutClose
+                        ? "Debes cerrar la sesión de caja antes de finalizar la sesión del sistema."
+                        : "Declara el importe real de cada cuenta para conciliar la sesión actual."}{" "}
+                    {sessionLabel ? `Sesión ${sessionLabel}.` : ""}
                 </p>
 
                 {detailLoading ? (
@@ -155,8 +153,14 @@ export function CashSessionCloseModal() {
                                 <AlertCircle className="mt-0.5 size-4 shrink-0" />
                                 <span>
                                     No tienes permiso para cerrar sesiones de caja.
-                                    No se puede completar el cierre de sesión.
                                 </span>
+                            </div>
+                        )}
+
+                        {rows.length === 0 && (
+                            <div className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-700">
+                                No hay cuentas de pago disponibles para declarar el
+                                cierre.
                             </div>
                         )}
 
@@ -183,104 +187,77 @@ export function CashSessionCloseModal() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {rows.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell
-                                                colSpan={6}
-                                                className="h-24 text-center"
-                                            >
-                                                Esta sesión no tiene cuentas
-                                                registradas. Puedes cerrarla de todas
-                                                formas.
-                                            </TableCell>
-                                        </TableRow>
-                                    ) : (
-                                        rows.map((item, index) => {
-                                            const opening = toNumber(
-                                                item.opening_amount
-                                            );
-                                            const collected = toNumber(
-                                                item.collected_amount
-                                            );
-                                            const expected = toNumber(
-                                                item.expected_amount
-                                            );
-                                            const declared = toNumber(
-                                                watchedDetails[index]?.declared_amount
-                                            );
-                                            const difference =
-                                                expected !== null && declared !== null
-                                                    ? declared - expected
-                                                    : null;
+                                    {rows.map((row, index) => {
+                                        const declared = Number(
+                                            watchedDetails[index]?.declared_amount ?? 0
+                                        );
+                                        const difference =
+                                            declared - row.expected_amount;
 
-                                            return (
-                                                <TableRow key={item.id}>
-                                                    <TableCell className="font-medium">
-                                                        <input
-                                                            type="hidden"
-                                                            {...register(
-                                                                `details.${index}.payment_account_id`
-                                                            )}
-                                                        />
-                                                        {item.payment_accounts?.name ??
-                                                            "Cuenta de pago"}
-                                                    </TableCell>
-                                                    <TableCell className="text-right">
-                                                        {formatCurrency(opening ?? 0)}
-                                                    </TableCell>
-                                                    <TableCell className="text-right">
-                                                        {collected === null
-                                                            ? "—"
-                                                            : formatCurrency(collected)}
-                                                    </TableCell>
-                                                    <TableCell className="text-right">
-                                                        {expected === null
-                                                            ? "—"
-                                                            : formatCurrency(expected)}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <InputText
-                                                            name={`details.${index}.declared_amount`}
-                                                            type="number"
-                                                            step="0.01"
-                                                            register={register}
-                                                            registerOptions={{
-                                                                setValueAs: (
-                                                                    value: string
-                                                                ) => {
-                                                                    if (
-                                                                        String(value).trim() ===
-                                                                        ""
-                                                                    )
-                                                                        return 0;
-                                                                    return Number(value);
-                                                                },
-                                                            }}
-                                                            error={
-                                                                errors.details?.[index]
-                                                                    ?.declared_amount
-                                                            }
-                                                        />
-                                                    </TableCell>
-                                                    <TableCell
-                                                        className={`text-right font-medium ${
-                                                            difference !== null && difference < 0
-                                                                ? "text-red-600"
-                                                                : difference !== null && difference > 0
-                                                                  ? "text-emerald-600"
-                                                                  : ""
-                                                        }`}
-                                                    >
-                                                        {difference === null
-                                                            ? "—"
-                                                            : formatCurrency(difference)}
-                                                    </TableCell>
-                                                </TableRow>
-                                            );
-                                        })
-                                    )}
+                                        return (
+                                            <TableRow key={row.payment_account_id}>
+                                                <TableCell className="font-medium">
+                                                    <input
+                                                        type="hidden"
+                                                        {...register(
+                                                            `details.${index}.payment_account_id`
+                                                        )}
+                                                    />
+                                                    {row.payment_account_name}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    {formatCurrency(row.opening_amount)}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    {formatCurrency(row.collected_amount)}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    {formatCurrency(row.expected_amount)}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <InputText
+                                                        name={`details.${index}.declared_amount`}
+                                                        type="number"
+                                                        step="0.01"
+                                                        register={register}
+                                                        registerOptions={{
+                                                            setValueAs: (
+                                                                value: string
+                                                            ) => {
+                                                                if (
+                                                                    String(value).trim() === ""
+                                                                )
+                                                                    return 0;
+                                                                return Number(value);
+                                                            },
+                                                        }}
+                                                        error={
+                                                            errors.details?.[index]
+                                                                ?.declared_amount
+                                                        }
+                                                    />
+                                                </TableCell>
+                                                <TableCell
+                                                    className={`text-right font-medium ${
+                                                        difference < 0
+                                                            ? "text-red-600"
+                                                            : difference > 0
+                                                              ? "text-emerald-600"
+                                                              : ""
+                                                    }`}
+                                                >
+                                                    {formatCurrency(difference)}
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
                                 </TableBody>
                             </Table>
+                            {errors.details?.root?.message && (
+                                <p className="px-3 pb-2 text-[13px] text-red-500">
+                                    {errors.details.root.message}
+                                </p>
+                            )}
                         </div>
 
                         <InputText
@@ -303,7 +280,11 @@ export function CashSessionCloseModal() {
                                         type="button"
                                         variant="outline"
                                         size="sm"
-                                        onClick={() => void checkSession("logout")}
+                                        onClick={() =>
+                                            void checkSession(
+                                                isLogoutClose ? "logout" : "close-request"
+                                            )
+                                        }
                                         disabled={checking}
                                     >
                                         {checking
@@ -321,16 +302,25 @@ export function CashSessionCloseModal() {
                                 onClick={cancelClose}
                                 disabled={submitting}
                             >
-                                Cancelar y continuar operando
+                                {isLogoutClose
+                                    ? "Cancelar y continuar operando"
+                                    : "Cancelar"}
                             </Button>
 
                             <Button
                                 type="submit"
-                                disabled={submitting || !canClose || !session}
+                                disabled={
+                                    submitting ||
+                                    !canClose ||
+                                    !session ||
+                                    rows.length === 0
+                                }
                             >
                                 {submitting
                                     ? "Cerrando caja..."
-                                    : "Confirmar cierre y salir"}
+                                    : isLogoutClose
+                                      ? "Confirmar cierre y salir"
+                                      : "Confirmar cierre"}
                             </Button>
                         </div>
                     </form>

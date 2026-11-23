@@ -20,6 +20,7 @@ import { Currency } from "@/modules/finances/currency/types/currency.types";
 import { currencyService } from "@/modules/finances/currency/services/currency.service";
 import { accountService } from "@/modules/finances/Account/services/account.service";
 import { Account } from "@/modules/finances/Account/types/account.types";
+import { useCashSessionStore } from "@/modules/finances/cashbox/store/cashSession.store";
 import TicketFormModal from "@/modules/sales/sale/components/TicketFormModal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import CardPayment from "@/modules/sales/sale/components/CardPayment";
@@ -30,6 +31,9 @@ type CreatedSale = SaleDetail & { notaPedidoBase64: string };
 
 export default function PagoStep() {
     const router = useRouter();
+    const cashSessionId = useCashSessionStore(
+        (state) => state.session?.id ?? null
+    );
 
     const {
         handleSubmit,
@@ -124,6 +128,12 @@ export default function PagoStep() {
                 ...data,
                 company_id: parsedCompany.id,
                 warehouse_id: parsedCompany.warehouse?.id,
+                // Vincula los pagos con la caja abierta para que aparezcan como
+                // movimientos conciliables en el cierre de sesión.
+                payments: data.payments?.map((payment) => ({
+                    ...payment,
+                    cash_session_id: cashSessionId ?? undefined,
+                })),
             });
 
             if (response.status === 201 || response.status === 200) {

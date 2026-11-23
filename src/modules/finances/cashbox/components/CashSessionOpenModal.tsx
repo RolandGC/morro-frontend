@@ -85,9 +85,8 @@ export function CashSessionOpenModal() {
                 </DialogHeader>
 
                 <p className="text-sm text-muted-foreground">
-                    No se encontró una sesión abierta para tu usuario en la empresa y
-                    almacén actuales. Registra el fondo inicial de cada cuenta de
-                    efectivo para continuar.
+                    Registra el fondo inicial de cada cuenta de efectivo para abrir
+                    la sesión en la empresa y almacén actuales.
                 </p>
 
                 {accountsLoading ? (

@@ -43,6 +43,7 @@ const routeNames: Record<string, string> = {
     purchase: "Compras",
     currencies: "Monedas",
     cashbox: "Caja",
+    "daily-closings": "Cierre diario",
     account: "Cuentas",
     roles: "Roles y permisos",
 };

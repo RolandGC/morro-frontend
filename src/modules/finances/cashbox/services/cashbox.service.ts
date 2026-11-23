@@ -26,9 +26,21 @@ class CashboxService {
     }
 
     async open(payload: CashboxForm): Promise<AxiosResponse<Cashbox>> {
+        // El documento usa `expected_amount`; el esquema real usa
+        // `opening_amount`. Se envían ambos con el mismo valor para que la
+        // apertura funcione con cualquier versión del backend.
+        const body = {
+            ...payload,
+            details: payload.details.map((detail) => ({
+                payment_account_id: detail.payment_account_id,
+                opening_amount: detail.opening_amount,
+                expected_amount: detail.opening_amount,
+            })),
+        };
+
         const response = await apiClient.post(
             endpoints.CASH_SESSIONS.OPEN,
-            payload
+            body
         );
         return response;
     }

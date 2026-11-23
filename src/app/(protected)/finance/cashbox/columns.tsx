@@ -1,123 +1,161 @@
-"use client"
+"use client";
 
-import { ColumnDef } from "@tanstack/react-table"
-import { MoreHorizontal, ArrowUpDown, Pencil, Trash2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu"
-import { Checkbox } from "@/components/ui/checkbox"
-import { formatDate } from "@/hooks/dateFormat"
-import { useToast } from "@/hooks/useToast"
-import Swal from "sweetalert2"
-import { useCurrencyStore } from "@/modules/finances/currency/store/currency.store"
-import { currencyService } from "@/modules/finances/currency/services/currency.service"
-import { Cashbox } from "@/modules/finances/cashbox/types/cashbox.types"
+import { ColumnDef } from "@tanstack/react-table";
+import { Eye, LockKeyhole } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { formatCurrency } from "@/lib/format";
+import type { Cashbox } from "@/modules/finances/cashbox/types/cashbox.types";
+import {
+    formatCashSessionDateTime,
+    getCashSessionAccountSummary,
+} from "@/modules/finances/cashbox/utils/cashSessionMovements";
+import { cash_session_status } from "@/types/types";
 
 interface ColumnsProps {
-    fetchData: () => Promise<void>;
+    onView: (session: Cashbox) => void;
+    onClose: (session: Cashbox) => void;
+    canClose: boolean;
 }
 
-export const getColumns = ({ fetchData }: ColumnsProps): ColumnDef<Cashbox>[] => [
-   /*  {
-        accessorFn: (row) => row.id,
-        id: "id",
-        header: "id",
-    }, */
+export const getColumns = ({
+    onView,
+    onClose,
+    canClose,
+}: ColumnsProps): ColumnDef<Cashbox>[] => [
     {
-        accessorFn: (row) => row.companies?.name,
-        id: "empresa",
+        accessorFn: (row) => row.id.slice(0, 8),
+        id: "Sesión",
+        header: "Sesión",
+    },
+    {
+        accessorFn: (row) => row.users?.name ?? "—",
+        id: "Usuario",
+        header: "Usuario",
+    },
+    {
+        accessorFn: (row) => row.warehouses?.name ?? "—",
+        id: "Almacén",
+        header: "Almacén",
+    },
+    {
+        accessorFn: (row) => row.companies?.name ?? "—",
+        id: "Empresa",
         header: "Empresa",
     },
     {
-        accessorFn: (row) => row.notes,
-        id: "notas",
-        header: "Notas",
-    },
-    /* {
-        accessorFn: (row) => row.model,
-        id: "model",
-        header: "Modelo",
+        accessorFn: (row) => formatCashSessionDateTime(row.opened_at),
+        id: "Apertura",
+        header: "Apertura",
     },
     {
-        accessorFn: (row) => formatDate(row.created_at),
-        id: "created_at",
-        header: "Fecha de creación",
-    }, */
-   /*  {
-        id: "Opciones",
-        header: "Opciones",
+        accessorFn: (row) => formatCashSessionDateTime(row.closed_at),
+        id: "Cierre",
+        header: "Cierre",
+    },
+    {
+        accessorFn: (row) => row.status,
+        id: "Estado",
+        header: "Estado",
         cell: ({ row }) => {
-            const currency = row.original;
-            const { openEdit } = useCurrencyStore();
-            const { notify } = useToast();
+            const isOpen = row.original.status === cash_session_status.open;
+            return (
+                <span
+                    className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                        isOpen
+                            ? "bg-emerald-500/15 text-emerald-700"
+                            : "bg-muted text-muted-foreground"
+                    }`}
+                >
+                    {isOpen ? "Abierta" : "Cerrada"}
+                </span>
+            );
+        },
+    },
+    {
+        id: "Esperado",
+        header: "Saldo esperado",
+        cell: ({ row }) => {
+            const total = getCashSessionAccountSummary(row.original).reduce(
+                (sum, item) => sum + item.expected_amount,
+                0
+            );
+            return <span className="money">{formatCurrency(total)}</span>;
+        },
+    },
+    {
+        id: "Declarado",
+        header: "Declarado",
+        cell: ({ row }) => {
+            const rows = getCashSessionAccountSummary(row.original);
+            const hasDeclared = rows.some((item) => item.declared_amount !== null);
+            if (!hasDeclared) return <span className="text-muted-foreground">—</span>;
+            const total = rows.reduce(
+                (sum, item) => sum + (item.declared_amount ?? 0),
+                0
+            );
+            return <span className="money">{formatCurrency(total)}</span>;
+        },
+    },
+    {
+        id: "Diferencia",
+        header: "Diferencia",
+        cell: ({ row }) => {
+            const rows = getCashSessionAccountSummary(row.original);
+            const hasDeclared = rows.some((item) => item.declared_amount !== null);
+            if (!hasDeclared) return <span className="text-muted-foreground">—</span>;
 
-            const handleEdit = () => {
-                openEdit({
-                    name: currency.name,
-                    code: currency.code,
-                    symbol: currency.symbol,
-                    is_base: currency.is_base,
-                }, currency.id);
-            };
-
-            const handleDelete = async () => {
-                const result = await Swal.fire({
-                    title: "¿Estás seguro?",
-                    text: `Se eliminará la moneda "${currency.name}" de forma permanente.`,
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonText: "Sí, eliminar",
-                    cancelButtonText: "Cancelar",
-                    reverseButtons: true,
-                    customClass: {
-                        confirmButton:
-                            "bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg ml-2",
-                        cancelButton:
-                            "bg-gray-500 hover:bg-gray-600 text-white font-medium px-4 py-2 rounded-lg mr-2",
-                    },
-                    buttonsStyling: false
-                });
-
-                // Si el usuario cancela
-                if (!result.isConfirmed) {
-                    return;
-                }
-
-                try {
-                    await currencyService.delete(currency.id);
-
-                    await Swal.fire({
-                        title: "¡Eliminado!",
-                        text: "La moneda fue eliminada correctamente.",
-                        icon: "success",
-                        confirmButtonText: "Aceptar"
-                    });
-
-                    notify("Moneda eliminada correctamente", "success", 3000);
-
-                    await fetchData();
-
-                } catch (error) {
-                    Swal.fire({
-                        title: "Error",
-                        text: "No se pudo eliminar la moneda.",
-                        icon: "error"
-                    });
-
-                    notify("Error al eliminar la moneda", "error", 3000);
-                    console.error(error);
-                }
-            };
+            const total = rows.reduce(
+                (sum, item) =>
+                    sum +
+                    ((item.declared_amount ?? 0) - item.expected_amount),
+                0
+            );
 
             return (
-                <div className="flex gap-2">
-                    <Button variant="ghost" size="icon" onClick={handleEdit} title="Editar moneda">
-                        <Pencil className="h-4 w-4" />
+                <span
+                    className={`money font-semibold ${
+                        total < 0
+                            ? "text-red-600"
+                            : total > 0
+                              ? "text-emerald-600"
+                              : ""
+                    }`}
+                >
+                    {formatCurrency(total)}
+                </span>
+            );
+        },
+    },
+    {
+        id: "Acciones",
+        header: "Acciones",
+        cell: ({ row }) => {
+            const session = row.original;
+            const isOpen = session.status === cash_session_status.open;
+
+            return (
+                <div className="flex gap-1">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        title="Ver detalle"
+                        onClick={() => onView(session)}
+                    >
+                        <Eye className="size-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={handleDelete} title="Eliminar moneda">
-                        <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
+                    {isOpen && canClose && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Cerrar caja"
+                            onClick={() => onClose(session)}
+                        >
+                            <LockKeyhole className="size-4" />
+                        </Button>
+                    )}
                 </div>
             );
         },
-    } */
-]
+    },
+];

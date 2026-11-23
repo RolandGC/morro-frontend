@@ -129,6 +129,11 @@ const data = {
           permission: "cash-sessions.read",
         },
         {
+          title: "Cierre diario",
+          url: "/finance/daily-closings",
+          permission: "daily-closings.read",
+        },
+        {
           title: "Cuentas",
           url: "/finance/account",
           permission: "payment-accounts.read",

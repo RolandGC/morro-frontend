@@ -17,7 +17,8 @@ import type { Cashbox } from "../types/cashbox.types";
 import type { CashboxForm, CashSessionCloseForm } from "../validators/cashboxSchema";
 import { getCashSessionErrorMessage } from "../utils/cashSessionError";
 
-type CheckPurpose = "startup" | "logout";
+type CheckPurpose = "startup" | "logout" | "open-request" | "close-request";
+type ClosePurpose = "logout" | "manual";
 
 interface CashSessionContext {
     companyId: string;
@@ -36,10 +37,13 @@ interface CashSessionState {
     submitting: boolean;
     openModalOpen: boolean;
     closeModalOpen: boolean;
+    closePurpose: ClosePurpose | null;
     error: string | null;
     onLogout: (() => void) | null;
 
     checkSession: (purpose: CheckPurpose) => Promise<void>;
+    requestOpen: () => Promise<void>;
+    requestClose: (session?: Cashbox) => Promise<void>;
     loadSessionDetail: (id: string) => Promise<void>;
     loadAccounts: () => Promise<void>;
     confirmOpen: (form: CashboxForm) => Promise<boolean>;
@@ -63,17 +67,29 @@ const initialState = {
     submitting: false,
     openModalOpen: false,
     closeModalOpen: false,
+    closePurpose: null as ClosePurpose | null,
     error: null,
     onLogout: null,
 };
 
 function canUse(permission: string): boolean {
-    const permissions = usePermissionStore.getState();
+    return canUseAny([permission]);
+}
+
+function canUseAny(permissions: string[]): boolean {
+    const permissionStore = usePermissionStore.getState();
 
     // Si aún no cargaron los permisos, el backend es la fuente de verdad.
-    if (!permissions.isLoaded) return true;
+    if (!permissionStore.isLoaded) return true;
 
-    return permissions.hasPermission(permission);
+    return permissionStore.hasAnyPermission(permissions);
+}
+
+function canOpenCashSession(): boolean {
+    return canUseAny([
+        CASH_SESSION_PERMISSIONS.create,
+        CASH_SESSION_PERMISSIONS.open,
+    ]);
 }
 
 export const useCashSessionStore = create<CashSessionState>((set, get) => ({
@@ -135,6 +151,12 @@ export const useCashSessionStore = create<CashSessionState>((set, get) => ({
         const user = useAuthStore.getState().user;
         const companyId = getSelectedCompanyId();
         const warehouseId = getSelectedWarehouseId();
+        const closePurpose: ClosePurpose | null =
+            purpose === "logout"
+                ? "logout"
+                : purpose === "close-request"
+                  ? "manual"
+                  : null;
 
         set({
             checking: true,
@@ -177,35 +199,52 @@ export const useCashSessionStore = create<CashSessionState>((set, get) => ({
                     (item) => item.status === cash_session_status.open
                 ) ?? null;
 
-            set({ session: openSession, checking: false });
+            set({
+                session: openSession,
+                checking: false,
+                closePurpose,
+            });
 
             if (openSession) {
-                const canClose = canUse(CASH_SESSION_PERMISSIONS.close);
-
-                set({
-                    openModalOpen: false,
-                    closeModalOpen: purpose === "logout",
-                    error:
-                        purpose === "logout" && !canClose
-                            ? "No tienes permiso para cerrar la sesión de caja"
-                            : null,
-                });
-
-                if (purpose === "logout") {
+                if (closePurpose) {
+                    set({
+                        openModalOpen: false,
+                        closeModalOpen: true,
+                        error:
+                            purpose === "logout" &&
+                            !canUse(CASH_SESSION_PERMISSIONS.close)
+                                ? "No tienes permiso para cerrar la sesión de caja"
+                                : null,
+                    });
                     void get().loadSessionDetail(openSession.id);
+                } else {
+                    set({
+                        openModalOpen: false,
+                        closeModalOpen: false,
+                        error: null,
+                    });
+                    if (purpose === "open-request") {
+                        showToast("Ya tienes una sesión de caja abierta", "info", 4000);
+                    }
                 }
-
                 return;
             }
 
-            set({ closeModalOpen: false, error: null });
+            set({ closeModalOpen: false, closePurpose: null, error: null });
 
             if (purpose === "logout") {
                 await get().finishLogout();
                 return;
             }
 
-            if (!canUse(CASH_SESSION_PERMISSIONS.open)) {
+            if (purpose === "close-request") {
+                const message = "No hay una sesión de caja abierta para cerrar";
+                set({ error: message, checking: false });
+                showToast(message, "info", 4000);
+                return;
+            }
+
+            if (!canOpenCashSession()) {
                 set({
                     openModalOpen: true,
                     accounts: [],
@@ -234,11 +273,37 @@ export const useCashSessionStore = create<CashSessionState>((set, get) => ({
             set({
                 checking: false,
                 error: message,
-                openModalOpen: purpose === "startup",
-                closeModalOpen: purpose === "logout",
+                closePurpose,
+                openModalOpen: purpose === "startup" || purpose === "open-request",
+                closeModalOpen: purpose === "logout" || purpose === "close-request",
             });
             showToast(message, "error", 4000);
         }
+    },
+
+    requestOpen: async () => {
+        await get().checkSession("open-request");
+    },
+
+    requestClose: async (session) => {
+        if (session) {
+            set({
+                session,
+                sessionDetail: null,
+                context: {
+                    companyId: session.company_id,
+                    warehouseId: session.warehouse_id,
+                },
+                closePurpose: "manual",
+                openModalOpen: false,
+                closeModalOpen: true,
+                error: null,
+            });
+            void get().loadSessionDetail(session.id);
+            return;
+        }
+
+        await get().checkSession("close-request");
     },
 
     confirmOpen: async (form) => {
@@ -251,7 +316,7 @@ export const useCashSessionStore = create<CashSessionState>((set, get) => ({
             return false;
         }
 
-        if (!canUse(CASH_SESSION_PERMISSIONS.open)) {
+        if (!canOpenCashSession()) {
             const message = "No tienes permiso para abrir sesiones de caja";
             set({ error: message });
             showToast(message, "error", 4000);
@@ -352,9 +417,22 @@ export const useCashSessionStore = create<CashSessionState>((set, get) => ({
                 throw new Error("Respuesta inesperada al cerrar la caja");
             }
 
-            set({ submitting: false, error: null });
+            const wasLogout = get().closePurpose === "logout";
+
+            set({
+                session: null,
+                sessionDetail: null,
+                closeModalOpen: false,
+                closePurpose: null,
+                submitting: false,
+                error: null,
+            });
+
             showToast("Sesión de caja cerrada correctamente", "success");
-            await get().finishLogout();
+
+            if (wasLogout) {
+                await get().finishLogout();
+            }
             return true;
         } catch (error) {
             const message = getCashSessionErrorMessage(
@@ -376,6 +454,7 @@ export const useCashSessionStore = create<CashSessionState>((set, get) => ({
     cancelClose: () =>
         set({
             closeModalOpen: false,
+            closePurpose: null,
             onLogout: null,
             error: null,
             submitting: false,

@@ -42,12 +42,10 @@ export const cashSessionCloseDetailSchema = z.object({
         .min(0, "El importe contado no puede ser negativo"),
 });
 
-/**
- * El backend acepta `details: []` (no exige longitud mínima), de modo que una
- * sesión abierta sin detalles pueda cerrarse y no bloquee el logout.
- */
 export const cashSessionCloseSchema = z.object({
-    details: z.array(cashSessionCloseDetailSchema),
+    details: z
+        .array(cashSessionCloseDetailSchema)
+        .min(1, "Debe declarar al menos una cuenta de pago"),
     notes: notesSchema,
 });
 
