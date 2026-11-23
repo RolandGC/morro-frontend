@@ -206,7 +206,16 @@ export const endpoints = {
     TICKETS:{
         CREATE: `${baseUrl}/boletas`,
         GET_SELL: `${baseUrl}/boletas/sale`,
-        GET_BY_ID: `${baseUrl}/boletas`,
+        GET_BY_ID: `${baseUrl}/boletas`
+    },
+    BILLING: {
+        ACCOUNT_GET: `${baseUrl}/billing/account`,
+        ACCOUNT_UPDATE: `${baseUrl}/billing/account`,
+        ACCOUNT_TEST: `${baseUrl}/billing/account/test`,
+        COMPANY_GET: (companyId: string) => `${baseUrl}/companies/${companyId}/billing`,
+        COMPANY_UPDATE: (companyId: string) => `${baseUrl}/companies/${companyId}/billing`,
+        COMPANY_CERTIFICATE: (companyId: string) => `${baseUrl}/companies/${companyId}/billing/certificate`,
+        COMPANY_SYNC: (companyId: string) => `${baseUrl}/companies/${companyId}/billing/sync`,
     },
     REPORTS: {
         SUMMARY: `${baseUrl}/reports/summary`,

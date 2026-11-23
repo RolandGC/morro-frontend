@@ -3,7 +3,7 @@ import { endpoints } from '@/config/endPoints';
 import { AxiosResponse } from 'axios';
 import { PaginationResponse } from '@/types/types';
 import { LoginResponse, User } from '@/modules/auth/types/auth.types';
-import { Company, CompanyApis, CompanyQueryParams } from '../types/company.type';
+import { Company, CompanyQueryParams } from '../types/company.type';
 import { CompanyForm } from '../validators/companySchema';
 
 class CompanyService {
@@ -37,14 +37,5 @@ class CompanyService {
         );
         return response;
     }
-    async loginAsCompany(company: CompanyApis){
-        const response = await apiClient.put(endpoints.BILLDING.UPDATE, company);
-        return response;
-    }
-    async postCompanyApis(){
-        const response = await apiClient.post(endpoints.BILLDING.POST);
-        return response;
-    }
-    
 }
 export const companyService = new CompanyService();

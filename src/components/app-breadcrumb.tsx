@@ -33,6 +33,7 @@ const routeNames: Record<string, string> = {
     reports: "Reportes",
     billing: "Facturación",
     sunat: "Facturación electrónica",
+    settings: "Configuración de facturación",
     ventas: "Ventas",
     inventario: "Inventario",
     cobranzas: "Cobranzas",

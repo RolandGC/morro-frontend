@@ -13,6 +13,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  is_superadmin?: boolean;
 }
 
 interface AuthStore {
@@ -50,6 +51,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
           id: user.id,
           email: user.email,
           name: user.name,
+          is_superadmin: user.is_superadmin,
         },
         token: access_token,
         isLoading: false,
