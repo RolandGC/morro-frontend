@@ -205,6 +205,8 @@ export const endpoints = {
     },
     TICKETS:{
         CREATE: `${baseUrl}/boletas`,
+        GET_SELL: `${baseUrl}/boletas/sale`,
+        GET_BY_ID: `${baseUrl}/boletas`
     },
     BILLING: {
         ACCOUNT_GET: `${baseUrl}/billing/account`,
