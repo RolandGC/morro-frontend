@@ -48,7 +48,7 @@ export default function CompaniesPage() {
         fetchCompanies();
     }, []);
 
-    const handleSelectCompany = async (company: Company) => {
+    async function handleSelectCompany(company: Company) {
         setSelecting(true);
         setError('');
 
@@ -61,38 +61,24 @@ export default function CompaniesPage() {
                 return;
             }
 
-            // 2. Enviar configuración hardcodeada al endpoint PUT
-            const resp = await companyService.loginAsCompany( {
-                username: 'ti.elmorro@gmail.com',
-                password: '147852369',
-                base_url: 'https://facturacion.apisperu.com/api/v1',
-                is_active: true,
-            });
-            if (resp.status == 200 || resp.status == 201) {
-                await companyService.postCompanyApis();
-            } else {
-                setError('No se pudo configurar la empresa');
-                return;
-            }
-
-            // 3. Guardar empresa seleccionada
+            // 2. Guardar empresa seleccionada
             localStorage.setItem(
                 'selected_company',
                 JSON.stringify(company)
             );
 
-            // 4. Guardar token
+            // 3. Guardar token
             saveAuthToken(response.data.access_token);
 
-            // 5. Redirigir al dashboard
+            // 4. Redirigir al dashboard
             router.replace('/dashboard');
         } catch (err) {
-            console.error('Error al seleccionar/configurar empresa:', err);
-            setError('No se pudo seleccionar o configurar la empresa');
+            console.error('Error al seleccionar empresa:', err);
+            setError('No se pudo seleccionar la empresa');
         } finally {
             setSelecting(false);
         }
-    };
+    }
 
     if (loading || selecting) {
         return (

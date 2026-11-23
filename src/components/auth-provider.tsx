@@ -37,7 +37,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const res = await authService.getCurrentUser();
           if (res.ok && res.data) {
             useAuthStore.setState({
-              user: { id: res.data.id, email: res.data.email, name: res.data.name },
+              user: {
+                id: res.data.id,
+                email: res.data.email,
+                name: res.data.name,
+                is_superadmin: res.data.is_superadmin,
+              },
             });
           }
         } catch {

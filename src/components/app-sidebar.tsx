@@ -150,6 +150,11 @@ const data = {
           url: "/billing/sunat",
           permission: "electronic-invoicing.read",
         },
+        {
+          title: "Configuración de facturación",
+          url: "/billing/settings",
+          permission: "billing.read",
+        },
       ],
     },
     {
