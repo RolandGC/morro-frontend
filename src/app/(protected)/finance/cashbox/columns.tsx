@@ -16,12 +16,14 @@ interface ColumnsProps {
     onView: (session: Cashbox) => void;
     onClose: (session: Cashbox) => void;
     canClose: boolean;
+    currentUserId: string | null;
 }
 
 export const getColumns = ({
     onView,
     onClose,
     canClose,
+    currentUserId,
 }: ColumnsProps): ColumnDef<Cashbox>[] => [
     {
         accessorFn: (row) => row.id.slice(0, 8),
@@ -133,6 +135,7 @@ export const getColumns = ({
         cell: ({ row }) => {
             const session = row.original;
             const isOpen = session.status === cash_session_status.open;
+            const isOwnSession = session.user_id === currentUserId;
 
             return (
                 <div className="flex gap-1">
@@ -144,7 +147,7 @@ export const getColumns = ({
                     >
                         <Eye className="size-4" />
                     </Button>
-                    {isOpen && canClose && (
+                    {isOpen && canClose && isOwnSession && (
                         <Button
                             variant="ghost"
                             size="icon"
@@ -152,6 +155,16 @@ export const getColumns = ({
                             onClick={() => onClose(session)}
                         >
                             <LockKeyhole className="size-4" />
+                        </Button>
+                    )}
+                    {isOpen && canClose && !isOwnSession && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Solo el usuario que abrió la sesión puede cerrarla"
+                            disabled
+                        >
+                            <LockKeyhole className="size-4 opacity-40" />
                         </Button>
                     )}
                 </div>

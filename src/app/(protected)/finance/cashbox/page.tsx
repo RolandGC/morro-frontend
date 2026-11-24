@@ -6,6 +6,7 @@ import { LockKeyhole, RefreshCw, UnlockKeyhole } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePermission } from "@/hooks/usePermission";
 import { showToast } from "@/hooks/useToast";
+import { useAuthStore } from "@/modules/auth/store/authStore";
 import { CashboxDataTable } from "@/modules/finances/cashbox/components/CashboxDataTable";
 import { CashSessionDetailModal } from "@/modules/finances/cashbox/components/CashSessionDetailModal";
 import { CASH_SESSION_PERMISSIONS } from "@/modules/finances/cashbox/constants/cashSession.constants";
@@ -31,6 +32,7 @@ export default function CashboxPage() {
     });
 
     const { can } = usePermission();
+    const currentUserId = useAuthStore((state) => state.user?.id ?? null);
     const session = useCashSessionStore((state) => state.session);
     const checking = useCashSessionStore((state) => state.checking);
     const requestOpen = useCashSessionStore((state) => state.requestOpen);
@@ -80,6 +82,28 @@ export default function CashboxPage() {
     const handleView = useCallback((item: Cashbox) => {
         setSelectedSession(item);
         setDetailOpen(true);
+
+        // El listado no incluye pagos; el detalle sí. Se carga bajo demanda
+        // para que la modal muestre los movimientos reales de la sesión.
+        void (async () => {
+            try {
+                const response = await cashboxService.getById(item.id);
+                if (response.status === 200) {
+                    setSelectedSession((current) =>
+                        current?.id === item.id ? response.data : current
+                    );
+                }
+            } catch (error) {
+                showToast(
+                    getCashSessionErrorMessage(
+                        error,
+                        "No se pudo cargar el detalle de la sesión"
+                    ),
+                    "error",
+                    4000
+                );
+            }
+        })();
     }, []);
 
     const handleClose = useCallback(
@@ -90,8 +114,14 @@ export default function CashboxPage() {
     );
 
     const columns = useMemo(
-        () => getColumns({ onView: handleView, onClose: handleClose, canClose }),
-        [handleView, handleClose, canClose]
+        () =>
+            getColumns({
+                onView: handleView,
+                onClose: handleClose,
+                canClose,
+                currentUserId,
+            }),
+        [handleView, handleClose, canClose, currentUserId]
     );
 
     return (

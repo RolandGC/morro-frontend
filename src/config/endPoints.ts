@@ -165,6 +165,7 @@ export const endpoints = {
     },
     CASH_SESSIONS: {
         GET_ALL: `${baseUrl}/cash-sessions`,
+        ACTIVE: `${baseUrl}/cash-sessions/active`,
         OPEN: `${baseUrl}/cash-sessions`,
         GET_BY_ID: `${baseUrl}/cash-sessions`,
         CLOSE: `${baseUrl}/cash-sessions`,

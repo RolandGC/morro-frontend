@@ -41,7 +41,10 @@ export function CashSessionDetailModal({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
+            <DialogContent
+                aria-describedby={undefined}
+                className="max-h-[90vh] max-w-4xl overflow-y-auto"
+            >
                 <DialogHeader>
                     <DialogTitle className="font-bold text-xl">
                         Detalle de sesión de caja

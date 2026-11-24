@@ -8,6 +8,11 @@ import apiClient from "@/hooks/useAxios";
 import { endpoints } from "@/config/endPoints";
 import { PaginationResponse } from "@/types/types";
 
+interface ActiveCashSessionParams {
+    company_id: string;
+    warehouse_id?: string;
+}
+
 class CashboxService {
     async getAll(
         params: CashboxQueryParams
@@ -25,22 +30,22 @@ class CashboxService {
         return response;
     }
 
-    async open(payload: CashboxForm): Promise<AxiosResponse<Cashbox>> {
-        // El documento usa `expected_amount`; el esquema real usa
-        // `opening_amount`. Se envían ambos con el mismo valor para que la
-        // apertura funcione con cualquier versión del backend.
-        const body = {
-            ...payload,
-            details: payload.details.map((detail) => ({
-                payment_account_id: detail.payment_account_id,
-                opening_amount: detail.opening_amount,
-                expected_amount: detail.opening_amount,
-            })),
-        };
+    async getActive(
+        params: ActiveCashSessionParams
+    ): Promise<AxiosResponse<Cashbox | null>> {
+        const response = await apiClient.get(endpoints.CASH_SESSIONS.ACTIVE, {
+            params,
+        });
+        return response;
+    }
 
+    async open(payload: CashboxForm): Promise<AxiosResponse<Cashbox>> {
+        // El backend original valida el DTO con whitelist y
+        // forbidNonWhitelisted: sólo acepta `opening_amount`. Enviar
+        // `expected_amount` provoca un 400 antes de crear la sesión.
         const response = await apiClient.post(
             endpoints.CASH_SESSIONS.OPEN,
-            body
+            payload
         );
         return response;
     }

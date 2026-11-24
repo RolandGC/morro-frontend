@@ -75,6 +75,7 @@ export function CashSessionOpenModal() {
             }}
         >
             <DialogContent
+                aria-describedby={undefined}
                 showCloseButton={false}
                 className="max-h-[90vh] overflow-y-auto sm:max-w-2xl"
             >

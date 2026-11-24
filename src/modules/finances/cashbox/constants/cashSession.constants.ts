@@ -1,6 +1,6 @@
+/** Permisos que el backend original exige realmente para cada acción. */
 export const CASH_SESSION_PERMISSIONS = {
     read: "cash-sessions.read",
-    create: "cash-sessions.create",
     open: "cash-sessions.open",
     close: "cash-sessions.close",
 } as const;

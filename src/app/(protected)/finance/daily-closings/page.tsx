@@ -29,6 +29,12 @@ import {
     type DailyClosingForm,
 } from "@/modules/finances/dailyClosings/validators/dailyClosingSchema";
 import { formatCurrency } from "@/lib/format";
+import {
+    getDailyClosingCollectionsByMethod,
+    getDailyClosingCurrencies,
+    getDailyClosingSalesByMethod,
+    type DailyClosingSummaryRow,
+} from "@/modules/finances/dailyClosings/utils/dailyClosingSummary";
 import { daily_closing_status, PaginationMeta } from "@/types/types";
 
 function todayLocal(): string {
@@ -38,9 +44,64 @@ function todayLocal(): string {
     return `${now.getFullYear()}-${month}-${day}`;
 }
 
+function SummaryTable({
+    title,
+    rows,
+    emptyMessage,
+}: {
+    title: string;
+    rows: DailyClosingSummaryRow[];
+    emptyMessage: string;
+}) {
+    return (
+        <section className="mt-5">
+            <h3 className="mb-2 text-sm font-semibold">{title}</h3>
+            {rows.length === 0 ? (
+                <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+            ) : (
+                <div className="overflow-hidden rounded-md border">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Método / cuenta</TableHead>
+                                <TableHead className="text-right">
+                                    Cantidad
+                                </TableHead>
+                                <TableHead className="text-right">Total</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {rows.map((row) => (
+                                <TableRow key={row.label}>
+                                    <TableCell>{row.label}</TableCell>
+                                    <TableCell className="text-right">
+                                        {row.count}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        {formatCurrency(row.total)}
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+            )}
+        </section>
+    );
+}
+
 export default function DailyClosingsPage() {
-    const { can, canAny } = usePermission();
-    const company = useMemo(() => getSelectedCompany(), []);
+    const { can, isLoaded: permissionsLoaded } = usePermission();
+    // La empresa se lee de localStorage: hacerlo durante el render provoca un
+    // desajuste de hidratación (SSR no tiene acceso a localStorage).
+    const [company, setCompany] = useState<ReturnType<typeof getSelectedCompany>>(
+        null
+    );
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setCompany(getSelectedCompany());
+    }, []);
 
     const [rows, setRows] = useState<DailyClosing[]>([]);
     const [meta, setMeta] = useState<PaginationMeta | null>(null);
@@ -59,6 +120,7 @@ export default function DailyClosingsPage() {
         register,
         handleSubmit,
         reset,
+        getValues,
         formState: { errors },
     } = useForm<DailyClosingForm>({
         resolver: zodResolver(dailyClosingSchema),
@@ -113,6 +175,22 @@ export default function DailyClosingsPage() {
             return;
         }
 
+        const selectedDate = getValues("closing_date");
+        const duplicate = rows.some(
+            (row) =>
+                row.company_id === company.id &&
+                row.closing_date?.slice(0, 10) === selectedDate
+        );
+
+        if (duplicate) {
+            showToast(
+                "Ya existe un cierre para esta fecha y empresa",
+                "info",
+                4000
+            );
+            return;
+        }
+
         setSubmitting(true);
         try {
             const response = await dailyClosingService.open({
@@ -151,12 +229,23 @@ export default function DailyClosingsPage() {
         }
     };
 
-    const canOpen = canAny([
-        "daily-closings.create",
-        "daily-closings.open",
-    ]);
+    // El guard del backend original exige `daily-closings.open`.
+    const canOpen = can("daily-closings.open");
     const canClose = can("daily-closings.close");
     const selectedSummary = selected?.summary_json;
+
+    const salesByMethod = useMemo(
+        () => getDailyClosingSalesByMethod(selectedSummary),
+        [selectedSummary]
+    );
+    const collectionsByMethod = useMemo(
+        () => getDailyClosingCollectionsByMethod(selectedSummary),
+        [selectedSummary]
+    );
+    const currencies = useMemo(
+        () => getDailyClosingCurrencies(selectedSummary),
+        [selectedSummary]
+    );
 
     return (
         <div className="container mx-auto py-4 px-4">
@@ -206,7 +295,15 @@ export default function DailyClosingsPage() {
                         )}
                     </div>
 
-                    <Button type="submit" disabled={submitting || !company?.id || !canOpen}>
+                    <Button
+                        type="submit"
+                        disabled={
+                            submitting ||
+                            !company?.id ||
+                            !permissionsLoaded ||
+                            !canOpen
+                        }
+                    >
                         <CalendarDays className="mr-2 size-4" />
                         {submitting ? "Generando..." : "Generar cierre"}
                     </Button>
@@ -216,7 +313,7 @@ export default function DailyClosingsPage() {
                             Selecciona una empresa para generar el cierre.
                         </p>
                     )}
-                    {!canOpen && (
+                    {permissionsLoaded && !canOpen && (
                         <p className="text-xs text-red-600">
                             No tienes permiso para generar cierres diarios.
                         </p>
@@ -404,7 +501,7 @@ export default function DailyClosingsPage() {
                         )}
                     </div>
 
-                    <div className="mb-5 grid gap-3 sm:grid-cols-3">
+                    <div className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                         <div className="rounded-lg border bg-muted/20 p-3">
                             <p className="text-xs text-muted-foreground">Total ventas</p>
                             <p className="text-lg font-semibold">
@@ -423,36 +520,44 @@ export default function DailyClosingsPage() {
                                 {formatCurrency(selected.total_collected)}
                             </p>
                         </div>
+                        <div className="rounded-lg border bg-muted/20 p-3">
+                            <p className="text-xs text-muted-foreground">Ventas al contado</p>
+                            <p className="text-lg font-semibold">
+                                {formatCurrency(selectedSummary?.total_cash)}
+                            </p>
+                        </div>
+                        <div className="rounded-lg border bg-muted/20 p-3">
+                            <p className="text-xs text-muted-foreground">N.º de ventas</p>
+                            <p className="text-lg font-semibold">
+                                {selectedSummary?.total_sales_count ?? 0}
+                            </p>
+                        </div>
                     </div>
 
-                    <h3 className="mb-2 text-sm font-semibold">Resumen por cuenta de pago</h3>
-                    {selectedSummary?.payment_summary?.length ? (
-                        <div className="overflow-hidden rounded-md border">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Cuenta</TableHead>
-                                        <TableHead className="text-right">Cantidad</TableHead>
-                                        <TableHead className="text-right">Total</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {selectedSummary.payment_summary.map((item) => (
-                                        <TableRow key={item.payment_account_name}>
-                                            <TableCell>{item.payment_account_name}</TableCell>
-                                            <TableCell className="text-right">{item.count}</TableCell>
-                                            <TableCell className="text-right">
-                                                {formatCurrency(item.total)}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    ) : (
+                    {salesByMethod.length === 0 &&
+                    collectionsByMethod.length === 0 &&
+                    currencies.length === 0 ? (
                         <p className="text-sm text-muted-foreground">
                             No hay resumen de pagos registrado.
                         </p>
+                    ) : (
+                        <>
+                            <SummaryTable
+                                title="Ventas por método de pago"
+                                rows={salesByMethod}
+                                emptyMessage="No hay ventas con método de pago registrado."
+                            />
+                            <SummaryTable
+                                title="Cobranzas por cuenta/método"
+                                rows={collectionsByMethod}
+                                emptyMessage="No hay cobranzas registradas."
+                            />
+                            <SummaryTable
+                                title="Ventas por moneda"
+                                rows={currencies}
+                                emptyMessage="No hay ventas por moneda registradas."
+                            />
+                        </>
                     )}
                 </section>
             )}

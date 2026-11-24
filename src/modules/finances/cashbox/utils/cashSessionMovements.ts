@@ -39,10 +39,13 @@ function isWithinSession(
 }
 
 /**
- * Devuelve los movimientos que realmente concilian la sesión.
- * - Excluye pagos de ventas canceladas.
- * - Excluye anticipos de crédito duplicados como `receivable_payments`.
- * - Excluye cobros reversados o de ventas canceladas.
+ * Devuelve los movimientos tal como los contabiliza el backend original al
+ * cerrar: usa `amount_base`, excluye pagos de ventas de crédito, cobros
+ * reversados y todo lo que esté fuera de la ventana apertura..ahora.
+ *
+ * Limitación del backend: los pagos de ventas canceladas sí se cuentan. La UI
+ * los muestra con una etiqueta explícita en lugar de descartarlos y generar un
+ * saldo esperado distinto al que guarda el servidor.
  */
 export function getCashSessionMovements(
     session: Cashbox | null | undefined,
@@ -52,11 +55,10 @@ export function getCashSessionMovements(
     const movements: CashSessionMovement[] = [];
 
     for (const payment of session.sale_payments ?? []) {
-        if (payment.sales?.status === "cancelled") continue;
         if (payment.sales?.sale_type === "credit") continue;
         if (!isWithinSession(payment.payment_date, session)) continue;
 
-        const amount = toNumber(payment.amount_base ?? payment.amount);
+        const amount = toNumber(payment.amount_base);
         if (amount === 0 || !payment.payment_account_id) continue;
 
         movements.push({
@@ -67,16 +69,19 @@ export function getCashSessionMovements(
                 payment.payment_accounts?.name ?? "Cuenta de pago",
             payment_date: payment.payment_date ?? null,
             amount,
-            description: "Pago de venta",
+            description:
+                payment.sales?.status === "cancelled"
+                    ? "Pago de venta anulada"
+                    : "Pago de venta",
         });
     }
 
     for (const payment of session.receivable_payments ?? []) {
         if (payment.reversed_at) continue;
-        if (payment.receivables?.sales?.status === "cancelled") continue;
+        if (payment.cash_session_id !== session.id) continue;
         if (!isWithinSession(payment.payment_date, session)) continue;
 
-        const amount = toNumber(payment.amount_base ?? payment.amount);
+        const amount = toNumber(payment.amount_base);
         if (amount === 0 || !payment.payment_account_id) continue;
 
         movements.push({

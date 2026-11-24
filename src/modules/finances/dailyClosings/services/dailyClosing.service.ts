@@ -25,7 +25,8 @@ class DailyClosingService {
     }
 
     async close(id: string): Promise<AxiosResponse<DailyClosing>> {
-        return apiClient.patch(`${endpoints.DAILY_CLOSINGS.CLOSE}/${id}/close`);
+        // El backend original expone POST, no PATCH.
+        return apiClient.post(`${endpoints.DAILY_CLOSINGS.CLOSE}/${id}/close`);
     }
 }
 
