@@ -792,149 +792,7 @@ export default function SaleAddPage() {
                 </SectionCard>
                 <div className="flex min-h-0 flex-col gap-4 lg:sticky lg:top-20">
                     {/* CLIENTE */}
-                    <SectionCard
-                        icon={UserRound}
-                        title="Cliente"
-                        description="Requerido para registrar la venta"
-                        bodyClassName="gap-2"
-                        actions={
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => openCreate()}
-                            >
-                                <Plus className="size-3.5" />
-                                Nuevo
-                            </Button>
-                        }
-                    >
-                        <Controller
-                            name="customer_id"
-                            control={control}
-                            render={({ field, fieldState }) => {
-                                const selectedCustomer = customerResults.find(
-                                    (customer) => customer.id === field.value
-                                );
-                                const showPicker =
-                                    customerPickerOpen || !field.value;
-                                return (
-                                    <div className="space-y-2">
-                                        {field.value && !customerPickerOpen && (
-                                            <div className="flex items-center justify-between gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2">
-                                                <div className="flex min-w-0 items-center gap-2">
-                                                    <CircleCheck className="size-4 shrink-0 text-primary" />
-                                                    <div className="min-w-0">
-                                                        <p className="truncate text-sm font-medium text-foreground">
-                                                            {selectedCustomer?.full_name ??
-                                                                (searchCustomer ||
-                                                                    "Cliente seleccionado")}
-                                                        </p>
-                                                        <p className="truncate text-xs text-muted-foreground">
-                                                            {selectedCustomer?.doc_number ??
-                                                                "Asignado a esta venta"}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <Button
-                                                    type="button"
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="shrink-0"
-                                                    onClick={() =>
-                                                        setCustomerPickerOpen(
-                                                            true
-                                                        )
-                                                    }
-                                                >
-                                                    Cambiar
-                                                </Button>
-                                            </div>
-                                        )}
-                                        {showPicker && (
-                                            <>
-                                                <SearchField
-                                                    icon={Search}
-                                                    placeholder="Buscar por documento o nombre..."
-                                                    autoComplete="off"
-                                                    value={searchCustomer}
-                                                    onFocus={() =>
-                                                        setCustomerPickerOpen(
-                                                            true
-                                                        )
-                                                    }
-                                                    onChange={(e) => {
-                                                        setSearchCustomer(
-                                                            e.target.value
-                                                        );
-                                                        setCustomerPickerOpen(
-                                                            true
-                                                        );
-                                                    }}
-                                                />
-                                                <div className="max-h-40 space-y-1.5 overflow-y-auto pr-1 scrollbar-slim">
-                                                    {customerLoading ? (
-                                                        <>
-                                                            <div className="h-12 animate-pulse rounded-lg bg-muted/60" />
-                                                            <div className="h-12 animate-pulse rounded-lg bg-muted/60" />
-                                                        </>
-                                                    ) : customerResults.length ===
-                                                      0 ? (
-                                                        <p className="rounded-lg border border-dashed px-3 py-4 text-center text-xs text-muted-foreground">
-                                                            No se encontraron
-                                                            clientes.
-                                                        </p>
-                                                    ) : (
-                                                        customerResults.map(
-                                                            (customer) => (
-                                                                <CustomerSearchItem
-                                                                    key={ customer.id}
-                                                                    customer={customer}
-                                                                    selected={
-                                                                        field.value ===
-                                                                        customer.id
-                                                                    }
-                                                                    onSelect={(
-                                                                        customer
-                                                                    ) => {
-                                                                        field.onChange(
-                                                                            customer.id
-                                                                        );
-                                                                        setSearchCustomer(
-                                                                            customer.full_name
-                                                                        );
-                                                                        setCustomerPickerOpen(
-                                                                            false
-                                                                        );
-                                                                    }}
-                                                                />
-                                                            )
-                                                        )
-                                                    )}
-                                                </div>
-                                            </>
-                                        )}
-                                        {fieldState.error && (
-                                            <p className="text-xs font-medium text-destructive">
-                                                {fieldState.error.message}
-                                            </p>
-                                        )}
-                                    </div>
-                                );
-                            }}
-                        />
-                        <CustomerFormModal
-                            fetchData={fetchCustomers}
-                            onSuccess={(customer) => {
-                                setValue("customer_id", customer.id, {
-                                    shouldValidate: true,
-                                    shouldDirty: true,
-                                });
-                                setSearchCustomer(customer.full_name ?? "");
-                                setCustomerPickerOpen(false);
-                            }}
-                        />
-                    </SectionCard>
+                    
                     <SectionCard
                         icon={ShoppingCart}
                         title="Carrito"
@@ -1149,23 +1007,167 @@ export default function SaleAddPage() {
                                     )}
                                 </div>
                             )}
+                            
+                        </div>
+                    </SectionCard>
+                    <SectionCard
+                        icon={UserRound}
+                        title="Cliente"
+                        description="Requerido para registrar la venta"
+                        bodyClassName="gap-2"
+                        actions={
                             <Button
                                 type="button"
-                                className="mt-3 h-11 w-full text-sm"
-                                disabled={isSubmitting || items.length === 0}
-                                onClick={handleContinue}
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openCreate()}
                             >
-                                {isSubmitting ? "Validando..." : "Continuar al pago"}
-                                {!isSubmitting && (
-                                    <ArrowRight className="size-4" />
-                                )}
+                                <Plus className="size-3.5" />
+                                Nuevo
                             </Button>
-                            {itemsError && (
-                                <p className="mt-2 text-xs font-medium text-destructive">
-                                    {itemsError}
-                                </p>
+                        }
+                    >
+                        <Controller
+                            name="customer_id"
+                            control={control}
+                            render={({ field, fieldState }) => {
+                                const selectedCustomer = customerResults.find(
+                                    (customer) => customer.id === field.value
+                                );
+                                const showPicker =
+                                    customerPickerOpen || !field.value;
+                                return (
+                                    <div className="space-y-2">
+                                        {field.value && !customerPickerOpen && (
+                                            <div className="flex items-center justify-between gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2">
+                                                <div className="flex min-w-0 items-center gap-2">
+                                                    <CircleCheck className="size-4 shrink-0 text-primary" />
+                                                    <div className="min-w-0">
+                                                        <p className="truncate text-sm font-medium text-foreground">
+                                                            {selectedCustomer?.full_name ??
+                                                                (searchCustomer ||
+                                                                    "Cliente seleccionado")}
+                                                        </p>
+                                                        <p className="truncate text-xs text-muted-foreground">
+                                                            {selectedCustomer?.doc_number ??
+                                                                "Asignado a esta venta"}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="shrink-0"
+                                                    onClick={() =>
+                                                        setCustomerPickerOpen(
+                                                            true
+                                                        )
+                                                    }
+                                                >
+                                                    Cambiar
+                                                </Button>
+                                            </div>
+                                        )}
+                                        {showPicker && (
+                                            <>
+                                                <SearchField
+                                                    icon={Search}
+                                                    placeholder="Buscar por documento o nombre..."
+                                                    autoComplete="off"
+                                                    value={searchCustomer}
+                                                    onFocus={() =>
+                                                        setCustomerPickerOpen(
+                                                            true
+                                                        )
+                                                    }
+                                                    onChange={(e) => {
+                                                        setSearchCustomer(
+                                                            e.target.value
+                                                        );
+                                                        setCustomerPickerOpen(
+                                                            true
+                                                        );
+                                                    }}
+                                                />
+                                                <div className="max-h-40 space-y-1.5 overflow-y-auto pr-1 scrollbar-slim">
+                                                    {customerLoading ? (
+                                                        <>
+                                                            <div className="h-12 animate-pulse rounded-lg bg-muted/60" />
+                                                            <div className="h-12 animate-pulse rounded-lg bg-muted/60" />
+                                                        </>
+                                                    ) : customerResults.length ===
+                                                        0 ? (
+                                                        <p className="rounded-lg border border-dashed px-3 py-4 text-center text-xs text-muted-foreground">
+                                                            No se encontraron
+                                                            clientes.
+                                                        </p>
+                                                    ) : (
+                                                        customerResults.map(
+                                                            (customer) => (
+                                                                <CustomerSearchItem
+                                                                    key={customer.id}
+                                                                    customer={customer}
+                                                                    selected={
+                                                                        field.value ===
+                                                                        customer.id
+                                                                    }
+                                                                    onSelect={(
+                                                                        customer
+                                                                    ) => {
+                                                                        field.onChange(
+                                                                            customer.id
+                                                                        );
+                                                                        setSearchCustomer(
+                                                                            customer.full_name
+                                                                        );
+                                                                        setCustomerPickerOpen(
+                                                                            false
+                                                                        );
+                                                                    }}
+                                                                />
+                                                            )
+                                                        )
+                                                    )}
+                                                </div>
+                                            </>
+                                        )}
+                                        {fieldState.error && (
+                                            <p className="text-xs font-medium text-destructive">
+                                                {fieldState.error.message}
+                                            </p>
+                                        )}
+                                    </div>
+                                );
+                            }}
+                        />
+                        <CustomerFormModal
+                            fetchData={fetchCustomers}
+                            onSuccess={(customer) => {
+                                setValue("customer_id", customer.id, {
+                                    shouldValidate: true,
+                                    shouldDirty: true,
+                                });
+                                setSearchCustomer(customer.full_name ?? "");
+                                setCustomerPickerOpen(false);
+                            }}
+                        />
+                        <Button
+                            type="button"
+                            className="mt-3 h-11 w-full text-sm"
+                            disabled={isSubmitting || items.length === 0}
+                            onClick={handleContinue}
+                        >
+                            {isSubmitting ? "Validando..." : "Continuar al pago"}
+                            {!isSubmitting && (
+                                <ArrowRight className="size-4" />
                             )}
-                        </div>
+                        </Button>
+                        {itemsError && (
+                            <p className="mt-2 text-xs font-medium text-destructive">
+                                {itemsError}
+                            </p>
+                        )}
                     </SectionCard>
                 </div>
             </div>

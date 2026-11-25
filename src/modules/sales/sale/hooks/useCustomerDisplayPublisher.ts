@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import { productService } from "@/modules/inventory/products/services/product.service";
 import { useCustomerDisplayStore } from "../store/customerDisplay.store";
@@ -18,6 +18,12 @@ import { SaleForm } from "../validators/saleSchema";
 
 const round2 = (value: number): number =>
   Math.round((value + Number.EPSILON) * 100) / 100;
+
+// El publicador se monta en el layout del flujo y en el paso de pago.
+// Estos valores compartidos evitan publicaciones duplicadas y limpiezas
+// prematuras al navegar entre pasos.
+let activePublishers = 0;
+let completed = false;
 
 const buildSummary = (
   status: CustomerDisplayStatus,
@@ -53,20 +59,32 @@ const buildSummary = (
 /**
  * Publica el resumen de la venta hacia la pantalla del cliente.
  *
- * Se usa únicamente en el último paso del flujo de venta (Pago). No modifica
- * el estado de la venta: solo escribe en el store independiente
- * `customerDisplay` y en el canal hacia la segunda pantalla.
+ * Se monta en el layout del flujo (para que funcione desde el primer paso) y
+ * también en el paso de pago. No modifica el estado de la venta: solo escribe
+ * en el store independiente `customerDisplay` y en el canal hacia la segunda
+ * pantalla.
  */
 export function useCustomerDisplayPublisher() {
   const { watch } = useFormContext<SaleForm>();
   const items = watch("items") ?? [];
   const productCache = useCustomerDisplayStore((state) => state.productCache);
 
-  const completedRef = useRef(false);
-
-  // Publica en vivo mientras se está en el último paso.
   useEffect(() => {
-    if (completedRef.current) return;
+    activePublishers += 1;
+    if (activePublishers === 1) completed = false;
+
+    return () => {
+      activePublishers -= 1;
+      if (activePublishers === 0 && !completed) {
+        useCustomerDisplayStore.getState().clear();
+        publishClear();
+      }
+    };
+  }, []);
+
+  // Publica en vivo desde el primer paso del flujo.
+  useEffect(() => {
+    if (completed) return;
 
     const summary = buildSummary("sale", items, productCache);
     useCustomerDisplayStore.getState().setSummary(summary);
@@ -76,7 +94,7 @@ export function useCustomerDisplayPublisher() {
   // Responde a la pantalla del cliente cuando recién se abre o recarga.
   useEffect(() => {
     return subscribeToCustomerDisplay((message) => {
-      if (message.type !== "hello" || completedRef.current) return;
+      if (message.type !== "hello" || completed) return;
 
       const summary = buildSummary(
         "sale",
@@ -132,7 +150,7 @@ export function useCustomerDisplayPublisher() {
 
   // Marca la venta como completada: la pantalla muestra el agradecimiento.
   const markThanks = useCallback(() => {
-    completedRef.current = true;
+    completed = true;
 
     const summary = buildSummary(
       "thanks",
@@ -145,19 +163,9 @@ export function useCustomerDisplayPublisher() {
   }, [items]);
 
   const clear = useCallback(() => {
-    completedRef.current = false;
+    completed = false;
     useCustomerDisplayStore.getState().clear();
     publishClear();
-  }, []);
-
-  // Limpia la pantalla del cliente si se abandona la venta sin guardar.
-  useEffect(() => {
-    return () => {
-      if (!completedRef.current) {
-        useCustomerDisplayStore.getState().clear();
-        publishClear();
-      }
-    };
   }, []);
 
   return { markThanks, clear };

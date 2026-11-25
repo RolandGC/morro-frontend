@@ -6,6 +6,12 @@ import { Monitor } from "lucide-react";
 import { useSaleForm } from "@/modules/sales/sale/hooks/useSaleForm";
 import { Button } from "@/components/ui/button";
 import { openCustomerDisplay } from "@/modules/sales/sale/services/customerDisplay.service";
+import { useCustomerDisplayPublisher } from "@/modules/sales/sale/hooks/useCustomerDisplayPublisher";
+
+function CustomerDisplayPublisher() {
+    useCustomerDisplayPublisher();
+    return null;
+}
 
 export default function SaleNewLayout({
     children,
@@ -34,6 +40,7 @@ export default function SaleNewLayout({
 
     return (
         <FormProvider {...form}>
+            <CustomerDisplayPublisher />
             <div className="mx-auto w-full max-w-[1600px] px-4 py-2 lg:px-6">
                 <div className="flex items-center justify-between gap-4">
                     <div className="min-w-0 flex-1">

@@ -32,7 +32,9 @@ export const companySchema = z.object({
 
   phone: z
     .string()
-    .regex(/^\d{9}$/, "El teléfono debe tener 9 dígitos"),
+    .regex(/^\d{9}$/, "El teléfono debe tener 9 dígitos")
+    .optional()
+    .or(z.literal("")),
 
   logo_url: z
     .url("Debe ser una URL válida")

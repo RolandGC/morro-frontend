@@ -23,14 +23,14 @@ export const getColumns = ({ fetchCompanies }: ColumnsProps): ColumnDef<Company>
         header: "Empresa",
     },
     {
-        accessorFn: (row) => row.phone,
-        id: "Telefono",
-        header: "Teléfono",
-    },
-    {
         accessorFn: (row) => row.ruc,
         id: "ruc",
         header: "RUC",
+    },
+    {
+        accessorFn: (row) => row.phone,
+        id: "Telefono",
+        header: "Teléfono",
     },
     /* {
         accessorFn: (row) => row.model,
