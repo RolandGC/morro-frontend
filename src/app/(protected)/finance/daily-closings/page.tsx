@@ -142,6 +142,7 @@ export default function DailyClosingsPage() {
         try {
             const response = await dailyClosingService.getAll({
                 ...filter,
+                company_id: company?.id || undefined,
                 status: status || undefined,
                 date_from: dateFrom || undefined,
                 date_to: dateTo || undefined,
@@ -160,7 +161,7 @@ export default function DailyClosingsPage() {
         } finally {
             setLoading(false);
         }
-    }, [filter, status, dateFrom, dateTo]);
+    }, [filter, status, dateFrom, dateTo, company?.id]);
 
     useEffect(() => {
         // Carga inicial desde la API: el estado se actualiza de forma

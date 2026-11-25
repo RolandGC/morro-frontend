@@ -18,6 +18,7 @@ import type {
 } from "@/modules/finances/cashbox/types/cashbox.types";
 import { getCashSessionErrorMessage } from "@/modules/finances/cashbox/utils/cashSessionError";
 import { cash_session_status } from "@/types/types";
+import { getSelectedCompanyId } from "@/modules/reports/utils/company";
 
 import { getColumns } from "./columns";
 
@@ -57,7 +58,10 @@ export default function CashboxPage() {
 
     const fetchData = useCallback(async () => {
         try {
-            const response = await cashboxService.getAll(cashboxFilter);
+            const response = await cashboxService.getAll({
+                ...cashboxFilter,
+                company_id: getSelectedCompanyId() ?? undefined,
+            });
             if (response.status !== 200) {
                 throw new Error("Respuesta inesperada al listar las sesiones");
             }
@@ -73,11 +77,11 @@ export default function CashboxPage() {
     }, [cashboxFilter]);
 
     useEffect(() => {
-        // Carga inicial desde la API: el estado se actualiza de forma
-        // asíncrona, no sincrónicamente dentro del effect.
+        // Carga inicial y refresco cuando cambia la sesión activa
+        // (apertura/cierre) o los filtros.
         // eslint-disable-next-line react-hooks/set-state-in-effect
         void fetchData();
-    }, [fetchData]);
+    }, [fetchData, session?.id, session?.status]);
 
     const handleView = useCallback((item: Cashbox) => {
         setSelectedSession(item);

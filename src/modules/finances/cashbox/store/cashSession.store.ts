@@ -93,7 +93,15 @@ export const useCashSessionStore = create<CashSessionState>((set, get) => ({
         set({ accountsLoading: true, error: null });
 
         try {
+            const companyId = getSelectedCompanyId();
+            if (!companyId) {
+                throw new Error(
+                    "No hay una empresa seleccionada para cargar las cuentas de efectivo"
+                );
+            }
+
             const response = await accountService.getAll({
+                company_id: companyId,
                 is_active: true,
                 type: payment_account_type.cash,
                 page: 1,
