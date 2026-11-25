@@ -146,6 +146,55 @@ export default function RoleFormModal({ onSuccess, fetchData }: RoleFormProps) {
         }
     };
 
+    const groupedPermissions = permissions.reduce((groups, permission) => {
+        const moduleName = permission.name.split(".")[0];
+
+        if (!groups[moduleName]) {
+            groups[moduleName] = [];
+        }
+
+        groups[moduleName].push(permission);
+
+        return groups;
+    }, {} as Record<string, Permission[]>);
+
+    const toggleModule = (
+        modulePermissions: Permission[],
+        checked: boolean,
+        currentPermissions: string[],
+        onChange: (value: string[]) => void
+    ) => {
+        const moduleNames = modulePermissions.map((permission) => permission.name);
+
+        if (checked) {
+            onChange([...new Set([...currentPermissions, ...moduleNames])]);
+        } else {
+            onChange(
+                currentPermissions.filter((name) => !moduleNames.includes(name))
+            );
+        }
+    };
+
+    const getModuleChecked = (
+        modulePermissions: Permission[],
+        selectedPermissions: string[]
+    ) => {
+        return modulePermissions.every((permission) =>
+            selectedPermissions.includes(permission.name)
+        );
+    };
+
+    const getModuleIndeterminate = (
+        modulePermissions: Permission[],
+        selectedPermissions: string[]
+    ) => {
+        const selectedCount = modulePermissions.filter((permission) =>
+            selectedPermissions.includes(permission.name)
+        ).length;
+
+        return selectedCount > 0 && selectedCount < modulePermissions.length;
+    };
+
     return (
         <Dialog open={open} onOpenChange={close}>
             <DialogContent className="lg:max-w-2xl max-h-[90vh] overflow-y-auto sm:max-w-sm">
@@ -191,46 +240,110 @@ export default function RoleFormModal({ onSuccess, fetchData }: RoleFormProps) {
                                 </>
                             )}
                             {isEditing && (
-                                <div>
-                                    <Controller
-                                        name="permissions"
-                                        control={permissionsForm.control}
-                                        defaultValue={[]}
-                                        render={({ field }) => (
-                                            <div className="grid grid-cols-2 gap-3">
-                                                {permissions.map((permission) => {
-                                                    const checked = field.value?.includes(permission.name);
+                                <Controller
+                                    name="permissions"
+                                    control={permissionsForm.control}
+                                    defaultValue={[]}
+                                    render={({ field }) => (
+                                        <div className="flex flex-col gap-4">
+                                            {Object.entries(groupedPermissions).map(
+                                                ([moduleName, modulePermissions]) => {
+                                                    const allChecked = getModuleChecked(
+                                                        modulePermissions,
+                                                        field.value ?? []
+                                                    );
+
+                                                    const indeterminate = getModuleIndeterminate(
+                                                        modulePermissions,
+                                                        field.value ?? []
+                                                    );
 
                                                     return (
                                                         <div
-                                                            key={permission.id}
-                                                            className="flex items-center space-x-2"
+                                                            key={moduleName}
+                                                            className="border rounded-lg p-4 space-y-3"
                                                         >
-                                                            <Checkbox
-                                                                checked={Boolean(checked)}
-                                                                onCheckedChange={(value) => {
-                                                                    const current = field.value ?? [];
+                                                            {/* Cabecera del módulo */}
+                                                            <div className="flex items-center justify-between border-b pb-3">
+                                                                <div className="flex items-center gap-2">
+                                                                    <Checkbox
+                                                                        checked={
+                                                                            indeterminate
+                                                                                ? "indeterminate"
+                                                                                : allChecked
+                                                                        }
+                                                                        onCheckedChange={(value) => {
+                                                                            toggleModule(
+                                                                                modulePermissions,
+                                                                                value === true,
+                                                                                field.value ?? [],
+                                                                                field.onChange
+                                                                            );
+                                                                        }}
+                                                                    />
 
-                                                                    if (value) {
-                                                                        field.onChange([...current, permission.name]);
-                                                                    } else {
-                                                                        field.onChange(
-                                                                            current.filter((name: string) => name !== permission.name)
-                                                                        );
-                                                                    }
-                                                                }}
-                                                            />
+                                                                    <span className="font-semibold capitalize">
+                                                                        {moduleName}
+                                                                    </span>
+                                                                </div>
 
-                                                            <label className="text-sm">
-                                                                {permission.display_name}
-                                                            </label>
+                                                                <span className="text-xs text-muted-foreground">
+                                                                    {
+                                                                        modulePermissions.filter((permission) =>
+                                                                            field.value?.includes(permission.name)
+                                                                        ).length
+                                                                    } / {modulePermissions.length} permisos
+                                                                </span>
+                                                            </div>
+
+                                                            {/* Permisos del módulo */}
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                                {modulePermissions.map((permission) => {
+                                                                    const checked = field.value?.includes(
+                                                                        permission.name
+                                                                    );
+
+                                                                    return (
+                                                                        <div
+                                                                            key={permission.id}
+                                                                            className="flex items-center gap-2"
+                                                                        >
+                                                                            <Checkbox
+                                                                                checked={Boolean(checked)}
+                                                                                onCheckedChange={(value) => {
+                                                                                    const current =
+                                                                                        field.value ?? [];
+
+                                                                                    if (value) {
+                                                                                        field.onChange([
+                                                                                            ...current,
+                                                                                            permission.name,
+                                                                                        ]);
+                                                                                    } else {
+                                                                                        field.onChange(
+                                                                                            current.filter(
+                                                                                                (name) =>
+                                                                                                    name !== permission.name
+                                                                                            )
+                                                                                        );
+                                                                                    }
+                                                                                }}
+                                                                            />
+
+                                                                            <label className="text-sm cursor-pointer">
+                                                                                {permission.display_name}
+                                                                            </label>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
                                                         </div>
                                                     );
-                                                })}
-                                            </div>
-                                        )}
-                                    />
-                                </div>
+                                                }
+                                            )}
+                                        </div>
+                                    )}
+                                />
                             )}
                             <div className="flex items-center justify-end gap-2">
                                 <Button

@@ -90,6 +90,7 @@ export default function SalePage() {
                 filter={saleFilter}
                 handleFilter={handleFilter}
                 totalPages={pages?.totalPages ?? 1}
+                totalRecords={pages?.total ?? 0}
             />
 
             <TicketFormModal
