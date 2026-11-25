@@ -95,7 +95,7 @@ export function CashSessionCloseModal() {
     };
 
     const canClose = can(CASH_SESSION_PERMISSIONS.close);
-    const sessionLabel = session?.id.slice(0, 8) ?? "";
+    const sessionLabel = session?.id?.slice(0, 8) ?? "";
     const isLogoutClose = closePurpose === "logout";
 
     return (
