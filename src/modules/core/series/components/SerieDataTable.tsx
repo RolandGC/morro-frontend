@@ -33,6 +33,7 @@ interface DataTableProps<TData, TValue> {
         value: SerieQueryParams[K]
     ) => void;
     totalPages: number;
+    toolbar?: React.ReactNode;
 }
 
 export function SerieDataTable<TData, TValue>({
@@ -40,7 +41,8 @@ export function SerieDataTable<TData, TValue>({
     data,
     filter,
     handleFilter,
-    totalPages
+    totalPages,
+    toolbar,
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -71,12 +73,13 @@ export function SerieDataTable<TData, TValue>({
     
     return (
         <div>
-            <div className="flex items-center py-4">
+            <div className="flex flex-wrap items-end gap-3 pb-4 pt-6">
+                {toolbar}
                 <Input
                     placeholder="Filtrar series..."
                     value={filter.series}
                     onChange={(event) => handleFilter("series", event.target.value)}
-                    className="max-w-sm"
+                    className="w-full max-w-sm sm:w-64"
                 />
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>

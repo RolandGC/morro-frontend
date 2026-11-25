@@ -25,6 +25,11 @@ export const getColumns = ({ fetchData }: ColumnsProps): ColumnDef<Serie>[] => [
     },
     
     {
+        accessorFn: (row) => (row.environment === "beta" ? "Beta" : "Producción"),
+        id: "ambiente",
+        header: "Ambiente",
+    },
+    {
         accessorFn: (row) => translateSerieType(row.type),
         id: "tipo",
         header: "Tipo",
@@ -49,6 +54,8 @@ export const getColumns = ({ fetchData }: ColumnsProps): ColumnDef<Serie>[] => [
                     next_number: serie.next_number,
                     user_id: serie.user_id,
                     type: serie.type,
+                    environment: serie.environment,
+                    create_in_other_environment: false,
                 }, serie.id);
             };
 
