@@ -242,7 +242,7 @@ export default function TicketFormModal({
 
             const hardcodedPayload = {
                 ...payload,
-                send_to_sunat: true,
+                //send_to_sunat: true,
                 document_type: "boleta" as const,
             };
 

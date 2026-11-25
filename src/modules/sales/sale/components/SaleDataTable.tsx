@@ -36,6 +36,7 @@ interface DataTableProps<TData, TValue> {
         value: SaleQueryParams[K]
     ) => void;
     totalPages: number;
+    totalRecords: number;
 }
 
 export function SaleDataTable<TData, TValue>({
@@ -43,7 +44,8 @@ export function SaleDataTable<TData, TValue>({
     data,
     filter,
     handleFilter,
-    totalPages
+    totalPages,
+    totalRecords
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -244,6 +246,9 @@ export function SaleDataTable<TData, TValue>({
                 </Table>
             </div>
             <div className="flex items-center justify-end space-x-2 py-4">
+                <span className="mr-2 text-sm text-muted-foreground">
+                    Total: {totalRecords.toLocaleString("es-PE")} registros
+                </span>
                 <Button
                     variant="outline"
                     size="sm"

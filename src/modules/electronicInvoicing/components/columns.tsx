@@ -62,7 +62,7 @@ export function getElectronicInvoicingColumns({
       cell: ({ row }) => {
         const document = row.original;
         return (
-          <div className="min-w-[170px]">
+          <div className="min-w-42.5">
             <button
               type="button"
               className="text-left text-sm font-semibold text-foreground hover:text-primary hover:underline"
@@ -77,7 +77,7 @@ export function getElectronicInvoicingColumns({
         );
       },
     },
-    {
+    /* {
       id: "kind",
       header: "Tipo",
       cell: ({ row }) => (
@@ -93,7 +93,7 @@ export function getElectronicInvoicingColumns({
     {
       accessorKey: "number",
       header: "Número",
-    },
+    }, */
     {
       id: "sale_date",
       header: "Fecha de emisión",
@@ -107,7 +107,7 @@ export function getElectronicInvoicingColumns({
       id: "customer",
       header: "Cliente",
       cell: ({ row }) => (
-        <div className="min-w-[180px]">
+        <div className="min-w-45">
           <p className="text-sm">{row.original.customer?.name ?? "—"}</p>
           <p className="text-xs text-muted-foreground">
             {row.original.customer?.doc_type
@@ -117,13 +117,13 @@ export function getElectronicInvoicingColumns({
         </div>
       ),
     },
-    {
+    /* {
       id: "document_number",
       header: "Documento del cliente",
       cell: ({ row }) => (
         <span className="text-sm">{row.original.customer?.doc_number ?? "—"}</span>
       ),
-    },
+    }, */
     {
       id: "currency",
       header: "Moneda",
