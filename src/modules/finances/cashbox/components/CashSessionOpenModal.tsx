@@ -96,18 +96,37 @@ export function CashSessionOpenModal() {
                         Cargando cuentas de efectivo...
                     </div>
                 ) : accounts.length === 0 ? (
-                    <EmptyState
-                        icon={AlertCircle}
-                        title={
-                            error
-                                ? "No se pudo preparar la apertura"
-                                : "No hay cuentas de efectivo activas"
-                        }
-                        description={
-                            error ??
-                            "No es posible registrar la apertura sin cuentas de pago de tipo efectivo."
-                        }
-                    />
+                    <div className="flex flex-col gap-4">
+                        <EmptyState
+                            icon={AlertCircle}
+                            title={
+                                error
+                                    ? "No se pudo preparar la apertura"
+                                    : "No hay cuentas de efectivo activas"
+                            }
+                            description={
+                                error ??
+                                "No es posible registrar la apertura sin cuentas de pago de tipo efectivo."
+                            }
+                        />
+
+                        <div className="flex items-center justify-end gap-2 border-t pt-4">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={dismissOpen}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                type="button"
+                                onClick={() => void loadAccounts()}
+                                disabled={accountsLoading}
+                            >
+                                Reintentar
+                            </Button>
+                        </div>
+                    </div>
                 ) : (
                     <form
                         onSubmit={handleSubmit(onSubmit)}

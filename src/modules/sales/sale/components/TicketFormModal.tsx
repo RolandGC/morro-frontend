@@ -242,11 +242,8 @@ export default function TicketFormModal({
 
             const hardcodedPayload = {
                 ...payload,
-                //send_to_sunat: true,
                 document_type: "boleta" as const,
             };
-
-            console.log("Payload enviado:", hardcodedPayload);
 
             const response = await saleService.createTicket(hardcodedPayload)
             //const response = await saleService.createTicket(payload);

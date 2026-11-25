@@ -57,7 +57,7 @@ export default function SimpleSelector({
                 value={value}
                 disabled={disabled}
             >
-                <SelectTrigger className="w-full">
+                <SelectTrigger id={label} className="w-full">
                     <SelectValue placeholder="Selecciona" />
                 </SelectTrigger>
 
