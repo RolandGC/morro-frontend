@@ -3,6 +3,7 @@ export interface PaginationMeta {
     page: number;
     limit: number;
     totalPages: number;
+    environment?: "beta" | "produccion" | null;
 }
 
 export interface PaginationResponse<T> {
@@ -138,4 +139,8 @@ export enum series_type {
     general = "general",
     zofra = "zofra",
     order_note = "order_note",
+    boleta_general = "boleta_general",
+    boleta_zofra = "boleta_zofra",
+    factura_general = "factura_general",
+    factura_zofra = "factura_zofra",
 }

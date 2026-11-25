@@ -4,9 +4,12 @@ import { SerieForm } from "../validators/serieSchema";
 import { series_type } from "@/types/types";
 
 const initialState: SerieForm = {
+    company_id: undefined,
+    environment: "beta",
+    create_in_other_environment: false,
     user_id: "",
     series: "",
-    type: series_type.general,
+    type: series_type.boleta_general,
     next_number: 1,
 };
 
@@ -17,7 +20,7 @@ interface SerieStore {
     serie_id: string | null;
     series: Serie[];
 
-    openCreate: () => void;
+    openCreate: (environment?: "beta" | "produccion") => void;
     openEdit: (
         serie: SerieForm,
         series_id: string | null
@@ -42,11 +45,14 @@ export const useSerieStore = create<SerieStore>((set) => ({
     serie_id: null,
     series: [],
 
-    openCreate: () =>
+    openCreate: (environment) =>
         set({
             open: true,
             isEditing: false,
-            serie: initialState,
+            serie: {
+                ...initialState,
+                environment: environment ?? "beta",
+            },
             serie_id: null,
         }),
 

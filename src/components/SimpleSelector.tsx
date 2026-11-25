@@ -20,6 +20,7 @@ type SimpleSelectorProps = {
     // Nuevo
     onAdd?: () => void;
     addLabel?: string;
+    disabled?: boolean;
 };
 
 export default function SimpleSelector({
@@ -30,6 +31,7 @@ export default function SimpleSelector({
     error,
     onAdd,
     addLabel = "Agregar",
+    disabled,
 }: SimpleSelectorProps) {
     return (
         <div className="flex flex-col gap-1">
@@ -53,6 +55,7 @@ export default function SimpleSelector({
             <Select
                 onValueChange={onSelect}
                 value={value}
+                disabled={disabled}
             >
                 <SelectTrigger className="w-full">
                     <SelectValue placeholder="Selecciona" />

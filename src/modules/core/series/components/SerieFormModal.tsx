@@ -6,21 +6,30 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/useToast";
 import SimpleSelector from "@/components/SimpleSelector";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useSerieStore } from "../store/serie.store";
 import { SerieForm, serieSchema } from "../validators/serieSchema";
 import { serieService } from "../services/serie.service";
 import { User } from "../../user/types/user.types";
 import { userService } from "../../user/services/user.service";
 import { series_type } from "@/types/types";
+import { getSelectedCompanyId } from "@/modules/reports/utils/company";
 
 interface SerieFormProps {
     onSuccess?: () => void;
     fetchData: () => void,
 }
+const environmentOptions = [
+    { id: "beta", name: "Beta" },
+    { id: "produccion", name: "Producción" },
+];
+
 const typeOptions = [
     { id: "1", name: "Nota de Pedido", value: series_type.order_note },
-    { id: "2", name: "Régimen General", value: series_type.general },
-    { id: "3", name: "Régimen Zofra", value: series_type.zofra },
+    { id: "2", name: "Boleta General", value: series_type.boleta_general },
+    { id: "3", name: "Boleta ZOFRA", value: series_type.boleta_zofra },
+    { id: "4", name: "Factura General", value: series_type.factura_general },
+    { id: "5", name: "Factura ZOFRA", value: series_type.factura_zofra },
 ];
 
 export default function SerieFormModal({ onSuccess, fetchData }: SerieFormProps) {
@@ -31,10 +40,8 @@ export default function SerieFormModal({ onSuccess, fetchData }: SerieFormProps)
 
     const { register, handleSubmit,
         control, reset: resetForm,
-        getValues,
-        setValue,
+        watch,
         formState: { errors, isSubmitting },
-        setError,
     } = useForm<SerieForm>({
         resolver: zodResolver(serieSchema),
         defaultValues: serie,
@@ -48,17 +55,27 @@ export default function SerieFormModal({ onSuccess, fetchData }: SerieFormProps)
                 series: serie.series ?? "",
                 type: serie.type ?? "",
                 next_number: serie.next_number ?? 0,
+                environment: serie.environment ?? "beta",
+                create_in_other_environment: false,
             });
         } else {
             resetForm(defaultValues);
         }
     }, [serie, isEditing, resetForm]);
 
+    const selectedEnvironment = watch("environment");
+    const otherEnvironmentLabel =
+        selectedEnvironment === "beta" ? "Producción" : "Beta";
+
     const fetchUsers = async () => {
 
         try {
 
-            const response = await userService.getAll({ is_active: true });
+            const companyId = getSelectedCompanyId();
+            const response = await userService.getAll({
+                is_active: true,
+                ...(companyId ? { company_id: companyId } : {}),
+            });
             if (response.status === 200) {
                 setData(response.data.data);
             }
@@ -73,11 +90,17 @@ export default function SerieFormModal({ onSuccess, fetchData }: SerieFormProps)
 
     const onSubmit = async (serie: SerieForm) => {
         try {
+            const companyId = getSelectedCompanyId();
+            const payload: SerieForm = {
+                ...serie,
+                ...(companyId ? { company_id: companyId } : {}),
+            };
+
             let response;
             if (isEditing && serie_id) {
-                response = await serieService.update(serie_id, serie);
+                response = await serieService.update(serie_id, payload);
             } else {
-                response = await serieService.create(serie);
+                response = await serieService.create(payload);
             }
             if (response.status === 201 || response.status === 200) {
                 showToast(
@@ -90,7 +113,16 @@ export default function SerieFormModal({ onSuccess, fetchData }: SerieFormProps)
                 onSuccess?.();
             }
         } catch (error) {
-            showToast("Error al guardar la Serie", "error")
+            const response = error as {
+                response?: { data?: { message?: string | string[] } };
+            };
+            const message = response.response?.data?.message;
+            showToast(
+                Array.isArray(message)
+                    ? message.join(", ")
+                    : message || "Error al guardar la serie",
+                "error"
+            );
             console.error(error)
         }
     };
@@ -102,6 +134,9 @@ export default function SerieFormModal({ onSuccess, fetchData }: SerieFormProps)
                     <DialogTitle className="font-bold text-2xl">{isEditing ? "Editar serie" : "Crear serie"}</DialogTitle>
                 </DialogHeader>
                 <div className="flex flex-col gap-4 w-full">
+                    <p className="text-xs text-muted-foreground">
+                        La serie se crea en el ambiente seleccionado. Si lo necesitas, puedes replicarla al otro ambiente.
+                    </p>
                     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 w-full">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <InputText
@@ -143,7 +178,7 @@ export default function SerieFormModal({ onSuccess, fetchData }: SerieFormProps)
                                 control={control}
                                 render={({ field }) => (
                                     <SimpleSelector
-                                        label="Tipo"
+                                        label="Tipo de comprobante"
                                         value={
                                             typeOptions.find(
                                                 (option) => option.value === field.value
@@ -163,6 +198,41 @@ export default function SerieFormModal({ onSuccess, fetchData }: SerieFormProps)
                             />
 
                         </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Controller
+                                name="environment"
+                                control={control}
+                                render={({ field }) => (
+                                    <SimpleSelector
+                                        label="Ambiente"
+                                        value={field.value}
+                                        options={environmentOptions}
+                                        onSelect={field.onChange}
+                                        error={errors.environment}
+                                        disabled={isEditing}
+                                    />
+                                )}
+                            />
+
+                            {!isEditing && (
+                                <Controller
+                                    name="create_in_other_environment"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <label className="flex min-h-9 items-center gap-2 self-end text-sm">
+                                            <Checkbox
+                                                checked={field.value}
+                                                onCheckedChange={(checked) =>
+                                                    field.onChange(checked === true)
+                                                }
+                                            />
+                                            Crear también en {otherEnvironmentLabel}
+                                        </label>
+                                    )}
+                                />
+                            )}
+                        </div>
+
                         <div className="flex items-center justify-end gap-2">
                             <Button
                                 type="button"
