@@ -63,6 +63,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [token, user?.id, isPermissionsLoaded, fetchPermissions]);
 
+  useEffect(() => {
+    if (!token || !user?.id) return;
+
+    let active = true;
+
+    const checkSession = async () => {
+      if (!active) return;
+      // Si el token fue invalidado, el interceptor de Axios redirige al login.
+      await authService.getCurrentUser();
+    };
+
+    const interval = window.setInterval(() => {
+      void checkSession();
+    }, 30_000);
+
+    const handleFocus = () => void checkSession();
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        void checkSession();
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [token, user?.id]);
+
   return (
     <AuthContext.Provider value={{ isAuthenticated: !!token, isLoading }}>
       {children}
