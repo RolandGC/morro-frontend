@@ -37,10 +37,25 @@ apiClient.interceptors.response.use(
   (error: AxiosError) => {
     if (typeof window !== 'undefined') {
       if (error.response?.status === 401) {
-        window.location.href = '/auth/login';
-        const token = getCookieValue('access_token');
-        //const isAuthPage = window.location.pathname.startsWith('/');
-        removeAuthToken();
+        const requestUrl = error.config?.url ?? "";
+        const isLoginRequest = requestUrl.includes("/auth/login");
+        const isLoginPage = window.location.pathname === "/auth/login";
+
+        // El login inválido lo maneja el formulario; no redirigir en bucle.
+        if (!isLoginRequest && !isLoginPage) {
+          const data = error.response?.data as
+            | { message?: string | string[] }
+            | undefined;
+          const rawMessage = data?.message;
+          const message = Array.isArray(rawMessage)
+            ? rawMessage.join(", ")
+            : rawMessage ||
+              "Tu sesión fue cerrada. Vuelve a iniciar sesión.";
+
+          sessionStorage.setItem("auth_redirect_message", message);
+          removeAuthToken();
+          window.location.replace("/auth/login?reason=session");
+        }
       }
 
       if (error.response?.status === 403) {

@@ -1,6 +1,8 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { AlertCircle } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { cn } from '@/lib/utils';
@@ -20,6 +22,16 @@ export function LoginFormData({
   const router = useRouter();
   const { success, error } = useToast();
   const { login, isLoading } = useAuthStore();
+  const [sessionMessage, setSessionMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const message = sessionStorage.getItem("auth_redirect_message");
+    if (!message) return;
+
+    sessionStorage.removeItem("auth_redirect_message");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSessionMessage(message);
+  }, []);
 
   const {
     register,
@@ -41,11 +53,16 @@ export function LoginFormData({
       } 
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        console.log('Status:', err.response?.status);
-        console.log('Data:', err.response?.data);
-        console.log('Message API:', err.response?.data?.message);
+        const data = err.response?.data as
+          | { message?: string | string[] }
+          | undefined;
+        const message = Array.isArray(data?.message)
+          ? data.message.join(", ")
+          : data?.message || "No se pudo iniciar sesión";
+
+        error(message);
       } else {
-        console.log('Error desconocido:', err);
+        error("No se pudo iniciar sesión");
       }
     }
   };
@@ -61,6 +78,13 @@ export function LoginFormData({
           <CardDescription>Ingrese sus credenciales</CardDescription>
         </CardHeader>
         <CardContent>
+          {sessionMessage && (
+            <div className="mb-4 flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-700">
+              <AlertCircle className="mt-0.5 size-4 shrink-0" />
+              <span>{sessionMessage}</span>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit(onSubmit)}>
             <FieldGroup>
               <Field>
